@@ -1,0 +1,9 @@
+# XSight SAI
+
+XSIGHT_URL = file:///sonic
+
+XSIGHT_LIBSAI = xsai-main_0.1_all.deb
+
+$(XSIGHT_LIBSAI)_URL = $(XSIGHT_URL)/$(XSIGHT_LIBSAI)
+
+SONIC_ONLINE_DEBS += $(XSIGHT_LIBSAI)
