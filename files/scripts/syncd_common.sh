@@ -146,6 +146,10 @@ wait() {
 
     waitplatform
 
+    debug "Starting XBM..."
+    /home/admin/xbm/cfg/start.sh
+    /home/admin/xbm/cfg/run_xbm.sh &
+
     /usr/bin/${SERVICE}.sh wait $DEV
 }
 
@@ -167,8 +171,10 @@ stop() {
     fi
 
     stopplatform1
-
     /usr/bin/${SERVICE}.sh stop $DEV
+
+    /home/admin/xbm/cfg/down.sh
+
     debug "Stopped ${SERVICE}$DEV service..."
 
     stopplatform2
