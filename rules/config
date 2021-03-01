@@ -5,12 +5,12 @@
 # SONIC_CONFIG_PRINT_DEPENDENCIES - show dependencies for each invoked target.
 # Before executing rule for each target its dependencies are printed to console.
 # Uncomment next line to enable:
-# SONIC_CONFIG_PRINT_DEPENDENCIES = y
+SONIC_CONFIG_PRINT_DEPENDENCIES = y
 
 # SONIC_CONFIG_BUILD_JOBS - set number of jobs for parallel build.
 # Corresponding -j argument will be passed to make command inside docker
 # container.
-SONIC_CONFIG_BUILD_JOBS = 1
+SONIC_CONFIG_BUILD_JOBS = 4
 
 # SONIC_CONFIG_MAKE_JOBS - set number of parallel make jobs per package.
 # Corresponding -j argument will be passed to make/dpkg commands that build separate packages
@@ -37,7 +37,7 @@ DEFAULT_BUILD_LOG_TIMESTAMP = none
 
 # SONIC_CONFIG_ENABLE_COLORS - enable colored output in build system.
 # Comment next line to disable:
-# SONIC_CONFIG_ENABLE_COLORS = y
+SONIC_CONFIG_ENABLE_COLORS = y
 
 # CHANGE_DEFAULT_PASSWORD - enforce default user/users to change password on 1st login
 CHANGE_DEFAULT_PASSWORD ?= n
@@ -49,7 +49,7 @@ SMARTSWITCH ?= 0
 DEFAULT_USERNAME = admin
 
 # DEFAULT_PASSWORD - default password for installer build
-DEFAULT_PASSWORD = YourPaSsWoRd
+DEFAULT_PASSWORD = admin
 
 # ENABLE_ZTP - installs Zero Touch Provisioning support.
 # ENABLE_ZTP = y
@@ -115,7 +115,7 @@ FRR_USER_GID = 300
 #	rcache  :  Use cache if exists, but dont update the cache
 #	cache   :  Same as rwcache
 # SONIC_DPKG_CACHE_SOURCE - Stores the cache location details
-SONIC_DPKG_CACHE_METHOD ?= none
+SONIC_DPKG_CACHE_METHOD ?= rwcache
 SONIC_DPKG_CACHE_SOURCE ?= /var/cache/sonic/artifacts
 
 # Default VS build memory preparation
