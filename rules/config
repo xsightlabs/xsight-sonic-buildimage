@@ -137,7 +137,7 @@ INCLUDE_SYSTEM_TELEMETRY = n
 INCLUDE_ICCPD = n
 
 # INCLUDE_SFLOW - build docker-sflow for sFlow support
-INCLUDE_SFLOW = y
+INCLUDE_SFLOW = n
 
 # INCLUDE_MGMT_FRAMEWORK - build docker-sonic-mgmt-framework for CLI and REST server support
 INCLUDE_MGMT_FRAMEWORK = y
@@ -150,7 +150,7 @@ ENABLE_HOST_SERVICE_ON_START = y
 INCLUDE_RESTAPI = n
 
 # INCLUDE_NAT - build docker-nat for nat support
-INCLUDE_NAT = y
+INCLUDE_NAT = n
 
 # INCLUDE_DHCP_RELAY - build and install dhcp-relay package
 INCLUDE_DHCP_RELAY = y
