@@ -13,7 +13,10 @@ SONIC_ALL += $(SONIC_ONE_IMAGE) \
 ifeq ($(ENABLE_SYNCD_RPC),y)
 $(SYNCD)_DEPENDS += $(LIBSAITHRIFT_DEV)
 endif
-$(SYNCD)_DEPENDS += $(XSIGHT_LIBSAI)
+
+$(SYNCD)_DEPENDS += $(XSIGHT_LIBSAI) $(XSIGHT_LIBSAI_DEV)
+$(SYNCD)_UNINSTALLS += $(XSIGHT_LIBSAI_DEV)
+
 
 # Runtime dependency on xsight sai is set only for syncd
 $(SYNCD)_RDEPENDS += $(XSIGHT_LIBSAI)
