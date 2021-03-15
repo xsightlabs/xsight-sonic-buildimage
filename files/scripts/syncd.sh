@@ -64,6 +64,11 @@ function startplatform() {
         fi
     fi
 
+    if [[ x"$sonic_asic_platform" == x"xsight" ]]; then
+        debug "Starting XBM..."
+        /home/admin/xbm/cfg/start.sh
+    fi
+
     if [[ x"$WARM_BOOT" != x"true" ]]; then
         if [ x$sonic_asic_platform == x'cavium' ]; then
             /etc/init.d/xpnet.sh start
@@ -145,6 +150,8 @@ function stopplatform2() {
             /etc/init.d/xpnet.sh start
         elif [ x"$sonic_asic_platform" == x"nvidia-bluefield" ]; then
             /usr/bin/bfnet.sh stop
+        elif [ x$sonic_asic_platform == x'xsight' ]; then
+            /home/admin/xbm/cfg/down.sh
         fi
     fi
 }
