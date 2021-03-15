@@ -659,6 +659,13 @@ fi
 ## Setup ebtable rules (rule file in text format)
 sudo cp files/image_config/ebtables/ebtables.filter.cfg ${FILESYSTEM_ROOT}/etc
 
+## xSight: XXX add xbm scripts. To be moved to platform package
+sudo LANG=C chroot $FILESYSTEM_ROOT apt-get -y install libjsoncpp1
+sudo cp -a platform/xsight/files/xbm $FILESYSTEM_ROOT/home/admin/
+sudo chmod +x $FILESYSTEM_ROOT/home/admin/xbm/cfg/*.sh
+sudo LANG=C chroot $FILESYSTEM_ROOT chown -R $USERNAME /home/admin/xbm
+
+
 ## Debug Image specific changes
 ## Update motd for debug image
 if [ "$DEBUG_IMG" == "y" ]
