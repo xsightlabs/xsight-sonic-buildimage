@@ -8,12 +8,12 @@
 	branch = 202311
 [submodule "sonic-sairedis"]
 	path = src/sonic-sairedis
-	url = https://github.com/sonic-net/sonic-sairedis
-	branch = 202311
+	url = http://x-git01.xsight.ent:7990/scm/xs/sonic-sairedis.git
+	branch = 202211-xsight
 [submodule "sonic-swss"]
 	path = src/sonic-swss
-	url = https://github.com/sonic-net/sonic-swss
-	branch = 202311
+	url = http://x-git01.xsight.ent:7990/scm/xs/sonic-swss.git
+	branch = 202211-xsight
 [submodule "src/p4c-bm/p4c-bm"]
 	path = platform/p4/p4c-bm/p4c-bm
 	url = https://github.com/krambn/p4c-bm
@@ -37,8 +37,8 @@
 	url = https://github.com/p4lang/ptf.git
 [submodule "src/sonic-utilities"]
 	path = src/sonic-utilities
-	url = https://github.com/sonic-net/sonic-utilities
-	branch = 202311
+	url = http://x-git01.xsight.ent:7990/scm/xs/sonic-utilities.git
+	branch = 202211-xsight
 [submodule "platform/broadcom/sonic-platform-modules-arista"]
 	path = platform/broadcom/sonic-platform-modules-arista
 	url = https://github.com/aristanetworks/sonic
