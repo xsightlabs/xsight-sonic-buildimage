@@ -260,7 +260,7 @@ static struct led_classdev es9632xx_leds[] = {
         .default_trigger = "unused",
         .brightness_set     = es9632xx_led_diag_set,
         .brightness_get  = es9632xx_led_diag_get,
-        .max_brightness  = LED_MODE_GREEN,
+        .max_brightness  = LED_MODE_AMBER,
     },
     [LED_TYPE_PSU1] = {
         .name             = "es9632xx_led::psu1",
