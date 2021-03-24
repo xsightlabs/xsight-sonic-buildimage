@@ -75,4 +75,5 @@ if [[ x"${LOCALHOST_SUBTYPE}" == x"SmartSwitch" ]]; then
     ORCHAGENT_ARGS+=" -q tcp://127.0.0.1:8100"
 fi
 
-exec /usr/bin/orchagent ${ORCHAGENT_ARGS}
+#exec /usr/bin/orchagent ${ORCHAGENT_ARGS}
+LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libsairedisnonstop.so.0 exec /usr/bin/orchagent ${ORCHAGENT_ARGS}
