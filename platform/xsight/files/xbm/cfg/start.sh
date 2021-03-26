@@ -29,7 +29,7 @@ echo 3 > /proc/sys/dev/xpci_dev/debug_level
 echo ">>> Start XBM"
 #read -p "--- Press enter to continue ---"
 #read -p '---- Please run XBM ---'
-#rm -f /home/admin/xbm/log/*
+rm -f /home/admin/xbm/log/*
 /home/admin/xbm/cfg/run_xbm.sh&
 #sleep 30
 
