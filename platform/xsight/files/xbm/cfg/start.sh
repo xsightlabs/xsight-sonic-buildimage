@@ -1,23 +1,5 @@
 #!/bin/bash
 
-echo ">>> Configuring CPU port VETH devices"
-
-# Setup CPU port
-ip link add name veth0 type veth peer name xcpu
-ip link set dev veth0 up
-ip link set dev xcpu up
-
-echo ">>> Re-load NetDev"
-#read -p "--- Press enter to continue ---"
-/home/admin/xbm/cfg/xrm.sh
-/home/admin/xbm/cfg/xload.sh
-
-echo ">>> Sleeping 5"
-sleep 5
-
-echo ">>> Set XPCI debug level to INFO(3)"
-echo 3 > /proc/sys/dev/xpci_dev/debug_level
-
 #echo ">>> Configuring namespaces"
 #read -p "--- Press enter to continue ---"
 #/home/admin/xbm/cfg/ns_netdev.sh
