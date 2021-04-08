@@ -83,7 +83,7 @@ function startplatform() {
 
     if [[ x"$sonic_asic_platform" == x"xsight" ]]; then
         debug "Starting XBM..."
-        /home/admin/xbm/cfg/start.sh
+        /home/admin/x1/start.sh
     fi
 
     if [[ x"$WARM_BOOT" != x"true" ]]; then
@@ -161,7 +161,7 @@ function stopplatform2() {
             /etc/init.d/xpnet.sh stop
             /etc/init.d/xpnet.sh start
         elif [ x$sonic_asic_platform == x'xsight' ]; then
-            /home/admin/xbm/cfg/down.sh
+            /home/admin/x1/down.sh
         fi
     fi
 }
