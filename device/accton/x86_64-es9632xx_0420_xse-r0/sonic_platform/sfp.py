@@ -124,7 +124,7 @@ class Sfp(SfpBase):
     HOST_CHK_CMD = "docker > /dev/null 2>&1"
 
     PLATFORM = "x86_64-es9632xx_0420_xse-r0"
-    HWSKU = "Accton-ES9632xx-0420-xse"
+    HWSKU = "es9632xx"
 
     _cpld_mapping = {
         0:  "20-0061",
