@@ -162,8 +162,14 @@ class Fan(FanBase):
 
         if not self.is_psu_fan:
             if val is not None:
-                return int(val, 10)==1
+                return int(val, 10) == 1
             else:
                 return False
         else:
-            return True
+            # Need to check if PSU is present
+            present_path = "{}{}".format(self.psu_hwmon_path, 'psu_v_in')
+            val = self._api_helper.read_txt_file(present_path)
+            if len(val) != 0:
+                return True
+            else:
+                return False

@@ -167,12 +167,12 @@ kos = [
     'modprobe i2c_mux_pca954x force_deselect_on_exit=1',
     'modprobe dps850',
     'modprobe optoe',
-    'modprobe x86-64-es9632xx-0420-xse-cpld',
-    'modprobe x86-64-es9632xx-0420-xse-fan',
-    'modprobe x86-64-es9632xx-0420-xse-leds',
-    'modprobe x86-64-es9632xx-0420-xse-psu',
-    'modprobe x86-64-es9632xx-0420-xse-sys',
-    'modprobe x86-64-es9632xx-0420-xse-sfp'
+    'modprobe x86-64-es9632xx-cpld',
+    'modprobe x86-64-es9632xx-fan',
+    'modprobe x86-64-es9632xx-leds',
+    'modprobe x86-64-es9632xx-psu',
+    'modprobe x86-64-es9632xx-sys',
+    'modprobe x86-64-es9632xx-sfp'
     ]
 
 

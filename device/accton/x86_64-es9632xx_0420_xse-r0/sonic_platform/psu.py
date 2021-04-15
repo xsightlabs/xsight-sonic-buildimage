@@ -62,7 +62,8 @@ class Psu(PsuBase):
         from sonic_platform.fan import Fan
         for fan_index in range(0, PSU_NUM_FAN[self.index]):
             fan = Fan(fan_index, 0, is_psu_fan=True, psu_index=self.index)
-            self._fan_list.append(fan)
+            if fan.get_presence():
+                self._fan_list.append(fan)
 
     def get_voltage(self):
         """

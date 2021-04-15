@@ -1,7 +1,7 @@
 ifneq ($(KERNELRELEASE),)
-obj-m:= x86-64-es9632xx-0420-xse-cpld.o x86-64-es9632xx-0420-xse-sfp.o\
-    x86-64-es9632xx-0420-xse-fan.o x86-64-es9632xx-0420-xse-leds.o \
-    x86-64-es9632xx-0420-xse-psu.o x86-64-es9632xx-0420-xse-sys.o dps850.o
+obj-m:= x86-64-es9632xx-cpld.o x86-64-es9632xx-sfp.o\
+    x86-64-es9632xx-fan.o x86-64-es9632xx-leds.o \
+    x86-64-es9632xx-psu.o x86-64-es9632xx-sys.o dps850.o
 
 else
 ifeq (,$(KERNEL_SRC))
