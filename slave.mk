@@ -375,6 +375,8 @@ endif
 export RUST_CROSS_COMPILE_TARGET
 endif
 
+export ASAN_SAI_PLUGIN
+
 ###############################################################################
 ## Routing stack related exports
 ###############################################################################
@@ -470,6 +472,7 @@ $(info "MULTIARCH_QEMU_ENVIRON"          : "$(MULTIARCH_QEMU_ENVIRON)")
 $(info "SONIC_VERSION_CONTROL_COMPONENTS": "$(SONIC_VERSION_CONTROL_COMPONENTS)")
 $(info "ENABLE_ASAN"                     : "$(ENABLE_ASAN)")
 $(info "DEFAULT_CONTAINER_REGISTRY"      : "$(SONIC_DEFAULT_CONTAINER_REGISTRY)")
+$(info "ASAN_SAI_PLUGIN"                 : "$(ASAN_SAI_PLUGIN)")
 ifeq ($(CONFIGURED_PLATFORM),vs)
 $(info "BUILD_MULTIASIC_KVM"             : "$(BUILD_MULTIASIC_KVM)")
 endif
