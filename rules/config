@@ -325,3 +325,6 @@ PIP_HTTP_TIMEOUT ?= 60
 
 # BUILD_REDUCE_IMAGE_SIZE - reduce the image size as much as possbible
 BUILD_REDUCE_IMAGE_SIZE = n
+
+# address-sanitizer for sai-plugin
+ASAN_SAI_PLUGIN = y
