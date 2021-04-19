@@ -65,7 +65,6 @@ function startplatform() {
     fi
 
     if [[ x"$sonic_asic_platform" == x"xsight" ]]; then
-        debug "Starting XBM..."
         /home/admin/x1/start.sh
     fi
 

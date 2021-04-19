@@ -666,6 +666,7 @@ sudo cp -a platform/xsight/files/x1 $FILESYSTEM_ROOT/home/admin/
 sudo chmod +x $FILESYSTEM_ROOT/home/admin/xbm/cfg/*.sh
 sudo chmod +x $FILESYSTEM_ROOT/home/admin/x1/*.sh
 sudo LANG=C chroot $FILESYSTEM_ROOT chown -R $USERNAME /home/admin/xbm
+sudo LANG=C chroot $FILESYSTEM_ROOT chown -R $USERNAME /home/admin/x1
 
 
 ## Debug Image specific changes
