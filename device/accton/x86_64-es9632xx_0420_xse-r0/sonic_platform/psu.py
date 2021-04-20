@@ -56,7 +56,8 @@ class Psu(PsuBase):
         self.i2c_num = PSU_CPLD_I2C_MAPPING[self.index]["num"]
         self.i2c_addr = PSU_CPLD_I2C_MAPPING[self.index]["addr"]
         self.cpld_path = I2C_PATH.format(self.i2c_num, self.i2c_addr)
-        self.__initialize_fan()
+        #TODO: uncomment when thermalctld issue in Azure repository is fixed.
+        #self.__initialize_fan()
 
     def __initialize_fan(self):
         from sonic_platform.fan import Fan
