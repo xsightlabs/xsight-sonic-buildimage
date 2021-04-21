@@ -2,7 +2,7 @@
 
 USE_XBM=true
 ATTACH_IF="xcpu"
-PORT_NUM=16
+PORT_NUM=32
 DEBUG_LEVEL=3
 NETDEV_MODE=1
 ONIE_MACHINE=`sed -n -e 's/^.*onie_machine=//p' /host/machine.conf`
