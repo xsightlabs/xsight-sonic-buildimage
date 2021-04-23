@@ -1,4 +1,5 @@
 #!/bin/bash
+ONIE_MACHINE=`sed -n -e 's/^.*onie_machine=//p' /host/machine.conf`
 
 set -x
 
@@ -19,6 +20,9 @@ export LD_LIBRARY_PATH=/home/admin/xbm/bin
 num_ports=32
 for i in `seq 1 ${num_ports}`
 do
+    if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
+        ip link add eth${i} type dummy
+    fi
     ifconfig eth${i} up
 done
 
