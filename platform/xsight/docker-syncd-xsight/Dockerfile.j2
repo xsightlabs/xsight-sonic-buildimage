@@ -19,8 +19,9 @@ debs/
 
 RUN apt-get install -y libjudy-dev libqt5core5a libqt5network5 libpcap0.8 libjsoncpp1 libasan5
 
-COPY ["start.sh", "/usr/bin/"]
 COPY ["supervisord.conf", "/etc/supervisor/conf.d/"]
+COPY ["files/supervisor-proc-exit-listener", "/usr/bin"]
+COPY ["critical_processes", "/etc/supervisor/"]
 
 ## Clean up
 RUN apt-get clean -y; apt-get autoclean -y; apt-get autoremove -y
