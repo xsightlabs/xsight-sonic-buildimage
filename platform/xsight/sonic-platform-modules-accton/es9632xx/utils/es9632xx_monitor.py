@@ -30,14 +30,14 @@ try:
     import logging.config
     import time  # this is only being used as part of the example
     import signal
-    from es9632xx_0420_xse.fanutil import FanUtil
-    from es9632xx_0420_xse.thermalutil import ThermalUtil
+    from es9632xx.fanutil import FanUtil
+    from es9632xx.thermalutil import ThermalUtil
 except ImportError as e:
     raise ImportError('%s - required module not found' % str(e))
 
 # Deafults
 VERSION = '1.0'
-FUNCTION_NAME = 'es9632xx_0420_xse_monitor'
+FUNCTION_NAME = 'es9632xx_monitor'
 DUTY_MAX = 100
 
 global log_file
