@@ -1,5 +1,5 @@
 [Unit]
-Description=Accton ES9632XX-0420-XSE Platform Monitoring service
+Description=Accton ES9632XX Platform Monitoring service
 Before=pmon.service
 After=sysinit.target
 DefaultDependencies=no

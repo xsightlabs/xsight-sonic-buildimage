@@ -5,6 +5,6 @@ Maintainer: Accton Network <brandon_chuang@edge-core.com>
 Build-Depends: debhelper (>= 9), bzip2
 Standards-Version: 3.9.3
 
-Package: sonic-platform-accton-es9632xx-0420-xse
+Package: sonic-platform-accton-es9632xx
 Architecture: amd64
 Description: kernel modules for platform devices such as fan, led, sfp

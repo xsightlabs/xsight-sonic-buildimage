@@ -355,6 +355,6 @@ exit:
 module_i2c_driver(es9632xx_psu_driver);
 
 MODULE_AUTHOR("Brandon Chuang <brandon_chuang@accton.com.tw>");
-MODULE_DESCRIPTION("es9632xx_0420_xse_psu driver");
+MODULE_DESCRIPTION("es9632xx_psu driver");
 MODULE_LICENSE("GPL");
 

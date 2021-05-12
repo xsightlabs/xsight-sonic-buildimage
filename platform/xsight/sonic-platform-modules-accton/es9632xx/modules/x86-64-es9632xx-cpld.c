@@ -833,7 +833,7 @@ static void __exit es9632xx_cpld_exit(void)
 }
 
 MODULE_AUTHOR("Brandon Chuang <brandon_chuang@edge-core.com>");
-MODULE_DESCRIPTION("Accton es9632xx-0420-xse CPLD driver");
+MODULE_DESCRIPTION("Accton es9632xx CPLD driver");
 MODULE_LICENSE("GPL");
 
 module_init(es9632xx_cpld_init);

@@ -37,7 +37,7 @@ import re
 import time
 import os
 
-PROJECT_NAME = 'es9632xx_0420_xse'
+PROJECT_NAME = 'es9632xx'
 version = '0.1.0'
 verbose = False
 DEBUG = False

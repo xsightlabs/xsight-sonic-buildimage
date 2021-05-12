@@ -123,8 +123,8 @@ class Sfp(SfpBase):
     PMON_HWSKU_PATH = "/usr/share/sonic/hwsku"
     HOST_CHK_CMD = "docker > /dev/null 2>&1"
 
-    PLATFORM = "x86_64-es9632xx_0420_xse-r0"
-    HWSKU = "es9632xx"
+    PLATFORM = "x86_64-es9632xx-r0"
+    HWSKU = "es9632xx-O32x400G"
 
     _cpld_mapping = {
         0:  "20-0061",
