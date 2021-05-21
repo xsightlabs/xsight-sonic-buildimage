@@ -6,37 +6,35 @@ PORT_NUM=32
 DEBUG_LEVEL=3
 NETDEV_MODE=1
 ONIE_MACHINE=`sed -n -e 's/^.*onie_machine=//p' /host/machine.conf`
-CFG_FILE="/home/admin/x1/hw.cfg"
+CFG_FILE="/etc/sonic/xlink.cfg"
 
 function get_hw_params {
     if [[ ! -f ${CFG_FILE} ]]; then
-        echo ">>> ERROR! Config file not found: ${CFG_FILE}"
-        exit 1
+        echo ">>> WARN! Config file not found: ${CFG_FILE}"
+        SYS_MODE="asic"
+        XPCI_NETDEV="eth0"
     fi
 
     SYS_MODE=`sed -n -e 's/^.*sys_mode[[:blank:]]*=[[:blank:]]*//p' ${CFG_FILE}`
     XPCI_NETDEV=`sed -n -e 's/^.*xpci_netdev[[:blank:]]*=[[:blank:]]*//p' ${CFG_FILE}`
 }
 
-#remove use_xbm flag file before examine simulation mode
-rm -f /etc/sonic/use_xbm
-
-if [[ ${ONIE_MACHINE} == *"kvm"* ]]; then
+if [[ ${ONIE_MACHINE,,} == *"kvm"* ]]; then
     echo ">>> Configuring CPU port VETH devices"
     # Setup CPU port
     ip link add name veth0 type veth peer name xcpu
     ip link set dev veth0 up
     ip link set dev xcpu up
 else
+    # Working on HW box. Determine what to run XBM/ASIC
     get_hw_params
-    if [[ ${SYS_MODE} == "asic" ]]; then
+    if [[ ${SYS_MODE,,} != "xbm" ]]; then
         USE_XBM=false;
-        NETDEV_MODE=0
     fi
 
     if [[ ! -d /sys/class/net/${XPCI_NETDEV} ]]; then
-        echo ">>> ERROR! No such interface: ${XPCI_NETDEV}"
-        exit 1
+        echo ">>> WARN! No such interface: ${XPCI_NETDEV}, set to eth0"
+        XPCI_NETDEV="eth0"
     fi
     ATTACH_IF=${XPCI_NETDEV}
 fi
@@ -61,7 +59,6 @@ sleep 5
 
 if [[ ${USE_XBM} == "true" ]]; then
     echo ">>> Simulation mode. Use xbm!"
-    touch /etc/sonic/use_xbm
     /home/admin/xbm/cfg/start.sh
 fi
 

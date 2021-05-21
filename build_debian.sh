@@ -663,6 +663,7 @@ sudo cp files/image_config/ebtables/ebtables.filter.cfg ${FILESYSTEM_ROOT}/etc
 sudo LANG=C chroot $FILESYSTEM_ROOT apt-get -y install libjsoncpp1
 sudo cp -a platform/xsight/files/xbm $FILESYSTEM_ROOT/home/admin/
 sudo cp -a platform/xsight/files/x1 $FILESYSTEM_ROOT/home/admin/
+sudo cp -a platform/xsight/files/xlink.cfg $FILESYSTEM_ROOT/etc/sonic/
 sudo chmod +x $FILESYSTEM_ROOT/home/admin/xbm/cfg/*.sh
 sudo chmod +x $FILESYSTEM_ROOT/home/admin/x1/*.sh
 sudo LANG=C chroot $FILESYSTEM_ROOT chown -R $USERNAME /home/admin/xbm
