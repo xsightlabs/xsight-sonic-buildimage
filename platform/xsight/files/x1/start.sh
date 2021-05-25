@@ -12,7 +12,7 @@ function get_hw_params {
     if [[ ! -f ${CFG_FILE} ]]; then
         echo ">>> WARN! Config file not found: ${CFG_FILE}"
         SYS_MODE="asic"
-        XPCI_NETDEV="eth0"
+        XPCI_NETDEV="eth1"
     fi
 
     SYS_MODE=`sed -n -e 's/^.*sys_mode[[:blank:]]*=[[:blank:]]*//p' ${CFG_FILE}`
@@ -33,8 +33,8 @@ else
     fi
 
     if [[ ! -d /sys/class/net/${XPCI_NETDEV} ]]; then
-        echo ">>> WARN! No such interface: ${XPCI_NETDEV}, set to eth0"
-        XPCI_NETDEV="eth0"
+        echo ">>> WARN! No such interface: ${XPCI_NETDEV}, set to eth1"
+        XPCI_NETDEV="eth1"
     fi
     ATTACH_IF=${XPCI_NETDEV}
 fi
