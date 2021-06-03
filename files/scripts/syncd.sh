@@ -82,7 +82,7 @@ function startplatform() {
     fi
 
     if [[ x"$sonic_asic_platform" == x"xsight" ]]; then
-        /home/admin/x1/start.sh
+        /home/admin/xlx/start.sh
     fi
 
     if [[ x"$WARM_BOOT" != x"true" ]]; then
@@ -160,7 +160,7 @@ function stopplatform2() {
             /etc/init.d/xpnet.sh stop
             /etc/init.d/xpnet.sh start
         elif [ x$sonic_asic_platform == x'xsight' ]; then
-            /home/admin/x1/down.sh
+            /home/admin/xlx/down.sh
         fi
     fi
 }
