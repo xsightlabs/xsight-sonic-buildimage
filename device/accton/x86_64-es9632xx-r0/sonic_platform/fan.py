@@ -46,6 +46,18 @@ class Fan(FanBase):
 
         FanBase.__init__(self)
 
+    def get_name(self):
+        """
+        Retrieves fan name
+        Returns:
+            A string with fan name either from fan tray or from psu
+        """
+        if self.is_psu_fan:
+            fan_name = "PSU {} fan {}".format(self.psu_index, self.fan_index)
+        else:
+            fan_name = "FanTray{} fan {}".format(self.fan_tray_index, self.fan_index)
+
+        return fan_name
 
     def get_direction(self):
         """

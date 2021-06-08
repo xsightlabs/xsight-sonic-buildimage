@@ -33,7 +33,7 @@ class FanDrawer(FanDrawerBase):
         Returns:
             string: The name of the device
         """
-        return "FanTray{}".format(self.fantrayindex)
+        return "FanTray {}".format(self.fantrayindex)
 
     def is_replaceable(self):
         """
