@@ -21,6 +21,13 @@ if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
         XPCI_NETDEV_ATTACH_IF=${DEFAULT_ASIC_NETDEV_NAME}
     fi
 
+    # Probe patched ixgbe module if required
+    # TODO: Move to modprobe
+    if [[ ! -d /sys/class/xpci/xpci ]]; then
+        rmmod ixgbe
+        insmod /home/admin/xlx/ixgbe.ko
+    fi	
+
     if [[ ${SYS_MODE,,} != "xbm" && ! -d /sys/class/net/${XPCI_NETDEV_ATTACH_IF} ]]; then
         echo ">>> WARN! No such interface: ${XPCI_NETDEV_ATTACH_IF}, set to ${DEFAULT_ASIC_NETDEV_NAME}"
         XPCI_NETDEV_ATTACH_IF=${DEFAULT_ASIC_NETDEV_NAME}
