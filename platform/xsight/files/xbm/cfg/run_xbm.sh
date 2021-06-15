@@ -27,9 +27,8 @@ do
 done
 
 /home/admin/xbm/bin/xbm --device-id 0 --name standalone0 --thrift-port 49153 \
-	--log-file /home/admin/xbm/log/standalone0_log_file.log --pcap -L error --log-flush \
-	--enforce-validation --dpu-x-size 16 --dpu-y-size 16 --ifu-config-mode 0 \
-	-i 0@eth1 -i 1@eth2 -i 2@eth3 -i 3@eth4 -i 4@eth5 -i 5@eth6 -i 6@eth7 -i 7@eth8 \
-	-i 64@eth9 -i 65@eth10 -i 66@eth11 -i 67@eth12 -i 68@eth13 -i 69@eth14 -i 70@eth15 -i 71@eth16 \
-	-i 8@eth17 -i 9@eth18 -i 10@eth19 -i 11@eth20 -i 12@eth21 -i 13@eth22 -i 14@eth23 -i 15@eth24 \
-	-i 72@eth25 -i 73@eth26 -i 74@eth27 -i 75@eth28 -i 76@eth29 -i 77@eth30 -i 78@eth31 -i 79@eth32 256@veth0
+	--log-file /home/admin/xbm/log/standalone0_log_file.log --pcap -L error --log-flush --enforce-validation \
+	--dpu-x-size 4 --dpu-y-size 4 --ifu-config-mode 0 \
+	-i 0@eth1 -i 1@eth2 -i 2@eth3 -i 3@eth4 -i 4@eth5 -i 5@eth6 -i 6@eth7 \
+	-i 7@eth8 -i 64@eth9 -i 65@eth10 -i 66@eth11 -i 67@eth12 -i 68@eth13 -i 69@eth14 -i 70@eth15 -i 71@eth16 \
+	-i 256@veth0
