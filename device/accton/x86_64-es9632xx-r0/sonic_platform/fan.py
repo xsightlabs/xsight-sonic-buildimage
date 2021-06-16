@@ -14,6 +14,8 @@ except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
 PSU_FAN_MAX_RPM = 25500
+TRAY_FAN_MAX_RPM = 31000
+TRAY_FANSPEED_TOLERANCE = 15
 
 CPLD_I2C_PATH = "/sys/bus/i2c/devices/17-0066/fan"
 PSU_HWMON_I2C_PATH ="/sys/bus/i2c/devices/{}-00{}/"
@@ -124,7 +126,24 @@ class Fan(FanBase):
             0   : when PWM mode is use
             pwm : when pwm mode is not use
         """
-        return False #Not supported
+        speed = 0
+        if self.is_psu_fan:
+            """
+            TODO: Need to implement for PSU fans
+            """
+            return False
+
+        elif self.get_presence():
+            if 0 == self.fan_index:
+                speed_path = "{}{}{}".format(CPLD_I2C_PATH, self.fan_tray_index+1, '_front_speed_rpm')
+            else:
+                speed_path = "{}{}{}".format(CPLD_I2C_PATH, self.fan_tray_index+1, '_rear_speed_rpm')
+            speed=self._api_helper.read_txt_file(speed_path)
+            if speed is None:
+                return 0
+            speed_percentage = (int(speed, 10)) * 100 / TRAY_FAN_MAX_RPM
+
+        return int(speed_percentage)
 
     def get_speed_tolerance(self):
         """
@@ -133,7 +152,7 @@ class Fan(FanBase):
             An integer, the percentage of variance from target speed which is
                  considered tolerable
         """
-        return False #Not supported
+        return TRAY_FANSPEED_TOLERANCE
 
     def set_speed(self, speed):
         """
@@ -160,8 +179,10 @@ class Fan(FanBase):
                    fan module status LED
         Returns:
             bool: True if status LED state is set successfully, False if not
+        TODO: set_status_led required implementation !
+        Always return true as workaround for error in syslog.
         """
-        return False #Not supported
+        return True
 
     def get_presence(self):
         """
@@ -185,3 +206,14 @@ class Fan(FanBase):
                 return True
             else:
                 return False
+
+    def get_status(self):
+        """
+        Returns Fan Status. Called in _refresh_fan_status thermalctld's function
+        Returns:
+            bool: True if status Ok, False if not
+        TODO: get_status required implementation !
+        Always return true as workaround for error in syslog.
+        """
+        return True
+
