@@ -189,3 +189,18 @@ class Chassis(ChassisBase):
             sys.stderr.write("SFP index {} out of range (1-{})\n".format(
                              index, len(self._sfp_list)))
         return sfp
+
+    ##############################################################
+    #                       Other methods                        #
+    ##############################################################
+
+    def get_thermal_manager(self):
+        """
+        The method used by class ThermalControlDaemon in thermalctld
+        Returns:
+            ThermalManager
+        """
+        from .thermal_manager import ThermalManager
+        return ThermalManager
+
+
