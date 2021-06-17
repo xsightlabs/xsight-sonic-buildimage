@@ -5,18 +5,13 @@ SHELL = /bin/bash
 MAIN_TARGET = ixgbe.ko
 
 $(addprefix $(DEST)/, $(MAIN_TARGET)): $(DEST)/% :
-	rm -rf ./ixgbe-$(IXGBE_DRIVER_VERSION)
-	wget -O ixgbe-$(IXGBE_DRIVER_VERSION).tar.gz "https://packages.trafficmanager.net/public/ixgbe-5.2.4.tar.gz"
-	tar xzf ixgbe-$(IXGBE_DRIVER_VERSION).tar.gz
-
-	# Patch
-	pushd ./ixgbe-$(IXGBE_DRIVER_VERSION)
-
+	rm -rf ./ixgbe
+	git clone ssh://git@x-git01.xsight.ent:7999/xs/ixgbe.git
+	pushd ./ixgbe
 	# Build the package
 	pushd src
 	export BUILD_KERNEL=$(KVERSION)
 	make
 	popd
-
 	popd
-	mv ./ixgbe-$(IXGBE_DRIVER_VERSION)/src/$* $(DEST)/
+	mv ./ixgbe/src/$* $(DEST)/
