@@ -1,6 +1,6 @@
 from sonic_platform_base.sonic_thermal_control.thermal_action_base import ThermalPolicyActionBase
 from sonic_platform_base.sonic_thermal_control.thermal_json_object import thermal_json_object
-from .thermal import logger
+#from .thermal import logger
 
 
 class SetFanSpeedAction(ThermalPolicyActionBase):
@@ -53,7 +53,7 @@ class SetAllFanSpeedAction(SetFanSpeedAction):
             fan_info_obj = thermal_info_dict[FanInfo.INFO_NAME]
             for fan in fan_info_obj.get_presence_fans():
                 fan.set_speed(self.speed)
-        logger.log_info('Set all system FAN speed to {}'.format(self.speed))
+        #logger.log_info('Set all system FAN speed to {}'.format(self.speed))
 
         SetAllFanSpeedAction.set_psu_fan_speed(thermal_info_dict, self.speed)
 
@@ -138,7 +138,7 @@ class ControlThermalAlgoAction(ThermalPolicyActionBase):
                 # save power
                 UpdateCoolingLevelToMinAction.update_cooling_level_to_minimum(thermal_info_dict)
 
-            logger.log_info('Changed thermal algorithm status to {}'.format(self.status))
+            #logger.log_info('Changed thermal algorithm status to {}'.format(self.status))
 
 
 @thermal_json_object('thermal.recover')
