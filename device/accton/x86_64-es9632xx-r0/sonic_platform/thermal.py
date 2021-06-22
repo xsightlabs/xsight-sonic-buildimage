@@ -150,3 +150,23 @@ class Thermal(ThermalBase):
             return False
         else:
             return int(raw_txt) != 0
+
+    @classmethod
+    def set_thermal_algorithm_status(cls, status):
+        """
+        Enable/disable kernel thermal algorithm.
+        TODO: Need to implement !
+        """
+        print "TODO: Thermal:set_thermal_algorithm_status - Not yet implemented. Param: ",str(status)
+        return True
+
+    @classmethod
+    def check_module_temperature_trustable(cls):
+        """
+        TODO: Need to implement !
+        """
+        print "TODO: Thermal:check_module_temperature_trustable - Not yet implemented"
+        if not cls.thermal_profile:
+            raise Exception("Fail to get thermal profile for this switch")
+        return 'trust'
+
