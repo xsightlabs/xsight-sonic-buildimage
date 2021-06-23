@@ -56,4 +56,3 @@ if [[ ${SYS_MODE,,} == "xbm" ]]; then
     echo ">>> Simulation mode. Use xbm!"
     /home/admin/xbm/cfg/start.sh
 fi
-
