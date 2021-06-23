@@ -17,5 +17,5 @@
  "ifu_mode": "full", 
  "mac_bypass": false, 
  "qqm_number": 4, 
- "hw_mode": "full"
+ "hw_mode": "4x4"
 }
