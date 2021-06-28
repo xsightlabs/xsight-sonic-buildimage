@@ -33,6 +33,10 @@ PSU_I2C_MAPPING = {
 
 class Fan(FanBase):
     """Platform-specific Fan class"""
+    
+    current_cooling_level = 45
+    "TODO: min_cooling_level static member should be verified !"
+    min_cooling_level = 20
 
     def __init__(self, fan_tray_index, fan_index=0, is_psu_fan=False, psu_index=0):
         self._api_helper=APIHelper()
@@ -216,4 +220,27 @@ class Fan(FanBase):
         Always return true as workaround for error in syslog.
         """
         return True
+
+    @staticmethod
+    def get_cooling_level():
+        """
+        Static method
+        Returns:
+            int: Current cooling level
+        """
+        print("Fan:get_cooling_level {}".format(str(Fan.current_cooling_level)))
+        return Fan.current_cooling_level
+
+    @staticmethod
+    def set_cooling_level(minimum_level, level):
+        """
+        Static method
+        Returns:
+        TODO: Need to implement
+        """
+        Fan.current_cooling_level = level
+        print("TODO: Fan:set_cooling_level - Not yet implemented")
+        print("Fan:set_cooling_level - inputs: {} {}".format(str(minimum_level), str(level)))
+
+
 

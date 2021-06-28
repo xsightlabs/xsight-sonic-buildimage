@@ -166,7 +166,17 @@ class Thermal(ThermalBase):
         TODO: Need to implement !
         """
         print "TODO: Thermal:check_module_temperature_trustable - Not yet implemented"
-        if not cls.thermal_profile:
-            raise Exception("Fail to get thermal profile for this switch")
+        #if not cls.thermal_profile:
+        #    raise Exception("Fail to get thermal profile for this switch")
         return 'trust'
+
+    @classmethod
+    def get_min_amb_temperature(cls):
+        """
+        TODO: Need to implement !
+        """
+        print "TODO: Thermal:get_min_amb_temperature - Not yet implemented"
+        return 86000
+
+
 

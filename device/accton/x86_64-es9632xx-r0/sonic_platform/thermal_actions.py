@@ -128,7 +128,7 @@ class ControlThermalAlgoAction(ThermalPolicyActionBase):
         from .thermal import Thermal
         from .thermal_conditions import UpdateCoolingLevelToMinCondition
         from .fan import Fan
-        status_changed = Thermal.set_thermal_algorithm_status(self.status, False)
+        status_changed = Thermal.set_thermal_algorithm_status(self.status)
 
         # Only update cooling level if thermal algorithm status changed
         if status_changed:
@@ -150,29 +150,30 @@ class ThermalRecoverAction(ThermalPolicyActionBase):
 class ChangeMinCoolingLevelAction(ThermalPolicyActionBase):
     UNKNOWN_SKU_COOLING_LEVEL = 6
     def execute(self, thermal_info_dict):
-        from .device_data import DEVICE_DATA
+        #from .device_data import DEVICE_DATA
         from .fan import Fan
         from .thermal_infos import ChassisInfo
         from .thermal_conditions import MinCoolingLevelChangeCondition
         from .thermal_conditions import UpdateCoolingLevelToMinCondition
 
         chassis = thermal_info_dict[ChassisInfo.INFO_NAME].get_chassis()
-        if chassis.platform_name not in DEVICE_DATA or 'thermal' not in DEVICE_DATA[chassis.platform_name] or 'minimum_table' not in DEVICE_DATA[chassis.platform_name]['thermal']:
-            Fan.min_cooling_level = ChangeMinCoolingLevelAction.UNKNOWN_SKU_COOLING_LEVEL
-        else:
-            trust_state = MinCoolingLevelChangeCondition.trust_state
-            temperature = MinCoolingLevelChangeCondition.temperature
-            minimum_table = DEVICE_DATA[chassis.platform_name]['thermal']['minimum_table']['unk_{}'.format(trust_state)]
+        #if chassis.platform_name not in DEVICE_DATA or 'thermal' not in DEVICE_DATA[chassis.platform_name] or 'minimum_table' not in DEVICE_DATA[chassis.platform_name]['thermal']:
+        #    Fan.min_cooling_level = ChangeMinCoolingLevelAction.UNKNOWN_SKU_COOLING_LEVEL
+        #else:
+        trust_state = MinCoolingLevelChangeCondition.trust_state
+        temperature = MinCoolingLevelChangeCondition.temperature
+        #minimum_table = DEVICE_DATA[chassis.platform_name]['thermal']['minimum_table']['unk_{}'.format(trust_state)]
 
-            for key, cooling_level in minimum_table.items():
-                temp_range = key.split(':')
-                temp_min = int(temp_range[0].strip())
-                temp_max = int(temp_range[1].strip())
-                if temp_min <= temperature <= temp_max:
-                    Fan.min_cooling_level = cooling_level - 10
-                    break
+        #for key, cooling_level in minimum_table.items():
+        #    temp_range = key.split(':')
+        #    temp_min = int(temp_range[0].strip())
+        #    temp_max = int(temp_range[1].strip())
+        #    if temp_min <= temperature <= temp_max:
+        #        Fan.min_cooling_level = cooling_level - 10
+        #        break
         
         current_cooling_level = Fan.get_cooling_level()
+        print("trust_state {} temperature {} current_cooling_level {}".format(str(trust_state), str(temperature), str(current_cooling_level)))
         if current_cooling_level < Fan.min_cooling_level:
             Fan.set_cooling_level(Fan.min_cooling_level, Fan.min_cooling_level)
             SetAllFanSpeedAction.set_psu_fan_speed(thermal_info_dict, Fan.min_cooling_level * 10)
