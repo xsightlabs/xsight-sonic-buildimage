@@ -4,3 +4,4 @@ rmmod igb
 modprobe igb
 modprobe ixgbe
 systemctl start systemd-udevd.service
+#DEBHELPER#
