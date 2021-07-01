@@ -1,0 +1,21 @@
+{
+ "cdt_bypass": false, 
+ "mbr_bypass": false, 
+ "pfe_bypass": false, 
+ "device_list": [
+  {
+   "ip": "localhost", 
+   "id": 0, 
+   "port": 49153
+  }
+ ],
+ "tdt_bypass": false, 
+ "ind_dir_bypass": false, 
+ "bid_bypass": true, 
+ "mac_crc_bypass": true, 
+ "version": "0.0", 
+ "ifu_mode": "full", 
+ "mac_bypass": false, 
+ "qqm_number": 4, 
+ "hw_mode": "full"
+}
