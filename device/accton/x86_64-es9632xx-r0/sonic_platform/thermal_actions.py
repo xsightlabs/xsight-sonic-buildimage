@@ -128,7 +128,7 @@ class ControlThermalAlgoAction(ThermalPolicyActionBase):
         from .thermal import Thermal
         from .thermal_conditions import UpdateCoolingLevelToMinCondition
         from .fan import Fan
-        status_changed = Thermal.set_thermal_algorithm_status(self.status)
+        status_changed = Thermal.set_thermal_algorithm_status(self.status, False)
 
         # Only update cooling level if thermal algorithm status changed
         if status_changed:
@@ -160,7 +160,7 @@ class ChangeMinCoolingLevelAction(ThermalPolicyActionBase):
         #if chassis.platform_name not in DEVICE_DATA or 'thermal' not in DEVICE_DATA[chassis.platform_name] or 'minimum_table' not in DEVICE_DATA[chassis.platform_name]['thermal']:
         #    Fan.min_cooling_level = ChangeMinCoolingLevelAction.UNKNOWN_SKU_COOLING_LEVEL
         #else:
-        trust_state = MinCoolingLevelChangeCondition.trust_state
+        #trust_state = MinCoolingLevelChangeCondition.trust_state
         temperature = MinCoolingLevelChangeCondition.temperature
         #minimum_table = DEVICE_DATA[chassis.platform_name]['thermal']['minimum_table']['unk_{}'.format(trust_state)]
 
@@ -173,7 +173,7 @@ class ChangeMinCoolingLevelAction(ThermalPolicyActionBase):
         #        break
         
         current_cooling_level = Fan.get_cooling_level()
-        print("trust_state {} temperature {} current_cooling_level {}".format(str(trust_state), str(temperature), str(current_cooling_level)))
+        # print("temperature {} current_cooling_level {}".format(str(temperature), str(current_cooling_level)))
         if current_cooling_level < Fan.min_cooling_level:
             Fan.set_cooling_level(Fan.min_cooling_level, Fan.min_cooling_level)
             SetAllFanSpeedAction.set_psu_fan_speed(thermal_info_dict, Fan.min_cooling_level * 10)

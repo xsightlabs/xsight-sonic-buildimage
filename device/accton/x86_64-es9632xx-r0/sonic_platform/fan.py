@@ -34,9 +34,10 @@ PSU_I2C_MAPPING = {
 class Fan(FanBase):
     """Platform-specific Fan class"""
     
-    current_cooling_level = 45
-    "TODO: min_cooling_level static member should be verified !"
-    min_cooling_level = 20
+    MIN_VALID_COOLING_LEVEL = 1
+    MAX_VALID_COOLING_LEVEL = 10
+    min_cooling_level = 2
+    current_cooling_level = min_cooling_level
 
     def __init__(self, fan_tray_index, fan_index=0, is_psu_fan=False, psu_index=0):
         self._api_helper=APIHelper()
@@ -221,26 +222,44 @@ class Fan(FanBase):
         """
         return True
 
-    @staticmethod
-    def get_cooling_level():
+    @classmethod
+    def get_cooling_level(cls):
         """
-        Static method
+        Class method
         Returns:
-            int: Current cooling level
+            int: Current cooling level in range 1..10, means level * 10% per each fan
         """
-        print("Fan:get_cooling_level {}".format(str(Fan.current_cooling_level)))
-        return Fan.current_cooling_level
+        print("Fan:get_cooling_level {}".format(str(cls.current_cooling_level)))
+        return cls.current_cooling_level
 
-    @staticmethod
-    def set_cooling_level(minimum_level, level):
+    @classmethod
+    def set_cooling_level(cls, level, cur_state):
         """
-        Static method
-        Returns:
-        TODO: Need to implement
+        Change cooling level. The input level should be an integer value [1, 10].
+        1 means 10%, 2 means 20%, 10 means 100%.
         """
-        Fan.current_cooling_level = level
-        print("TODO: Fan:set_cooling_level - Not yet implemented")
-        print("Fan:set_cooling_level - inputs: {} {}".format(str(minimum_level), str(level)))
+        if not isinstance(level, int):
+            raise RuntimeError("Failed to set cooling level, input parameter must be integer")
 
-
+        if level < cls.MIN_VALID_COOLING_LEVEL or level > cls.MAX_VALID_COOLING_LEVEL:
+            raise RuntimeError("Failed to set cooling level, level value must be in range [{}, {}], got {}".format(
+                cls.MIN_VALID_COOLING_LEVEL,
+                cls.MAX_VALID_COOLING_LEVEL,
+                level
+                ))
+        try:
+            import sonic_platform.platform
+            import sonic_platform_base.sonic_sfp.sfputilhelper
+            platform_chassis = sonic_platform.platform.Platform().get_chassis()
+            if platform_chassis is not None:
+                cls.current_cooling_level = level
+                fans_num = platform_chassis.get_num_fans()
+                print("Fan: Got {} Fan Objects".format(fans_num))
+                for fan_ins in platform_chassis.get_all_fans():
+                    fan_ins.set_speed(level * 10)
+            else:
+                print("Fan: Chassis not available !")
+            print("Fan:set_cooling_level: {} x10%".format(str(level)))
+        except (ValueError, IOError) as e:
+            raise RuntimeError("Failed to set cooling level - {}".format(e))
 
