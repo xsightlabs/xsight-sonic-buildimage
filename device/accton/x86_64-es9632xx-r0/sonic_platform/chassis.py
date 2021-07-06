@@ -190,10 +190,6 @@ class Chassis(ChassisBase):
                              index, len(self._sfp_list)))
         return sfp
 
-    ##############################################################
-    #                       Other methods                        #
-    ##############################################################
-
     def get_thermal_manager(self):
         """
         The method used by class ThermalControlDaemon in thermalctld

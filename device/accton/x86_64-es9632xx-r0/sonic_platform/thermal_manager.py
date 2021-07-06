@@ -34,7 +34,7 @@ class ThermalManager(ThermalManagerBase):
             bool: True if set success, False if fail. 
         """
         from .thermal import Thermal
-        Thermal.set_thermal_algorithm_status(True)
+        return Thermal.set_thermal_algorithm_status(True)
 
     @classmethod
     def stop_thermal_control_algorithm(cls):
@@ -45,7 +45,7 @@ class ThermalManager(ThermalManagerBase):
             bool: True if set success, False if fail. 
         """
         from .thermal import Thermal
-        Thermal.set_thermal_algorithm_status(False)
+        return Thermal.set_thermal_algorithm_status(False)
 
     @classmethod
     def _add_private_thermal_policy(cls):

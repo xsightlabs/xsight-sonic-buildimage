@@ -17,7 +17,7 @@ except ImportError as e:
 
 class Thermal(ThermalBase):
     """Platform-specific Thermal class"""
-    ZONE_CRITICAL_TEMPERATURE = 35
+    ZONE_CRITICAL_TEMPERATURE = 80
     THERMAL_NAME_LIST = []
     SYSFS_PATH = "/sys/bus/i2c/devices"
 
@@ -219,11 +219,11 @@ class Thermal(ThermalBase):
             #print("Thermal: Got {} Thermals Objects".format(thermals_num))
             for thermal_ins in platform_chassis.get_all_thermals():
                 if (cls.ZONE_CRITICAL_TEMPERATURE <= thermal_ins.get_temperature()):
-                    print("Thermal: Critical temperature on {}".format(thermal_ins.get_name()))
+                    #print("Thermal: Critical temperature on {}".format(thermal_ins.get_name()))
                     return False
         else:
             print("Thermal: Chassis not available !")
 
-        print("Thermal:check_thermal_zone_temperature: All temperatures looks Ok")
+        print("Thermal:check_thermal_zone_temperature: All temperatures look OK")
         return True
 
