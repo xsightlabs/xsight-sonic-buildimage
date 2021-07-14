@@ -172,7 +172,8 @@ kos = [
     'modprobe x86-64-es9632xx-leds',
     'modprobe x86-64-es9632xx-psu',
     'modprobe x86-64-es9632xx-sys',
-    'modprobe x86-64-es9632xx-sfp'
+    'modprobe x86-64-es9632xx-sfp',
+    'modprobe at24'
     ]
 
 
@@ -249,7 +250,8 @@ mknod = [
     'echo lm75 0x4d > /sys/bus/i2c/devices/i2c-18/new_device',
     'echo lm75 0x4e > /sys/bus/i2c/devices/i2c-18/new_device',
     'echo lm75 0x4f > /sys/bus/i2c/devices/i2c-18/new_device',
-    'echo es9632xx_sys 0x55 > /sys/bus/i2c/devices/i2c-23/new_device']
+    'echo es9632xx_sys 0x55 > /sys/bus/i2c/devices/i2c-23/new_device',
+    'echo 24c02 0x57 > /sys/bus/i2c/devices/i2c-0/new_device']
 
 def device_install():
     global FORCE
