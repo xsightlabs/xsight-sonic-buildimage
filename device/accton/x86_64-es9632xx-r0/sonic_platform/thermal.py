@@ -12,12 +12,16 @@ import glob
 
 try:
     from sonic_platform_base.thermal_base import ThermalBase
+    from sonic_py_common.logger import Logger
 except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
+logger = Logger()
+# To enable messages of log_debug verbosity, uncomment the below line
+# logger.set_min_log_priority_debug()
+
 class Thermal(ThermalBase):
     """Platform-specific Thermal class"""
-    ZONE_CRITICAL_TEMPERATURE = 80
     THERMAL_NAME_LIST = []
     SYSFS_PATH = "/sys/bus/i2c/devices"
 
@@ -153,29 +157,20 @@ class Thermal(ThermalBase):
     @classmethod
     def set_thermal_algorithm_status(cls, status, force=True):
         """
-        Enable/disable kernel thermal algorithm.
-        When enable kernel thermal algorithm, kernel will adjust fan speed
-        according to thermal zones temperature. Please note that kernel will
-        only adjust fan speed when temperature across some "edge", e.g temperature
-        changes to exceed high threshold.
-        When disable kernel thermal algorithm, kernel no longer adjust fan speed.
-        We usually disable the algorithm when we want to set a fix speed. E.g, when 
-        a fan unit is removed from system, we will set fan speed to 100% and disable 
-        the algorithm to avoid it adjust the speed.
-
+        Thermal policy activation/deactivation
         Returns:
             True if thermal algorithm status changed.
-
-        TODO: required kernel implementation
         """
         if not force and cls.thermal_algorithm_status == status:
             return False
 
         cls.thermal_algorithm_status = status
-        # TODO Need to switch kernel algorithm according to status
-        print("Thermal:set_thermal_algorithm_status - Kernel thermal algorithm: {}".format(str(cls.thermal_algorithm_status)))
-
+        logger.log_debug("Thermal:set_thermal_algorithm_status - {}".format(str(cls.thermal_algorithm_status)))
         return True
+
+    @classmethod
+    def check_module_temperature_trustable(cls):
+        return 'untrust'
 
     @classmethod
     def get_min_amb_temperature(cls):
@@ -183,47 +178,42 @@ class Thermal(ThermalBase):
         Calculating ambient temperature inside the box,
         Returns:
             float - ambient temperature
-        TODO: temperature calculation need to be reviewed after receiving temperature profiling from hardware vendor
         """
-        import sonic_platform.platform
-        import sonic_platform_base.sonic_sfp.sfputilhelper
+        from sonic_platform import platform
         ambient = None
-        platform_chassis = sonic_platform.platform.Platform().get_chassis()
+        platform_chassis = platform.Platform().get_chassis()
         if platform_chassis is not None:
             thermals_num = platform_chassis.get_num_thermals()
             ambient = 0.0
-            print("Thermal: Got {} Thermal Objects".format(thermals_num))
             for thermal_ins in platform_chassis.get_all_thermals():
                 ambient += thermal_ins.get_temperature()
             ambient /= thermals_num
         else:
-            print("Thermal: Chassis not available !")
-        print("Thermal:get_min_amb_temperature Returns: {}".format(ambient))
+            logger.log_error("Thermal: Chassis is not available !")
+        logger.log_debug("Thermal:get_min_amb_temperature Returns: {}".format(ambient))
         return ambient
 
     @classmethod
     def check_thermal_zone_temperature(cls):
         """
-        Check thermal zone current temperature with normal temperature
+        Compare thermal zone temperature to the threshold
 
         Returns:
-            True if all thermal zones current temperature less or equal than normal temperature
-        TODO: Check if need some special temperature profiling per each sensor
-        TODO: Pass over temeperatues on modules
+            True if all thermal zones temperatures are below the high threshold.
+        TODO: Check temperature of modules
         """
         # Check Inbox thermperatures
-        import sonic_platform.platform
-        platform_chassis = sonic_platform.platform.Platform().get_chassis()
+        from sonic_platform import platform
+        platform_chassis = platform.Platform().get_chassis()
         if platform_chassis is not None:
             thermals_num = platform_chassis.get_num_thermals()
-            #print("Thermal: Got {} Thermals Objects".format(thermals_num))
+            logger.log_debug("Thermal:check_thermal_zone_temperature: Got {} Thermal Objects".format(thermals_num))
             for thermal_ins in platform_chassis.get_all_thermals():
-                if (cls.ZONE_CRITICAL_TEMPERATURE <= thermal_ins.get_temperature()):
-                    #print("Thermal: Critical temperature on {}".format(thermal_ins.get_name()))
+                if (thermal_ins.get_high_threshold() <= thermal_ins.get_temperature()):
+                    logger.log_warning("Thermal: Critical temperature on {}".format(thermal_ins.get_name()))
                     return False
         else:
-            print("Thermal: Chassis not available !")
-
-        print("Thermal:check_thermal_zone_temperature: All temperatures look OK")
+            logger.log_error("Thermal: Chassis is not available !")
+        logger.log_debug("Thermal:check_thermal_zone_temperature: All temperatures looks OK")
         return True
 

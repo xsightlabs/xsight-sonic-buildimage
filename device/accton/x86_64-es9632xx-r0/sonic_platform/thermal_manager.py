@@ -31,7 +31,7 @@ class ThermalManager(ThermalManagerBase):
         Start thermal control algorithm
 
         Returns:
-            bool: True if set success, False if fail. 
+            bool: True if start succeeded. False - if failed. 
         """
         from .thermal import Thermal
         return Thermal.set_thermal_algorithm_status(True)
@@ -42,7 +42,7 @@ class ThermalManager(ThermalManagerBase):
         Stop thermal control algorithm
 
         Returns:
-            bool: True if set success, False if fail. 
+            bool: True if start succeeded. False - if failed.
         """
         from .thermal import Thermal
         return Thermal.set_thermal_algorithm_status(False)

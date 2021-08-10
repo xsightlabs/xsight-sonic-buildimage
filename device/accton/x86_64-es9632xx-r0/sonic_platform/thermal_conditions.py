@@ -1,6 +1,6 @@
 from sonic_platform_base.sonic_thermal_control.thermal_condition_base import ThermalPolicyConditionBase
 from sonic_platform_base.sonic_thermal_control.thermal_json_object import thermal_json_object
-
+from .thermal import logger
 
 class FanCondition(ThermalPolicyConditionBase):
     def get_fan_info(self, thermal_info_dict):
@@ -77,19 +77,25 @@ class AllPsuPresenceCondition(PsuCondition):
 
 
 class MinCoolingLevelChangeCondition(ThermalPolicyConditionBase):
+    trust_state = None
     temperature = None
     
     def is_match(self, thermal_info_dict):
         from .thermal import Thermal
 
-        temperature = Thermal.get_min_amb_temperature()
-        temperature = int(temperature / 1000)
+        trust_state = Thermal.check_module_temperature_trustable()
+        temperature = int(Thermal.get_min_amb_temperature())
 
         change_cooling_level = False
+        if trust_state != MinCoolingLevelChangeCondition.trust_state:
+            MinCoolingLevelChangeCondition.trust_state = trust_state
+            change_cooling_level = True
+
         if temperature != MinCoolingLevelChangeCondition.temperature:
             MinCoolingLevelChangeCondition.temperature = temperature
             change_cooling_level = True
-
+        # See on top of thermal.py how to enable log_debug
+        logger.log_debug("MinCoolingLevelChangeCondition: temperature {} change_cooling_level {}".format(temperature, change_cooling_level))
         return change_cooling_level
 
 

@@ -192,7 +192,6 @@ class Chassis(ChassisBase):
 
     def get_thermal_manager(self):
         """
-        The method used by class ThermalControlDaemon in thermalctld
         Returns:
             ThermalManager
         """
