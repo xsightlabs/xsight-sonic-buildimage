@@ -10,6 +10,7 @@
 try:
     from sonic_platform_base.fan_base import FanBase
     from .helper import APIHelper
+    from .thermal import logger
 except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
@@ -227,15 +228,14 @@ class Fan(FanBase):
         """
         Class method
         Returns:
-            int: Current cooling level in range 1..10, means level * 10% per each fan
+            int: Current cooling level in range 1..10, means cooling level number * 10%
         """
-        print("Fan:get_cooling_level {}".format(str(cls.current_cooling_level)))
         return cls.current_cooling_level
 
     @classmethod
     def set_cooling_level(cls, level, cur_state):
         """
-        Change cooling level. The input level should be an integer value [1, 10].
+        Changes cooling level. The input level should be an integer value 1..10.
         1 means 10%, 2 means 20%, 10 means 100%.
         """
         if not isinstance(level, int):
@@ -248,18 +248,17 @@ class Fan(FanBase):
                 level
                 ))
         try:
-            import sonic_platform.platform
-            import sonic_platform_base.sonic_sfp.sfputilhelper
-            platform_chassis = sonic_platform.platform.Platform().get_chassis()
+            from sonic_platform import platform
+            platform_chassis = platform.Platform().get_chassis()
             if platform_chassis is not None:
                 cls.current_cooling_level = level
                 fans_num = platform_chassis.get_num_fans()
-                print("Fan: Got {} Fan Objects".format(fans_num))
                 for fan_ins in platform_chassis.get_all_fans():
                     fan_ins.set_speed(level * 10)
             else:
-                print("Fan: Chassis not available !")
-            print("Fan:set_cooling_level: {} x10%".format(str(level)))
+                logger.log_error("Fan: Chassis is not available !")
+            # See on top of thermal.py how to enable log_debug
+            logger.log_debug("Fan:set_cooling_level: {} x10%".format(str(level)))
         except (ValueError, IOError) as e:
             raise RuntimeError("Failed to set cooling level - {}".format(e))
 

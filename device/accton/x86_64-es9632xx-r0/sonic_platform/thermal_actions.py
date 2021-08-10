@@ -1,6 +1,6 @@
 from sonic_platform_base.sonic_thermal_control.thermal_action_base import ThermalPolicyActionBase
 from sonic_platform_base.sonic_thermal_control.thermal_json_object import thermal_json_object
-#from .thermal import logger
+from .thermal import logger
 
 
 class SetFanSpeedAction(ThermalPolicyActionBase):
@@ -53,7 +53,8 @@ class SetAllFanSpeedAction(SetFanSpeedAction):
             fan_info_obj = thermal_info_dict[FanInfo.INFO_NAME]
             for fan in fan_info_obj.get_presence_fans():
                 fan.set_speed(self.speed)
-        print('thermal_actions:SetAllFanSpeedAction: Set all system FAN speed to {}'.format(self.speed))
+        # See on top of thermal.py how to enable log_debug
+        logger.log_debug('thermal_actions:SetAllFanSpeedAction: Set all Fan\'s speed to {}%'.format(self.speed))
 
         SetAllFanSpeedAction.set_psu_fan_speed(thermal_info_dict, self.speed)
 
@@ -138,7 +139,7 @@ class ControlThermalAlgoAction(ThermalPolicyActionBase):
                 # save power
                 UpdateCoolingLevelToMinAction.update_cooling_level_to_minimum(thermal_info_dict)
 
-            #logger.log_info('Changed thermal algorithm status to {}'.format(self.status))
+            logger.log_info('Changed thermal algorithm status to {}'.format(self.status))
 
 
 @thermal_json_object('thermal.recover')
@@ -149,14 +150,26 @@ class ThermalRecoverAction(ThermalPolicyActionBase):
 
 class ChangeMinCoolingLevelAction(ThermalPolicyActionBase):
     def execute(self, thermal_info_dict):
+        from .thermal_device_data import DEVICE_DATA
         from .fan import Fan
         from .thermal_infos import ChassisInfo
         from .thermal_conditions import MinCoolingLevelChangeCondition
         from .thermal_conditions import UpdateCoolingLevelToMinCondition
 
-        chassis = thermal_info_dict[ChassisInfo.INFO_NAME].get_chassis()
+        trust_state = MinCoolingLevelChangeCondition.trust_state
         temperature = MinCoolingLevelChangeCondition.temperature
+        minimum_table = DEVICE_DATA['es9632xx-O32x400G']['thermal']['minimum_table']['unk_{}'.format(trust_state)]
 
+        for key, cooling_level in minimum_table.items():
+            temp_range = key.split(':')
+            temp_min = int(temp_range[0].strip())
+            temp_max = int(temp_range[1].strip())
+            if temp_min <= temperature <= temp_max:
+                Fan.min_cooling_level = cooling_level - 10
+                break
+
+        # See on top of thermal.py how to enable log_debug
+        logger.log_debug("ChangeMinCoolingLevelAction: temperature {} Fan.min_cooling_level {} ".format(temperature, Fan.min_cooling_level))
         current_cooling_level = Fan.get_cooling_level()
         if current_cooling_level < Fan.min_cooling_level:
             Fan.set_cooling_level(Fan.min_cooling_level, Fan.min_cooling_level)
