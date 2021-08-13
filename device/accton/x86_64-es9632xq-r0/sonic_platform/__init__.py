@@ -1,2 +1,1 @@
-__all__ = ['chassis', 'eeprom', 'platform', 'psu', 'sfp', 'thermal', 'fan', 'fan_drawer']
-from . import platform
+../../x86_64-es9632xx-r0/sonic_platform/__init__.py

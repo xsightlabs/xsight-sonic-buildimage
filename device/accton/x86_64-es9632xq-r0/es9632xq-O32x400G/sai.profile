@@ -1,1 +1,1 @@
-SAI_INIT_CONFIG_FILE=/usr/share/sonic/hwsku/xdrv_config.json
+../../x86_64-es9632xx-r0/es9632xx-O32x400G/sai.profile
