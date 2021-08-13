@@ -1,5 +1,1 @@
-{
-    "skip_ledd": true,
-    "skip_thermalctld": false
-}
-
+../x86_64-es9632xx-r0/pmon_daemon_control.json
