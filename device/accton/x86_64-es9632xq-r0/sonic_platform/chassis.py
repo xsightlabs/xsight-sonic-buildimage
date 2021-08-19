@@ -189,3 +189,13 @@ class Chassis(ChassisBase):
             sys.stderr.write("SFP index {} out of range (1-{})\n".format(
                              index, len(self._sfp_list)))
         return sfp
+
+    def get_thermal_manager(self):
+        """
+        Returns:
+            ThermalManager
+        """
+        from .thermal_manager import ThermalManager
+        return ThermalManager
+
+
