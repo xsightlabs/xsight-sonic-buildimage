@@ -30,7 +30,10 @@ $(addprefix $(DEST)/, $(MAIN_TARGET)): $(DEST)/% :
 ifeq ($(CROSS_BUILD_ENVIRON), y)
 	CC=$(CROSS_CC) LDSHARED=$(CROSS_CC) CXXFLAGS="-DFORCE_BOOST_SMART_PTR -DSIGNED_RIGHT_SHIFT_IS=1 -DARITHMETIC_RIGHT_SHIFT=1" CFLAGS="-DSIGNED_RIGHT_SHIFT_IS=1 -DARITHMETIC_RIGHT_SHIFT=1" dpkg-buildpackage -d -rfakeroot -b -us -uc -a$(CONFIGURED_ARCH) -Pcross,nocheck -j$(SONIC_CONFIG_MAKE_JOBS) --admindir $(SONIC_DPKG_ADMINDIR)
 else
+ifeq ($(ENABLE_SYNCD_RPC),y)
 	CXXFLAGS="-DFORCE_BOOST_SMART_PTR" DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage -d -rfakeroot -b -us -uc -j$(SONIC_CONFIG_MAKE_JOBS) --admindir $(SONIC_DPKG_ADMINDIR)
+else
+	DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage -d -rfakeroot -b -us -uc -j$(SONIC_CONFIG_MAKE_JOBS) --admindir $(SONIC_DPKG_ADMINDIR)
 endif
 	popd
 
