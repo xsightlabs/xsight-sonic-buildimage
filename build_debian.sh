@@ -665,7 +665,7 @@ fi
 sudo cp files/image_config/ebtables/ebtables.filter.cfg ${FILESYSTEM_ROOT}/etc
 
 ## xSight: XXX add xbm scripts. To be moved to platform package
-sudo LANG=C chroot $FILESYSTEM_ROOT apt-get -y install libjsoncpp1
+sudo LANG=C chroot $FILESYSTEM_ROOT apt-get -y install libjsoncpp1 libssl1.1 libthrift-0.11.0
 sudo cp -a platform/xsight/files/xbm $FILESYSTEM_ROOT/home/admin/
 sudo cp -a platform/xsight/files/xlx $FILESYSTEM_ROOT/home/admin/
 sudo cp -a platform/xsight/files/xlink.cfg $FILESYSTEM_ROOT/etc/sonic/
@@ -673,7 +673,6 @@ sudo chmod +x $FILESYSTEM_ROOT/home/admin/xbm/cfg/*.sh
 sudo chmod +x $FILESYSTEM_ROOT/home/admin/xlx/*.sh
 sudo LANG=C chroot $FILESYSTEM_ROOT chown -R $USERNAME /home/admin/xbm
 sudo LANG=C chroot $FILESYSTEM_ROOT chown -R $USERNAME /home/admin/xlx
-
 
 ## Debug Image specific changes
 ## Update motd for debug image
