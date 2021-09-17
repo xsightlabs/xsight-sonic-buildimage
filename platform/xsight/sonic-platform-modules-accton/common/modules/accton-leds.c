@@ -46,7 +46,7 @@ struct es9632xx_led_data {
     struct mutex    update_lock;
     char            valid;          /* != 0 if registers are valid */
     unsigned long    last_updated;  /* In jiffies */
-    u8                reg_val[1];   /* Register value, 0 = RELEASE/DIAG LED,
+    u8                reg_val[2];   /* Register value, 0 = RELEASE/DIAG LED,
                                                        1 = FAN/PSU LED,
                                                        2 ~ 4 = SYSTEM LED */
 };
@@ -64,7 +64,22 @@ static struct es9632xx_led_data  *ledctl = NULL;
 #define LED_TYPE_LOC_REG_MASK            (0xC0)
 #define LED_MODE_LOC_OFF_VALUE           (0x00)
 #define LED_MODE_LOC_AMBER_VALUE         (0x40)
-#define LED_MODE_LOC_AMBER_BLINK_VALUE   (0x80)
+#define LED_MODE_LOC_AMBER_BLINK_VALUE   (0xC0)
+
+#define LED_TYPE_FAN_REG_MASK            (0x30)
+#define LED_MODE_FAN_OFF_VALUE           (0x00)
+#define LED_MODE_FAN_AMBER_VALUE         (0x20)
+#define LED_MODE_FAN_GREEN_VALUE         (0x10)
+
+#define LED_TYPE_PSU1_REG_MASK           (0x03)
+#define LED_MODE_PSU1_OFF_VALUE          (0x00)
+#define LED_MODE_PSU1_AMBER_VALUE        (0x02)
+#define LED_MODE_PSU1_GREEN_VALUE        (0x01)
+
+#define LED_TYPE_PSU2_REG_MASK           (0x0C)
+#define LED_MODE_PSU2_OFF_VALUE          (0x00)
+#define LED_MODE_PSU2_AMBER_VALUE        (0x08)
+#define LED_MODE_PSU2_GREEN_VALUE        (0x04)
 
 static const u8 led_reg[] = {
     0x30,    /* LOC LED */
@@ -109,6 +124,15 @@ static struct led_type_mode led_type_mode_data[] = {
 {LED_TYPE_DIAG, LED_MODE_GREEN,       LED_TYPE_DIAG_REG_MASK, LED_MODE_DIAG_GREEN_VALUE},
 {LED_TYPE_DIAG, LED_MODE_AMBER,       LED_TYPE_DIAG_REG_MASK, LED_MODE_DIAG_AMBER_VALUE},
 {LED_TYPE_DIAG, LED_MODE_OFF,         LED_TYPE_DIAG_REG_MASK, LED_MODE_DIAG_OFF_VALUE},
+{LED_TYPE_FAN,  LED_MODE_OFF,         LED_TYPE_FAN_REG_MASK,  LED_MODE_FAN_OFF_VALUE},
+{LED_TYPE_FAN,  LED_MODE_GREEN,       LED_TYPE_FAN_REG_MASK,  LED_MODE_FAN_GREEN_VALUE},
+{LED_TYPE_FAN,  LED_MODE_AMBER,       LED_TYPE_FAN_REG_MASK,  LED_MODE_FAN_AMBER_VALUE},
+{LED_TYPE_PSU1, LED_MODE_OFF,         LED_TYPE_PSU1_REG_MASK, LED_MODE_PSU1_OFF_VALUE},
+{LED_TYPE_PSU1, LED_MODE_GREEN,       LED_TYPE_PSU1_REG_MASK, LED_MODE_PSU1_GREEN_VALUE},
+{LED_TYPE_PSU1, LED_MODE_AMBER,       LED_TYPE_PSU1_REG_MASK, LED_MODE_PSU1_AMBER_VALUE},
+{LED_TYPE_PSU2, LED_MODE_OFF,         LED_TYPE_PSU2_REG_MASK, LED_MODE_PSU2_OFF_VALUE},
+{LED_TYPE_PSU2, LED_MODE_GREEN,       LED_TYPE_PSU2_REG_MASK, LED_MODE_PSU2_GREEN_VALUE},
+{LED_TYPE_PSU2, LED_MODE_AMBER,       LED_TYPE_PSU2_REG_MASK, LED_MODE_PSU2_AMBER_VALUE},
 };
 
 static int led_reg_val_to_light_mode(enum led_type type, u8 reg_val) {
@@ -118,7 +142,6 @@ static int led_reg_val_to_light_mode(enum led_type type, u8 reg_val) {
         if (type != led_type_mode_data[i].type) {
             continue;
         }
-
         if ((led_type_mode_data[i].type_mask & reg_val) ==
              led_type_mode_data[i].mode_value) {
             return led_type_mode_data[i].mode;
@@ -213,16 +236,6 @@ exit:
     mutex_unlock(&ledctl->update_lock);
 }
 
-static void es9632xx_led_auto_set(struct led_classdev *led_cdev,
-                                           enum led_brightness led_light_mode)
-{
-}
-
-static enum led_brightness es9632xx_led_auto_get(struct led_classdev *cdev)
-{
-    return LED_MODE_AUTO;
-}
-
 static void es9632xx_led_diag_set(struct led_classdev *led_cdev,
                                            enum led_brightness led_light_mode)
 {
@@ -247,41 +260,77 @@ static void es9632xx_led_loc_set(struct led_classdev *led_cdev,
     es9632xx_led_set(led_cdev, led_light_mode, led_reg[0], LED_TYPE_LOC);
 }
 
+static enum led_brightness es9632xx_led_fan_get(struct led_classdev *cdev)
+{
+    es9632xx_led_update();
+    return led_reg_val_to_light_mode(LED_TYPE_FAN, ledctl->reg_val[0]);
+}
+
+static void es9632xx_led_fan_set(struct led_classdev *led_cdev,
+                                           enum led_brightness led_light_mode)
+{
+    es9632xx_led_set(led_cdev, led_light_mode, led_reg[0], LED_TYPE_FAN);
+}
+
+static enum led_brightness es9632xx_led_psu1_get(struct led_classdev *cdev)
+{
+    es9632xx_led_update();
+    return led_reg_val_to_light_mode(LED_TYPE_PSU1, ledctl->reg_val[0]);
+}
+
+static void es9632xx_led_psu1_set(struct led_classdev *led_cdev,
+                                           enum led_brightness led_light_mode)
+{
+    es9632xx_led_set(led_cdev, led_light_mode, led_reg[0], LED_TYPE_PSU1);
+}
+
+static enum led_brightness es9632xx_led_psu2_get(struct led_classdev *cdev)
+{
+    es9632xx_led_update();
+    return led_reg_val_to_light_mode(LED_TYPE_PSU2, ledctl->reg_val[0]);
+}
+
+static void es9632xx_led_psu2_set(struct led_classdev *led_cdev,
+                                           enum led_brightness led_light_mode)
+{
+    es9632xx_led_set(led_cdev, led_light_mode, led_reg[0], LED_TYPE_PSU2);
+}
+
 static struct led_classdev es9632xx_leds[] = {
     [LED_TYPE_LOC] = {
-        .name             = "es9632xx_led::loc",
+        .name            = "es9632xx_led::loc",
         .default_trigger = "unused",
-        .brightness_set     = es9632xx_led_loc_set,
+        .brightness_set  = es9632xx_led_loc_set,
         .brightness_get  = es9632xx_led_loc_get,
         .max_brightness  = LED_MODE_AMBER_BLINK,
     },
     [LED_TYPE_DIAG] = {
-        .name             = "es9632xx_led::diag",
+        .name            = "es9632xx_led::diag",
         .default_trigger = "unused",
-        .brightness_set     = es9632xx_led_diag_set,
+        .brightness_set  = es9632xx_led_diag_set,
         .brightness_get  = es9632xx_led_diag_get,
         .max_brightness  = LED_MODE_AMBER,
     },
     [LED_TYPE_PSU1] = {
-        .name             = "es9632xx_led::psu1",
+        .name            = "es9632xx_led::psu1",
         .default_trigger = "unused",
-        .brightness_set     = es9632xx_led_auto_set,
-        .brightness_get  = es9632xx_led_auto_get,
-        .max_brightness  = LED_MODE_AUTO,
+        .brightness_set  = es9632xx_led_psu1_set,
+        .brightness_get  = es9632xx_led_psu1_get,
+        .max_brightness  = LED_MODE_AMBER,
     },
     [LED_TYPE_PSU2] = {
-        .name             = "es9632xx_led::psu2",
+        .name            = "es9632xx_led::psu2",
         .default_trigger = "unused",
-        .brightness_set     = es9632xx_led_auto_set,
-        .brightness_get  = es9632xx_led_auto_get,
-        .max_brightness  = LED_MODE_AUTO,
+        .brightness_set  = es9632xx_led_psu2_set,
+        .brightness_get  = es9632xx_led_psu2_get,
+        .max_brightness  = LED_MODE_AMBER,
     },
     [LED_TYPE_FAN] = {
-        .name             = "es9632xx_led::fan",
+        .name            = "es9632xx_led::fan",
         .default_trigger = "unused",
-        .brightness_set     = es9632xx_led_auto_set,
-        .brightness_get  = es9632xx_led_auto_get,
-        .max_brightness  = LED_MODE_AUTO,
+        .brightness_set  = es9632xx_led_fan_set,
+        .brightness_get  = es9632xx_led_fan_get,
+        .max_brightness  = LED_MODE_AMBER,
     },
 };
 
