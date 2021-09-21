@@ -3,8 +3,9 @@
 SYS_MODE="xbm"
 XPCI_NETDEV_ATTACH_IF="xcpu"
 # default netdev name for asic mode if config file doesn't exist or interface doesn't exist
-DEFAULT_ASIC_NETDEV_NAME="eth1"
-PORT_NUM=32
+DEFAULT_ASIC_NETDEV_NAME="eth10g1"
+SECOND_ASIC_NETDEV_NAME="eth10g0"
+PORT_NUM=256
 DEBUG_LEVEL=3
 NETDEV_MODE=1
 ONIE_MACHINE=`sed -n -e 's/^.*onie_machine=//p' /host/machine.conf`
@@ -19,6 +20,23 @@ if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
         echo ">>> WARN! Config file not found: ${CFG_FILE}"
         SYS_MODE="asic"
         XPCI_NETDEV_ATTACH_IF=${DEFAULT_ASIC_NETDEV_NAME}
+    fi
+
+    # Probe patched ixgbe module if required
+    if [[ ! -d /sys/class/xpci/xpci ]]; then
+        ip link set dev ${SECOND_ASIC_NETDEV_NAME} down
+        ip link set dev ${DEFAULT_ASIC_NETDEV_NAME} down
+        sleep 1
+        ip link set dev ${DEFAULT_ASIC_NETDEV_NAME} up
+
+        ip link set dev ${DEFAULT_ASIC_NETDEV_NAME} down
+        ip link set dev ${DEFAULT_ASIC_NETDEV_NAME} up
+
+    else
+        ip link set dev ${SECOND_ASIC_NETDEV_NAME} down
+        ip link set dev ${DEFAULT_ASIC_NETDEV_NAME} down
+        sleep 1
+        ip link set dev ${DEFAULT_ASIC_NETDEV_NAME} up
     fi
 
     if [[ ${SYS_MODE,,} != "xbm" && ! -d /sys/class/net/${XPCI_NETDEV_ATTACH_IF} ]]; then
