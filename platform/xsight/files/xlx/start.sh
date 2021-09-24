@@ -8,6 +8,8 @@ SECOND_ASIC_NETDEV_NAME="eth10g0"
 PORT_NUM=256
 DEBUG_LEVEL=3
 NETDEV_MODE=1
+HW_IRQ_MODE=1
+PCI_MODE=1
 ONIE_MACHINE=`sed -n -e 's/^.*onie_machine=//p' /host/machine.conf`
 CFG_FILE="/etc/sonic/xlink.cfg"
 
@@ -53,6 +55,10 @@ if [[ ${XPCI_NETDEV_ATTACH_IF} == "xcpu" ]]; then
     ip link set dev xcpu up
 fi
 
+if [[ ${SYS_MODE,,} == "xbm" ]]; then
+    HW_IRQ_MODE=0
+    PCI_MODE=0
+fi
 echo ">>> Re-load NetDev"
 #read -p "--- Press enter to continue ---"
 rmmod xpci
@@ -62,7 +68,8 @@ rmmod xpci
 #               3 - Info
 #               4 - Debug
 #               5 - Debug with Packet trace
-insmod /home/admin/xlx/xpci.ko attach_if=${XPCI_NETDEV_ATTACH_IF} num_of_ports=${PORT_NUM} debug_level=${DEBUG_LEVEL} netdev_mode=${NETDEV_MODE}
+insmod /home/admin/xlx/xpci.ko attach_if=${XPCI_NETDEV_ATTACH_IF} num_of_ports=${PORT_NUM} debug_level=${DEBUG_LEVEL} \
+                               netdev_mode=${NETDEV_MODE} hw_irq_mode=${HW_IRQ_MODE} pci_mode=${PCI_MODE}
 
 echo ">>> Sleeping 5"
 sleep 5
