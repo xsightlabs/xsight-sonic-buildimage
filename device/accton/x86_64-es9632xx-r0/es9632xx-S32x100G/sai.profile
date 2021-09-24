@@ -1,1 +1,0 @@
-../es9632xx-O32x400G/sai.profile
