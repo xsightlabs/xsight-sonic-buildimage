@@ -16,7 +16,7 @@ except ImportError as e:
 
 PSU_FAN_MAX_RPM = 25500
 TRAY_FAN_MAX_RPM = 31000
-TRAY_FANSPEED_TOLERANCE = 15
+TRAY_FANSPEED_TOLERANCE = 25
 
 CPLD_I2C_PATH = "/sys/bus/i2c/devices/17-0066/fan"
 PSU_HWMON_I2C_PATH ="/sys/bus/i2c/devices/{}-00{}/"
@@ -134,10 +134,7 @@ class Fan(FanBase):
         """
         speed = 0
         if self.is_psu_fan:
-            """
-            TODO: Need to implement for PSU fans
-            """
-            return False
+            return 100.0
 
         elif self.get_presence():
             if 0 == self.fan_index:
@@ -158,7 +155,11 @@ class Fan(FanBase):
             An integer, the percentage of variance from target speed which is
                  considered tolerable
         """
-        return TRAY_FANSPEED_TOLERANCE
+        tolerance = TRAY_FANSPEED_TOLERANCE
+        if self.is_psu_fan:
+            tolerance = 100.0
+
+        return tolerance
 
     def set_speed(self, speed):
         """
