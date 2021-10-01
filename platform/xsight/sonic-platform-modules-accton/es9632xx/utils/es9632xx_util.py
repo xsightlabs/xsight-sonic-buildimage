@@ -154,7 +154,7 @@ def log_os_system(cmd, show):
 
 
 def driver_check():
-    ret, lsmod = log_os_system("ls /sys/module/*es9632xx*", 0)
+    ret, lsmod = log_os_system("ls /sys/module/es9632*", 0)
     logging.info('mods:'+lsmod)
     if ret :
         return False
@@ -167,12 +167,12 @@ kos = [
     'modprobe i2c_mux_pca954x force_deselect_on_exit=1',
     'modprobe dps850',
     'modprobe optoe',
-    'modprobe x86-64-es9632xx-cpld',
-    'modprobe x86-64-es9632xx-fan',
-    'modprobe x86-64-es9632xx-leds',
-    'modprobe x86-64-es9632xx-psu',
-    'modprobe x86-64-es9632xx-sys',
-    'modprobe x86-64-es9632xx-sfp',
+    'modprobe es9632-cpld',
+    'modprobe es9632-fan',
+    'modprobe es9632-leds',
+    'modprobe es9632-psu',
+    'modprobe es9632-sys',
+    'modprobe es9632-sfp',
     'modprobe at24'
     ]
 
@@ -235,12 +235,12 @@ mknod = [
     'echo pca9548 0x74 > /sys/bus/i2c/devices/i2c-2/new_device',
     'echo pca9548 0x75 > /sys/bus/i2c/devices/i2c-2/new_device',
     'echo pca9548 0x76 > /sys/bus/i2c/devices/i2c-2/new_device',
-    'echo es9632xx_cpld1 0x68 > /sys/bus/i2c/devices/i2c-1/new_device',
-    'echo es9632xx_cpld2 0x61 > /sys/bus/i2c/devices/i2c-20/new_device',
-    'echo es9632xx_cpld3 0x62 > /sys/bus/i2c/devices/i2c-21/new_device',
-    'echo es9632xx_fan 0x66 > /sys/bus/i2c/devices/i2c-17/new_device',
-    'echo es9632xx_psu1 0x51 > /sys/bus/i2c/devices/i2c-10/new_device',
-    'echo es9632xx_psu2 0x50 > /sys/bus/i2c/devices/i2c-9/new_device',
+    'echo es9632_cpld1 0x68 > /sys/bus/i2c/devices/i2c-1/new_device',
+    'echo es9632_cpld2 0x61 > /sys/bus/i2c/devices/i2c-20/new_device',
+    'echo es9632_cpld3 0x62 > /sys/bus/i2c/devices/i2c-21/new_device',
+    'echo es9632_fan 0x66 > /sys/bus/i2c/devices/i2c-17/new_device',
+    'echo es9632_psu1 0x51 > /sys/bus/i2c/devices/i2c-10/new_device',
+    'echo es9632_psu2 0x50 > /sys/bus/i2c/devices/i2c-9/new_device',
     'echo dps850 0x59 > /sys/bus/i2c/devices/i2c-10/new_device',
     'echo dps850 0x58 > /sys/bus/i2c/devices/i2c-9/new_device',
     'echo lm75 0x48 > /sys/bus/i2c/devices/i2c-18/new_device',
@@ -250,7 +250,7 @@ mknod = [
     'echo lm75 0x4d > /sys/bus/i2c/devices/i2c-18/new_device',
     'echo lm75 0x4e > /sys/bus/i2c/devices/i2c-18/new_device',
     'echo lm75 0x4f > /sys/bus/i2c/devices/i2c-18/new_device',
-    'echo es9632xx_sys 0x55 > /sys/bus/i2c/devices/i2c-23/new_device',
+    'echo es9632_sys 0x55 > /sys/bus/i2c/devices/i2c-23/new_device',
     'echo 24c02 0x57 > /sys/bus/i2c/devices/i2c-0/new_device']
 
 def device_install():

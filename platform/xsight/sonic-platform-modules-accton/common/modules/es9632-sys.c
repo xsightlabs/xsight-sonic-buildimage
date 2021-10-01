@@ -1,5 +1,5 @@
 /*
- * An hwmon driver for accton es9632xx Power Module
+ * An hwmon driver for accton es9632 Power Module
  *
  * Copyright (C) 2014 Accton Technology Corporation.
  * Brandon Chuang <brandon_chuang@accton.com.tw>
@@ -42,7 +42,7 @@ static const unsigned short normal_i2c[] = { I2C_CLIENT_END };
 
 /* Each client has this additional data
  */
-struct es9632xx_sys_data {
+struct es9632_sys_data {
     struct mutex        update_lock;
     char                valid;           /* !=0 if registers are valid */
     u8 eeprom[EEPROM_SIZE];
@@ -51,7 +51,7 @@ struct es9632xx_sys_data {
 static ssize_t show_eeprom(struct device *dev, struct device_attribute *da,
              char *buf);
 
-enum es9632xx_sys_sysfs_attributes {
+enum es9632_sys_sysfs_attributes {
     SYS_EEPROM
 };
 
@@ -59,7 +59,7 @@ enum es9632xx_sys_sysfs_attributes {
  */
 static SENSOR_DEVICE_ATTR(eeprom, S_IRUGO, show_eeprom, NULL, SYS_EEPROM);
 
-static struct attribute *es9632xx_sys_attributes[] = {
+static struct attribute *es9632_sys_attributes[] = {
     &sensor_dev_attr_eeprom.dev_attr.attr,
     NULL
 };
@@ -68,7 +68,7 @@ static ssize_t show_eeprom(struct device *dev, struct device_attribute *da,
              char *buf)
 {
     struct i2c_client *client = to_i2c_client(dev);
-    struct es9632xx_sys_data *data = i2c_get_clientdata(client);
+    struct es9632_sys_data *data = i2c_get_clientdata(client);
     int status = 0;
 
     mutex_lock(&data->update_lock);
@@ -102,14 +102,14 @@ exit:
 	return status;
 }
 
-static const struct attribute_group es9632xx_sys_group = {
-    .attrs = es9632xx_sys_attributes,
+static const struct attribute_group es9632_sys_group = {
+    .attrs = es9632_sys_attributes,
 };
 
-static int es9632xx_sys_probe(struct i2c_client *client,
+static int es9632_sys_probe(struct i2c_client *client,
             const struct i2c_device_id *dev_id)
 {
-    struct es9632xx_sys_data *data;
+    struct es9632_sys_data *data;
     int status;
 
     if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE)) {
@@ -117,7 +117,7 @@ static int es9632xx_sys_probe(struct i2c_client *client,
         goto exit;
     }
 
-    data = kzalloc(sizeof(struct es9632xx_sys_data), GFP_KERNEL);
+    data = kzalloc(sizeof(struct es9632_sys_data), GFP_KERNEL);
     if (!data) {
         status = -ENOMEM;
         goto exit;
@@ -130,7 +130,7 @@ static int es9632xx_sys_probe(struct i2c_client *client,
     dev_info(&client->dev, "chip found\n");
 
     /* Register sysfs hooks */
-    status = sysfs_create_group(&client->dev.kobj, &es9632xx_sys_group);
+    status = sysfs_create_group(&client->dev.kobj, &es9632_sys_group);
     if (status) {
         goto exit_free;
     }
@@ -143,35 +143,35 @@ exit:
     return status;
 }
 
-static int es9632xx_sys_remove(struct i2c_client *client)
+static int es9632_sys_remove(struct i2c_client *client)
 {
-    struct es9632xx_sys_data *data = i2c_get_clientdata(client);
+    struct es9632_sys_data *data = i2c_get_clientdata(client);
 
-    sysfs_remove_group(&client->dev.kobj, &es9632xx_sys_group);
+    sysfs_remove_group(&client->dev.kobj, &es9632_sys_group);
     kfree(data);
 
     return 0;
 }
 
-static const struct i2c_device_id es9632xx_sys_id[] = {
-    { "es9632xx_sys", 0 },
+static const struct i2c_device_id es9632_sys_id[] = {
+    { "es9632_sys", 0 },
     {}
 };
-MODULE_DEVICE_TABLE(i2c, es9632xx_sys_id);
+MODULE_DEVICE_TABLE(i2c, es9632_sys_id);
 
-static struct i2c_driver es9632xx_sys_driver = {
+static struct i2c_driver es9632_sys_driver = {
     .class        = 0,
     .driver = {
-        .name     = "es9632xx_sys",
+        .name     = "es9632_sys",
     },
-    .probe        = es9632xx_sys_probe,
-    .remove       = es9632xx_sys_remove,
-    .id_table     = es9632xx_sys_id,
+    .probe        = es9632_sys_probe,
+    .remove       = es9632_sys_remove,
+    .id_table     = es9632_sys_id,
     .address_list = normal_i2c,
 };
 
-module_i2c_driver(es9632xx_sys_driver);
+module_i2c_driver(es9632_sys_driver);
 
 MODULE_AUTHOR("Brandon Chuang <brandon_chuang@edge-core.com>");
-MODULE_DESCRIPTION("es9632xx_sys driver");
+MODULE_DESCRIPTION("es9632_sys driver");
 MODULE_LICENSE("GPL");
