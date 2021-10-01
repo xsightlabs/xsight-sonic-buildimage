@@ -4,7 +4,7 @@
  * This module supports the accton cpld that hold the channel select
  * mechanism for other i2c slave devices, such as SFP.
  * This includes the:
- *	 Accton es9632xx CPLD1/CPLD2/CPLD3
+ *	 Accton es9632 CPLD1/CPLD2/CPLD3
  *
  * Based on:
  *	pca954x.c from Kumar Gala <galak@kernel.crashing.org>
@@ -46,30 +46,30 @@ struct cpld_client_node {
 };
 
 enum cpld_type {
-    es9632xx_cpld1,
-    es9632xx_cpld2,
-    es9632xx_cpld3
+    es9632_cpld1,
+    es9632_cpld2,
+    es9632_cpld3
 };
 
-struct es9632xx_cpld_data {
+struct es9632_cpld_data {
     enum cpld_type   type;
     struct device   *hwmon_dev;
     struct mutex     update_lock;
 };
 
-static const struct i2c_device_id es9632xx_cpld_id[] = {
-    { "es9632xx_cpld1", es9632xx_cpld1 },
-    { "es9632xx_cpld2", es9632xx_cpld2 },
-    { "es9632xx_cpld3", es9632xx_cpld3 },
+static const struct i2c_device_id es9632_cpld_id[] = {
+    { "es9632_cpld1", es9632_cpld1 },
+    { "es9632_cpld2", es9632_cpld2 },
+    { "es9632_cpld3", es9632_cpld3 },
     { }
 };
-MODULE_DEVICE_TABLE(i2c, es9632xx_cpld_id);
+MODULE_DEVICE_TABLE(i2c, es9632_cpld_id);
 
-#define TRANSCEIVER_PRESENT_ATTR_ID(index)   	MODULE_PRESENT_##index
-#define TRANSCEIVER_RESET_ATTR_ID(index)        MODULE_RESET_##index
-#define TRANSCEIVER_LPMODE_ATTR_ID(index)        MODULE_LPMODE_##index
+#define TRANSCEIVER_PRESENT_ATTR_ID(index)  MODULE_PRESENT_##index
+#define TRANSCEIVER_RESET_ATTR_ID(index)    MODULE_RESET_##index
+#define TRANSCEIVER_LPMODE_ATTR_ID(index)   MODULE_LPMODE_##index
 
-enum es9632xx_cpld_sysfs_attributes {
+enum es9632_cpld_sysfs_attributes {
 	CPLD_VERSION,
 	ACCESS,
 	MODULE_PRESENT_ALL,
@@ -185,8 +185,8 @@ static ssize_t access(struct device *dev, struct device_attribute *da,
 			const char *buf, size_t count);
 static ssize_t show_version(struct device *dev, struct device_attribute *da,
              char *buf);
-static int es9632xx_cpld_read_internal(struct i2c_client *client, u8 reg);
-static int es9632xx_cpld_write_internal(struct i2c_client *client, u8 reg, u8 value);
+static int es9632_cpld_read_internal(struct i2c_client *client, u8 reg);
+static int es9632_cpld_write_internal(struct i2c_client *client, u8 reg, u8 value);
 
 /* transceiver attributes */
 #define DECLARE_TRANSCEIVER_SENSOR_DEVICE_ATTR(index) \
@@ -237,17 +237,17 @@ DECLARE_TRANSCEIVER_SENSOR_DEVICE_ATTR(30);
 DECLARE_TRANSCEIVER_SENSOR_DEVICE_ATTR(31);
 DECLARE_TRANSCEIVER_SENSOR_DEVICE_ATTR(32);
 
-static struct attribute *es9632xx_cpld1_attributes[] = {
+static struct attribute *es9632_cpld1_attributes[] = {
     &sensor_dev_attr_version.dev_attr.attr,
     &sensor_dev_attr_access.dev_attr.attr,
 	NULL
 };
 
-static const struct attribute_group es9632xx_cpld1_group = {
-	.attrs = es9632xx_cpld1_attributes,
+static const struct attribute_group es9632_cpld1_group = {
+	.attrs = es9632_cpld1_attributes,
 };
 
-static struct attribute *es9632xx_cpld2_attributes[] = {
+static struct attribute *es9632_cpld2_attributes[] = {
     &sensor_dev_attr_version.dev_attr.attr,
     &sensor_dev_attr_access.dev_attr.attr,
 	/* transceiver attributes */
@@ -287,11 +287,11 @@ static struct attribute *es9632xx_cpld2_attributes[] = {
 	NULL
 };
 
-static const struct attribute_group es9632xx_cpld2_group = {
-	.attrs = es9632xx_cpld2_attributes,
+static const struct attribute_group es9632_cpld2_group = {
+	.attrs = es9632_cpld2_attributes,
 };
 
-static struct attribute *es9632xx_cpld3_attributes[] = {
+static struct attribute *es9632_cpld3_attributes[] = {
     &sensor_dev_attr_version.dev_attr.attr,
     &sensor_dev_attr_access.dev_attr.attr,
 	/* transceiver attributes */
@@ -362,8 +362,8 @@ static struct attribute *es9632xx_cpld3_attributes[] = {
 	NULL
 };
 
-static const struct attribute_group es9632xx_cpld3_group = {
-	.attrs = es9632xx_cpld3_attributes,
+static const struct attribute_group es9632_cpld3_group = {
+	.attrs = es9632_cpld3_attributes,
 };
 
 static ssize_t show_present_all(struct device *dev, struct device_attribute *da,
@@ -375,12 +375,12 @@ static ssize_t show_present_all(struct device *dev, struct device_attribute *da,
     u8 *regs[] = {NULL, regs_cpld2, NULL};
     u8  size[] = {0, ARRAY_SIZE(regs_cpld2), 0};
 	struct i2c_client *client = to_i2c_client(dev);
-	struct es9632xx_cpld_data *data = i2c_get_clientdata(client);
+	struct es9632_cpld_data *data = i2c_get_clientdata(client);
 
 	mutex_lock(&data->update_lock);
 
     for (i = 0; i < size[data->type]; i++) {
-        status = es9632xx_cpld_read_internal(client, regs[data->type][i]);
+        status = es9632_cpld_read_internal(client, regs[data->type][i]);
         if (status < 0) {
             goto exit;
         }
@@ -403,7 +403,7 @@ static ssize_t show_status(struct device *dev, struct device_attribute *da,
 {
     struct sensor_device_attribute *attr = to_sensor_dev_attr(da);
     struct i2c_client *client = to_i2c_client(dev);
-    struct es9632xx_cpld_data *data = i2c_get_clientdata(client);
+    struct es9632_cpld_data *data = i2c_get_clientdata(client);
 	int status = 0;
 	u8 reg = 0, mask = 0, invert = 1;
 
@@ -461,7 +461,7 @@ static ssize_t show_status(struct device *dev, struct device_attribute *da,
 	}
 
     mutex_lock(&data->update_lock);
-	status = es9632xx_cpld_read_internal(client, reg);
+	status = es9632_cpld_read_internal(client, reg);
 	if (unlikely(status < 0)) {
 		goto exit;
 	}
@@ -479,7 +479,7 @@ static ssize_t set_control(struct device *dev, struct device_attribute *da,
 {
     struct sensor_device_attribute *attr = to_sensor_dev_attr(da);
 	struct i2c_client *client = to_i2c_client(dev);
-	struct es9632xx_cpld_data *data = i2c_get_clientdata(client);
+	struct es9632_cpld_data *data = i2c_get_clientdata(client);
 	long value;
 	int status;
     u8 reg = 0, mask = 0;
@@ -528,7 +528,7 @@ static ssize_t set_control(struct device *dev, struct device_attribute *da,
 
     /* Read current status */
     mutex_lock(&data->update_lock);
-	status = es9632xx_cpld_read_internal(client, reg);
+	status = es9632_cpld_read_internal(client, reg);
 	if (unlikely(status < 0)) {
 		goto exit;
 	}
@@ -543,7 +543,7 @@ static ssize_t set_control(struct device *dev, struct device_attribute *da,
 		status &= ~mask;
 	}
 
-    status = es9632xx_cpld_write_internal(client, reg, status);
+    status = es9632_cpld_write_internal(client, reg, status);
 	if (unlikely(status < 0)) {
 		goto exit;
 	}
@@ -562,7 +562,7 @@ static ssize_t access(struct device *dev, struct device_attribute *da,
 	int status;
 	u32 addr, val;
     struct i2c_client *client = to_i2c_client(dev);
-    struct es9632xx_cpld_data *data = i2c_get_clientdata(client);
+    struct es9632_cpld_data *data = i2c_get_clientdata(client);
 
 	if (sscanf(buf, "0x%x 0x%x", &addr, &val) != 2) {
 		return -EINVAL;
@@ -573,7 +573,7 @@ static ssize_t access(struct device *dev, struct device_attribute *da,
 	}
 
 	mutex_lock(&data->update_lock);
-	status = es9632xx_cpld_write_internal(client, addr, val);
+	status = es9632_cpld_write_internal(client, addr, val);
 	if (unlikely(status < 0)) {
 		goto exit;
 	}
@@ -585,7 +585,7 @@ exit:
 	return status;
 }
 
-static void es9632xx_cpld_add_client(struct i2c_client *client)
+static void es9632_cpld_add_client(struct i2c_client *client)
 {
     struct cpld_client_node *node = kzalloc(sizeof(struct cpld_client_node), GFP_KERNEL);
 
@@ -601,7 +601,7 @@ static void es9632xx_cpld_add_client(struct i2c_client *client)
 	mutex_unlock(&list_lock);
 }
 
-static void es9632xx_cpld_remove_client(struct i2c_client *client)
+static void es9632_cpld_remove_client(struct i2c_client *client)
 {
     struct list_head    *list_node = NULL;
     struct cpld_client_node *cpld_node = NULL;
@@ -644,18 +644,18 @@ static ssize_t show_version(struct device *dev, struct device_attribute *attr, c
 /*
  * I2C init/probing/exit functions
  */
-static int es9632xx_cpld_probe(struct i2c_client *client,
+static int es9632_cpld_probe(struct i2c_client *client,
 			 const struct i2c_device_id *id)
 {
 	struct i2c_adapter *adap = to_i2c_adapter(client->dev.parent);
-	struct es9632xx_cpld_data *data;
+	struct es9632_cpld_data *data;
 	int ret = -ENODEV;
 	const struct attribute_group *group = NULL;
 
 	if (!i2c_check_functionality(adap, I2C_FUNC_SMBUS_BYTE))
 		goto exit;
 
-	data = kzalloc(sizeof(struct es9632xx_cpld_data), GFP_KERNEL);
+	data = kzalloc(sizeof(struct es9632_cpld_data), GFP_KERNEL);
 	if (!data) {
 		ret = -ENOMEM;
 		goto exit;
@@ -667,14 +667,14 @@ static int es9632xx_cpld_probe(struct i2c_client *client,
 
     /* Register sysfs hooks */
     switch (data->type) {
-    case es9632xx_cpld1:
-        group = &es9632xx_cpld1_group;
+    case es9632_cpld1:
+        group = &es9632_cpld1_group;
         break;
-    case es9632xx_cpld2:
-        group = &es9632xx_cpld2_group;
+    case es9632_cpld2:
+        group = &es9632_cpld2_group;
         break;
-	case es9632xx_cpld3:
-        group = &es9632xx_cpld3_group;
+	case es9632_cpld3:
+        group = &es9632_cpld3_group;
         break;
     default:
         break;
@@ -687,7 +687,7 @@ static int es9632xx_cpld_probe(struct i2c_client *client,
         }
     }
 
-    es9632xx_cpld_add_client(client);
+    es9632_cpld_add_client(client);
     return 0;
 
 exit_free:
@@ -696,23 +696,23 @@ exit:
 	return ret;
 }
 
-static int es9632xx_cpld_remove(struct i2c_client *client)
+static int es9632_cpld_remove(struct i2c_client *client)
 {
-    struct es9632xx_cpld_data *data = i2c_get_clientdata(client);
+    struct es9632_cpld_data *data = i2c_get_clientdata(client);
     const struct attribute_group *group = NULL;
 
-    es9632xx_cpld_remove_client(client);
+    es9632_cpld_remove_client(client);
 
     /* Remove sysfs hooks */
     switch (data->type) {
-    case es9632xx_cpld1:
-        group = &es9632xx_cpld1_group;
+    case es9632_cpld1:
+        group = &es9632_cpld1_group;
         break;
-    case es9632xx_cpld2:
-        group = &es9632xx_cpld2_group;
+    case es9632_cpld2:
+        group = &es9632_cpld2_group;
         break;
-	case es9632xx_cpld3:
-        group = &es9632xx_cpld3_group;
+	case es9632_cpld3:
+        group = &es9632_cpld3_group;
         break;
     default:
         break;
@@ -727,7 +727,7 @@ static int es9632xx_cpld_remove(struct i2c_client *client)
     return 0;
 }
 
-static int es9632xx_cpld_read_internal(struct i2c_client *client, u8 reg)
+static int es9632_cpld_read_internal(struct i2c_client *client, u8 reg)
 {
 	int status = 0, retry = I2C_RW_RETRY_COUNT;
 
@@ -745,7 +745,7 @@ static int es9632xx_cpld_read_internal(struct i2c_client *client, u8 reg)
     return status;
 }
 
-static int es9632xx_cpld_write_internal(struct i2c_client *client, u8 reg, u8 value)
+static int es9632_cpld_write_internal(struct i2c_client *client, u8 reg, u8 value)
 {
 	int status = 0, retry = I2C_RW_RETRY_COUNT;
 
@@ -763,7 +763,7 @@ static int es9632xx_cpld_write_internal(struct i2c_client *client, u8 reg, u8 va
     return status;
 }
 
-int es9632xx_cpld_read(unsigned short cpld_addr, u8 reg)
+int es9632_cpld_read(unsigned short cpld_addr, u8 reg)
 {
     struct list_head   *list_node = NULL;
     struct cpld_client_node *cpld_node = NULL;
@@ -776,8 +776,8 @@ int es9632xx_cpld_read(unsigned short cpld_addr, u8 reg)
         cpld_node = list_entry(list_node, struct cpld_client_node, list);
 
         if (cpld_node->client->addr == cpld_addr) {
-            ret = es9632xx_cpld_read_internal(cpld_node->client, reg);
-    		break;
+            ret = es9632_cpld_read_internal(cpld_node->client, reg);
+            break;
         }
     }
 
@@ -785,9 +785,9 @@ int es9632xx_cpld_read(unsigned short cpld_addr, u8 reg)
 
     return ret;
 }
-EXPORT_SYMBOL(es9632xx_cpld_read);
+EXPORT_SYMBOL(es9632_cpld_read);
 
-int es9632xx_cpld_write(unsigned short cpld_addr, u8 reg, u8 value)
+int es9632_cpld_write(unsigned short cpld_addr, u8 reg, u8 value)
 {
     struct list_head   *list_node = NULL;
     struct cpld_client_node *cpld_node = NULL;
@@ -800,7 +800,7 @@ int es9632xx_cpld_write(unsigned short cpld_addr, u8 reg, u8 value)
         cpld_node = list_entry(list_node, struct cpld_client_node, list);
 
         if (cpld_node->client->addr == cpld_addr) {
-            ret = es9632xx_cpld_write_internal(cpld_node->client, reg, value);
+            ret = es9632_cpld_write_internal(cpld_node->client, reg, value);
             break;
         }
     }
@@ -809,32 +809,32 @@ int es9632xx_cpld_write(unsigned short cpld_addr, u8 reg, u8 value)
 
     return ret;
 }
-EXPORT_SYMBOL(es9632xx_cpld_write);
+EXPORT_SYMBOL(es9632_cpld_write);
 
-static struct i2c_driver es9632xx_cpld_driver = {
+static struct i2c_driver es9632_cpld_driver = {
 	.driver		= {
-		.name	= "es9632xx_cpld",
+		.name	= "es9632_cpld",
 		.owner	= THIS_MODULE,
 	},
-	.probe		= es9632xx_cpld_probe,
-	.remove		= es9632xx_cpld_remove,
-	.id_table	= es9632xx_cpld_id,
+	.probe		= es9632_cpld_probe,
+	.remove		= es9632_cpld_remove,
+	.id_table	= es9632_cpld_id,
 };
 
-static int __init es9632xx_cpld_init(void)
+static int __init es9632_cpld_init(void)
 {
     mutex_init(&list_lock);
-    return i2c_add_driver(&es9632xx_cpld_driver);
+    return i2c_add_driver(&es9632_cpld_driver);
 }
 
-static void __exit es9632xx_cpld_exit(void)
+static void __exit es9632_cpld_exit(void)
 {
-    i2c_del_driver(&es9632xx_cpld_driver);
+    i2c_del_driver(&es9632_cpld_driver);
 }
 
 MODULE_AUTHOR("Brandon Chuang <brandon_chuang@edge-core.com>");
-MODULE_DESCRIPTION("Accton es9632xx CPLD driver");
+MODULE_DESCRIPTION("Accton es9632 CPLD driver");
 MODULE_LICENSE("GPL");
 
-module_init(es9632xx_cpld_init);
-module_exit(es9632xx_cpld_exit);
+module_init(es9632_cpld_init);
+module_exit(es9632_cpld_exit);

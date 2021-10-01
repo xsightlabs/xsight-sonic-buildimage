@@ -31,17 +31,17 @@
 #include <linux/dmi.h>
 #include <linux/platform_device.h>
 
-#define DRVNAME "es9632xx_fan"
+#define DRVNAME "es9632_fan"
 #define MAX_FAN_SPEED_RPM	31000
 
-static struct es9632xx_fan_data *es9632xx_fan_update_device(struct device *dev);
+static struct es9632_fan_data *es9632_fan_update_device(struct device *dev);
 static ssize_t fan_show_value(struct device *dev, struct device_attribute *da, char *buf);
 static ssize_t set_duty_cycle(struct device *dev, struct device_attribute *da,
             const char *buf, size_t count);
 static ssize_t show_version(struct device *dev, struct device_attribute *da,
              char *buf);
-extern int es9632xx_cpld_read(unsigned short cpld_addr, u8 reg);
-extern int es9632xx_cpld_write(unsigned short cpld_addr, u8 reg, u8 value);
+extern int es9632_cpld_read(unsigned short cpld_addr, u8 reg);
+extern int es9632_cpld_write(unsigned short cpld_addr, u8 reg, u8 value);
 
 /* fan related data, the index should match sysfs_fan_attributes
  */
@@ -65,7 +65,7 @@ static const u8 fan_reg[] = {
 };
 
 /* fan data */
-struct es9632xx_fan_data {
+struct es9632_fan_data {
     struct platform_device *pdev;
     struct device   *hwmon_dev;
     struct mutex     update_lock;
@@ -189,7 +189,7 @@ DECLARE_FAN_DIRECTION_SENSOR_DEV_ATTR(6);
 /* 1 fan duty cycle attribute in this platform */
 DECLARE_FAN_DUTY_CYCLE_SENSOR_DEV_ATTR();
 
-static struct attribute *es9632xx_fan_attributes[] = {
+static struct attribute *es9632_fan_attributes[] = {
     &sensor_dev_attr_version.dev_attr.attr,
     /* fan related attributes */
     DECLARE_FAN_FAULT_ATTR(1, 11),
@@ -225,12 +225,12 @@ static struct attribute *es9632xx_fan_attributes[] = {
 #define FAN_MAX_DUTY_CYCLE              100
 #define FAN_REG_VAL_TO_SPEED_RPM_STEP   200
 
-static int es9632xx_fan_read_value(struct i2c_client *client, u8 reg)
+static int es9632_fan_read_value(struct i2c_client *client, u8 reg)
 {
     return i2c_smbus_read_byte_data(client, reg);
 }
 
-static int es9632xx_fan_write_value(struct i2c_client *client, u8 reg, u8 value)
+static int es9632_fan_write_value(struct i2c_client *client, u8 reg, u8 value)
 {
     return i2c_smbus_write_byte_data(client, reg, value);
 }
@@ -270,7 +270,7 @@ static u8 reg_val_to_is_present(u8 reg_val, enum fan_id id)
     return !(reg_val & BIT(id));
 }
 
-static u8 is_fan_fault(struct es9632xx_fan_data *data, enum fan_id id)
+static u8 is_fan_fault(struct es9632_fan_data *data, enum fan_id id)
 {
 	u8 ret = 1;
 	int front_fan_index = FAN1_FRONT_SPEED_RPM + id;
@@ -291,7 +291,7 @@ static ssize_t set_duty_cycle(struct device *dev, struct device_attribute *da,
 {
     int error, value;
     struct i2c_client *client = to_i2c_client(dev);
-	struct es9632xx_fan_data *data = i2c_get_clientdata(client);
+	struct es9632_fan_data *data = i2c_get_clientdata(client);
 
     error = kstrtoint(buf, 10, &value);
     if (error) {
@@ -306,7 +306,7 @@ static ssize_t set_duty_cycle(struct device *dev, struct device_attribute *da,
 
 	/* Disable the watchdog timer
 	 */
-	error = es9632xx_fan_write_value(client, 0x33, 0);
+	error = es9632_fan_write_value(client, 0x33, 0);
 
 	if (error != 0) {
 		dev_dbg(&client->dev, "Unable to disable the watchdog timer\n");
@@ -314,7 +314,7 @@ static ssize_t set_duty_cycle(struct device *dev, struct device_attribute *da,
         goto exit;
 	}
 
-    es9632xx_fan_write_value(client, fan_reg[FAN_DUTY_CYCLE_PERCENTAGE], duty_cycle_to_reg_val(value));
+    es9632_fan_write_value(client, fan_reg[FAN_DUTY_CYCLE_PERCENTAGE], duty_cycle_to_reg_val(value));
 	data->valid = 0;
 
 exit:
@@ -326,13 +326,13 @@ static ssize_t fan_show_value(struct device *dev, struct device_attribute *da,
              char *buf)
 {
     struct i2c_client *client = to_i2c_client(dev);
-	struct es9632xx_fan_data *data = i2c_get_clientdata(client);
+	struct es9632_fan_data *data = i2c_get_clientdata(client);
     struct sensor_device_attribute *attr = to_sensor_dev_attr(da);
     ssize_t ret = 0;
 
     mutex_lock(&data->update_lock);
 
-    data = es9632xx_fan_update_device(dev);
+    data = es9632_fan_update_device(dev);
     if (data->valid) {
         switch (attr->index) {
             case FAN_DUTY_CYCLE_PERCENTAGE:
@@ -396,26 +396,26 @@ static ssize_t fan_show_value(struct device *dev, struct device_attribute *da,
     return ret;
 }
 
-static const struct attribute_group es9632xx_fan_group = {
-    .attrs = es9632xx_fan_attributes,
+static const struct attribute_group es9632_fan_group = {
+    .attrs = es9632_fan_attributes,
 };
 
-static struct es9632xx_fan_data *es9632xx_fan_update_device(struct device *dev)
+static struct es9632_fan_data *es9632_fan_update_device(struct device *dev)
 {
     struct i2c_client *client = to_i2c_client(dev);
-    struct es9632xx_fan_data *data = i2c_get_clientdata(client);
+    struct es9632_fan_data *data = i2c_get_clientdata(client);
 
     if (time_after(jiffies, data->last_updated + HZ + HZ / 2) ||
         !data->valid) {
         int i;
 
-        dev_dbg(&client->dev, "Starting es9632xx_fan update\n");
+        dev_dbg(&client->dev, "Starting es9632_fan update\n");
         data->valid = 0;
 
         /* Update fan data
          */
         for (i = 0; i < ARRAY_SIZE(data->reg_val); i++) {
-            int status = es9632xx_fan_read_value(client, fan_reg[i]);
+            int status = es9632_fan_read_value(client, fan_reg[i]);
 
             if (status < 0) {
                 data->valid = 0;
@@ -449,10 +449,10 @@ static ssize_t show_version(struct device *dev, struct device_attribute *attr, c
     return sprintf(buf, "%d\n", val);
 }
 
-static int es9632xx_fan_probe(struct i2c_client *client,
+static int es9632_fan_probe(struct i2c_client *client,
             const struct i2c_device_id *dev_id)
 {
-    struct es9632xx_fan_data *data;
+    struct es9632_fan_data *data;
     int status;
 
     if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE_DATA)) {
@@ -460,7 +460,7 @@ static int es9632xx_fan_probe(struct i2c_client *client,
         goto exit;
     }
 
-    data = kzalloc(sizeof(struct es9632xx_fan_data), GFP_KERNEL);
+    data = kzalloc(sizeof(struct es9632_fan_data), GFP_KERNEL);
     if (!data) {
         status = -ENOMEM;
         goto exit;
@@ -473,12 +473,12 @@ static int es9632xx_fan_probe(struct i2c_client *client,
     dev_info(&client->dev, "chip found\n");
 
     /* Register sysfs hooks */
-    status = sysfs_create_group(&client->dev.kobj, &es9632xx_fan_group);
+    status = sysfs_create_group(&client->dev.kobj, &es9632_fan_group);
     if (status) {
         goto exit_free;
     }
 
-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "es9632xx_fan",
+    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "es9632_fan",
                                                       NULL, NULL, NULL);
     if (IS_ERR(data->hwmon_dev)) {
         status = PTR_ERR(data->hwmon_dev);
@@ -490,7 +490,7 @@ static int es9632xx_fan_probe(struct i2c_client *client,
     return 0;
 
 exit_remove:
-    sysfs_remove_group(&client->dev.kobj, &es9632xx_fan_group);
+    sysfs_remove_group(&client->dev.kobj, &es9632_fan_group);
 exit_free:
     kfree(data);
 exit:
@@ -498,11 +498,11 @@ exit:
     return status;
 }
 
-static int es9632xx_fan_remove(struct i2c_client *client)
+static int es9632_fan_remove(struct i2c_client *client)
 {
-    struct es9632xx_fan_data *data = i2c_get_clientdata(client);
+    struct es9632_fan_data *data = i2c_get_clientdata(client);
     hwmon_device_unregister(data->hwmon_dev);
-    sysfs_remove_group(&client->dev.kobj, &es9632xx_fan_group);
+    sysfs_remove_group(&client->dev.kobj, &es9632_fan_group);
 
     return 0;
 }
@@ -510,26 +510,25 @@ static int es9632xx_fan_remove(struct i2c_client *client)
 /* Addresses to scan */
 static const unsigned short normal_i2c[] = { I2C_CLIENT_END };
 
-static const struct i2c_device_id es9632xx_fan_id[] = {
-    { "es9632xx_fan", 0 },
+static const struct i2c_device_id es9632_fan_id[] = {
+    { "es9632_fan", 0 },
     {}
 };
-MODULE_DEVICE_TABLE(i2c, es9632xx_fan_id);
+MODULE_DEVICE_TABLE(i2c, es9632_fan_id);
 
-static struct i2c_driver es9632xx_fan_driver = {
+static struct i2c_driver es9632_fan_driver = {
     .class        = I2C_CLASS_HWMON,
     .driver = {
         .name     = DRVNAME,
     },
-    .probe        = es9632xx_fan_probe,
-    .remove       = es9632xx_fan_remove,
-    .id_table     = es9632xx_fan_id,
+    .probe        = es9632_fan_probe,
+    .remove       = es9632_fan_remove,
+    .id_table     = es9632_fan_id,
     .address_list = normal_i2c,
 };
 
-module_i2c_driver(es9632xx_fan_driver);
+module_i2c_driver(es9632_fan_driver);
 
 MODULE_AUTHOR("Brandon Chuang <brandon_chuang@accton.com.tw>");
-MODULE_DESCRIPTION("es9632xx_fan driver");
+MODULE_DESCRIPTION("es9632_fan driver");
 MODULE_LICENSE("GPL");
-

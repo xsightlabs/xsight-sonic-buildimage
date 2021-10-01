@@ -32,7 +32,7 @@
 #include <linux/slab.h>
 #include <linux/delay.h>
 
-#define DRIVER_NAME 	"es9632xx_sfp"
+#define DRIVER_NAME	"es9632_sfp"
 
 #define DEBUG_MODE 0
 
