@@ -198,4 +198,19 @@ class Chassis(ChassisBase):
         from .thermal_manager import ThermalManager
         return ThermalManager
 
+    def get_change_event(self, timeout=0):
+        """
+        Returns:
+            Change events
+        """
+        # SFP events
+        sfp_dict = {}
+        if not self.sfp_module_initialized:
+            self.__initialize_sfp()
 
+        for index in range(0, PORT_END):
+            sfp_event = self._sfp_list[index].get_transceiver_change_event(2000)
+            if sfp_event is not None:
+                sfp_dict[index] = sfp_event
+
+        return True, {'sfp': sfp_dict}
