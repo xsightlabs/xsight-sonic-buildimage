@@ -20,7 +20,7 @@
 "tdt_bypass": false,
 "ind_dir_bypass": false,
 "bid_bypass": false,
-"mac_crc_bypass": true,
+"mac_crc_bypass": false,
 "dies_num": 1,
 "version": "0.0",
 "ifu_mode": "full",
