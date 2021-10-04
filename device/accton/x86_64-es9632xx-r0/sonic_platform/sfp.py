@@ -21,6 +21,8 @@ try:
 except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
+data = {'valid': 0, 'last': 0, 'present': 0}
+
 CPLD_I2C_PATH = "/sys/bus/i2c/devices/"
 
 QSFP_INFO_OFFSET = 128
@@ -551,6 +553,32 @@ class Sfp(SfpBase):
                 transceiver_dom_threshold_dict[key])
 
         return transceiver_dom_threshold_dict
+
+    def get_transceiver_change_event(self, timeout=2000):
+        """
+        Checks if transceiver has been inserted/removed
+        Returns:
+            SFP_STATUS_INSERTED, SFP_STATUS_REMOVED or None
+        """
+        now = time.time()
+ 
+        if now < (self.data['last'] + timeout) and self.data['valid']:
+            return None
+
+        present = self.get_presence()
+        if present ^ self.data['present']:
+            if present == True:
+                sfp_event = SFP_STATUS_INSERTED
+            else:
+                sfp_event = SFP_STATUS_REMOVED
+        else:
+            sfp_event = None
+
+        self.data['present'] = present
+        self.data['last'] = now
+        self.data['valid'] = 1
+
+        return sfp_event
 
     def get_reset_status(self):
         """
