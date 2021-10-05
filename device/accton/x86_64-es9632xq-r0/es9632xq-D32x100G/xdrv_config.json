@@ -23,5 +23,6 @@
  "rbu_wa_protection_bypass": false,
  "pcs_disable_bypass": false,
  "bypass_all": false,
- "serdes_disable_bypass": false
+ "serdes_disable_bypass": false,
+ "reg_mem_access_file": false
 }

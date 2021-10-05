@@ -29,5 +29,6 @@
 "hw_mode": "full",
 "pcs_disable_bypass": true,
 "bypass_all": false,
-"serdes_disable_bypass": true
+"serdes_disable_bypass": true,
+"reg_mem_access_file": false
 }
