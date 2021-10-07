@@ -62,6 +62,7 @@
 		    "cir":"600",
 		    "cbs":"600",
 		    "red_action":"drop"
+{% if include_sflow == "y" %}
 	    },
 	    "queue2_group1": {
 		    "cbs": "1000",
@@ -76,6 +77,9 @@
 		    "trap_priority": "1"
 
 	    }
+{% else %}
+	    }
+{% endif %}
     },
     "COPP_TRAP": {
 	    "bgp": {
@@ -117,10 +121,14 @@
 	    "nat": {
 		    "trap_ids": "src_nat_miss,dest_nat_miss",
 		    "trap_group": "queue1_group2"
+{% if include_sflow == "y" %}
 	    },
 	    "sflow": {
 		    "trap_group": "queue2_group1",
 		    "trap_ids": "sample_packet"
 	    }
+{% else %}
+	    }
+{% endif %}
     }
 }
