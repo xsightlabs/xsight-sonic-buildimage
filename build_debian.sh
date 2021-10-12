@@ -696,6 +696,10 @@ fi
 ## Setup ebtable rules (rule file in text format)
 sudo cp files/image_config/ebtables/ebtables.filter.cfg ${FILESYSTEM_ROOT}/etc
 
+## xSight: Add and enable determine-reset-cause.service
+sudo cp -a files/image_config/platform/determine-reboot-cause.service $FILESYSTEM_ROOT/lib/systemd/system/determine-reboot-cause.service
+sudo LANG=C chroot $FILESYSTEM_ROOT systemctl enable determine-reboot-cause.service
+
 ## xSight: XXX add xbm scripts. To be moved to platform package
 sudo LANG=C chroot $FILESYSTEM_ROOT apt-get -y install libjsoncpp1 libssl1.1 libthrift-0.11.0
 sudo cp -a platform/xsight/files/xbm $FILESYSTEM_ROOT/home/admin/
