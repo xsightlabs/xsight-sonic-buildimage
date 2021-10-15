@@ -1,4 +1,7 @@
 {
+    "chassis": {
+      "name": "es9632xx-O32x400G"
+    },
     "interfaces": {
         "Ethernet0": {
             "index": "1,1,1,1,1,1,1,1",
