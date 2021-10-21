@@ -6,8 +6,8 @@
 #
 #############################################################################
 
+import os.path
 #import sonic_platform
-
 try:
     from sonic_platform_base.psu_base import PsuBase
     from .helper import APIHelper
@@ -16,6 +16,14 @@ except ImportError as e:
 
 
 I2C_PATH ="/sys/bus/i2c/devices/{0}-00{1}/"
+
+PSULED_FNODES= ["/sys/class/leds/es9632_led::psu1/brightness",
+                "/sys/class/leds/es9632_led::psu2/brightness"]
+PSULED_MODES = {
+    "0" : "STATUS_LED_COLOR_OFF",
+    "1" : "STATUS_LED_COLOR_GREEN",
+    "3" : "STATUS_LED_COLOR_AMBER"
+}
 
 PSU_NAME_LIST = ["PSU-1", "PSU-2"]
 PSU_NUM_FAN = [1, 1]
@@ -116,12 +124,19 @@ class Psu(PsuBase):
         Sets the state of the PSU status LED
         Args:
             color: A string representing the color with which to set the PSU status LED
-                   Note: Only support green and off
+                   Note: Only support green, amber and off
         Returns:
             bool: True if status LED state is set successfully, False if not
         """
-        
-        return False  #Controlled by HW
+        mode = None
+        for key, val in PSULED_MODES.items():
+            if val == color:
+                mode = key
+                break
+        if mode is None:
+            return False
+        else:
+            return self._api_helper.write_txt_file(PSULED_FNODES[self.index], mode)
 
     def get_status_led(self):
         """
@@ -129,11 +144,8 @@ class Psu(PsuBase):
         Returns:
             A string, one of the predefined STATUS_LED_COLOR_* strings above
         """
-        
-        if self.get_status():            
-            return True
-        else:
-            return False
+        val = self._api_helper.read_txt_file(PSULED_FNODES[self.index])
+        return PSULED_MODES[val] if val in PSULED_MODES else "UNKNOWN"
 
     def get_temperature(self):
         """
@@ -165,12 +177,7 @@ class Psu(PsuBase):
             A float number, the high threshold output voltage in volts, 
             e.g. 12.1 
         """
-        vout_path = "{}{}".format(self.hwmon_path, 'psu_mfr_vout_max')        
-        vout_val=self._api_helper.read_txt_file(vout_path)
-        if vout_val is not None:
-            return float(vout_val)/ 1000
-        else:
-            return 0
+        return 13.0
 
     def get_voltage_low_threshold(self):
         """
@@ -179,12 +186,7 @@ class Psu(PsuBase):
             A float number, the low threshold output voltage in volts, 
             e.g. 12.1 
         """
-        vout_path = "{}{}".format(self.hwmon_path, 'psu_mfr_vout_min')        
-        vout_val=self._api_helper.read_txt_file(vout_path)
-        if vout_val is not None:
-            return float(vout_val)/ 1000
-        else:
-            return 0
+        return 11.0
 
     def get_name(self):
         """
@@ -219,3 +221,60 @@ class Psu(PsuBase):
             return int(val, 10) == 1
         else:
             return 0
+
+    def get_model(self):
+        """
+        Retrieves the model number (or part number) of the device
+        Returns:
+            string: Model/part number of device
+        """
+        model_path="{}{}".format(self.cpld_path, 'psu_model_name')
+        if not os.path.isfile(model_path):
+            return "Unknown"
+
+        val = open(model_path, encoding='utf-8', errors='ignore').read()
+        if val is not None:
+            return val
+        else:
+            return "Unknown"
+
+    def get_serial(self):
+        """
+        Retrieves the serial number of the device
+        Returns:
+            string: Serial number of device
+        """
+        serial_path="{}{}".format(self.cpld_path, 'psu_serial_numer')
+        if not os.path.isfile(serial_path):
+            return "Unknown"
+
+        val = open(serial_path, encoding='utf-8', errors='ignore').read()
+        if val is not None:
+            return val
+        else:
+            return "Unknown"
+
+    def is_replaceable(self):
+        """
+        Retrieves whether device is replaceable
+        returns:
+            bool: True if it is replaceable
+        """
+        return True
+
+    def get_powergood_status(self):
+        """
+        Retrieves the powergood status of PSU
+        Returns:
+            A boolean, True if PSU has stablized its output voltages and passed all
+            its internal self-tests, False if not.
+        """
+        return self.get_status()
+
+    def get_maximum_supplied_power(self):
+        """
+        Retrieves maximum supplied power of PSU
+        Returns:
+            float: Power in watts
+        """
+        return self.get_power()

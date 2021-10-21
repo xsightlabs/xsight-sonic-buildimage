@@ -1,6 +1,24 @@
 {
     "chassis": {
-      "name": "es9632xx-O32x400G"
+      "name": "es9632xx-O32x400G",
+      "psus": [
+        {
+          "name": "PSU-1",
+            "fans": [
+              {
+                "name": "PSU 1 fan 0"
+              }
+            ]
+         },
+         {
+           "name": "PSU-2",
+             "fans": [
+               {
+                 "name": "PSU 2 fan 0"
+               }
+             ]
+         }
+      ]
     },
     "interfaces": {
         "Ethernet0": {
