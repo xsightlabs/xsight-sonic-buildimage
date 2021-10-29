@@ -237,6 +237,14 @@ class Chassis(ChassisBase):
         """
         return self._eeprom.get_pn()
 
+    def get_num_fans(self):
+        """
+        Retrieves number of chassis fans
+        Returns:
+            integer: Number of fans
+        """
+        return 0
+
     def get_status_led(self):
         val = self._api_helper.read_txt_file(SYSLED_FNODE)
         return SYSLED_MODES[val] if val in SYSLED_MODES else "UNKNOWN"

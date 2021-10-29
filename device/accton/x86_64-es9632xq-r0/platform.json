@@ -18,7 +18,8 @@
                }
              ]
          }
-      ]
+      ],
+      "fans": []
     },
     "interfaces": {
         "Ethernet0": {
