@@ -125,6 +125,22 @@ class Thermal(ThermalBase):
         """
         return self.THERMAL_NAME_LIST[self.index]
 
+    def get_model(self):
+        """
+        Retrieves the model of the thermal device
+            Returns:
+            string: The model of the thermal device
+        """
+        return "lm75"
+
+    def is_replaceable(self):
+        """
+        Retrieves is the thermal device replaceable
+            Returns:
+            boolean: false
+        """
+        return False
+
     def get_presence(self):
         """
         Retrieves the presence of the Thermal

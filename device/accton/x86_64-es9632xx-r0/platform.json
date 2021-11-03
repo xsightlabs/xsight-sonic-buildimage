@@ -19,7 +19,98 @@
              ]
          }
       ],
-      "fans": []
+      "thermals": [
+        {
+          "name": "Temp sensor 1"
+        },
+        {
+          "name": "Temp sensor 2"
+        },
+        {
+          "name": "Temp sensor 3"
+        },
+        {
+          "name": "Temp sensor 4"
+        },
+        {
+          "name": "Temp sensor 5"
+        },
+        {
+          "name": "Temp sensor 6"
+        },
+        {
+          "name": "Temp sensor 7"
+        }
+      ],
+      "fans": [],
+      "fan_drawers": [
+        {
+          "name": "FanTray 0",
+            "fans": [
+              {
+                "name": "FanTray0 fan 0"
+              },
+              {
+                "name": "FanTray0 fan 1"
+              }
+            ]
+        },
+        {
+          "name": "FanTray 1",
+          "fans": [
+            {
+              "name": "FanTray1 fan 0"
+            },
+            {
+              "name": "FanTray1 fan 1"
+            }
+          ]
+        },
+        {
+          "name": "FanTray 2",
+          "fans": [
+            {
+              "name": "FanTray2 fan 0"
+            },
+            {
+              "name": "FanTray2 fan 1"
+            }
+          ]
+        },
+        {
+          "name": "FanTray 3",
+          "fans": [
+            {
+              "name": "FanTray3 fan 0"
+            },
+            {
+              "name": "FanTray3 fan 1"
+            }
+          ]
+        },
+        {
+          "name": "FanTray 4",
+          "fans": [
+            {
+              "name": "FanTray4 fan 0"
+            },
+            {
+              "name": "FanTray4 fan 1"
+            }
+          ]
+        },
+        {
+          "name": "FanTray 5",
+          "fans": [
+            {
+              "name": "FanTray5 fan 0"
+            },
+            {
+              "name": "FanTray5 fan 1"
+            }
+          ]
+        }
+      ]
     },
     "interfaces": {
         "Ethernet0": {
