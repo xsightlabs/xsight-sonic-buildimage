@@ -18,6 +18,7 @@ PSU_FAN_MAX_RPM = 25500
 TRAY_FAN_MAX_RPM = 31000
 TRAY_FANSPEED_TOLERANCE = 25
 
+FAN_LED_FILE = "/sys/class/leds/es9632_led::fan/brightness"
 CPLD_I2C_PATH = "/sys/bus/i2c/devices/17-0066/fan"
 PSU_HWMON_I2C_PATH ="/sys/bus/i2c/devices/{}-00{}/"
 PSU_I2C_MAPPING = {
@@ -45,6 +46,8 @@ class Fan(FanBase):
         self.fan_index = fan_index
         self.fan_tray_index = fan_tray_index
         self.is_psu_fan = is_psu_fan
+        self.fan_target_speed = None
+        self.status_led_state = None
         if self.is_psu_fan:
             self.psu_index = psu_index
             self.psu_i2c_num = PSU_I2C_MAPPING[self.psu_index]['num']
@@ -66,6 +69,23 @@ class Fan(FanBase):
             fan_name = "FanTray{} fan {}".format(self.fan_tray_index, self.fan_index)
 
         return fan_name
+
+    def get_model(self):
+        """
+        Retrieves the fan model
+        Returns:
+            string: The model of the device
+
+        """
+        return "R40W12BGNL9-07T17"
+
+    def is_replaceable(self):
+        """
+        Indicate whether this device is replaceable.
+        Returns:
+            bool: True if it is replaceable.
+        """
+        return True
 
     def get_direction(self):
         """
@@ -173,7 +193,7 @@ class Fan(FanBase):
         """
 
         if not self.is_psu_fan and self.get_presence():
-            speed_path = "{}{}{}".format(CPLD_I2C_PATH, self.fan_tray_index+1, '_duty_cycle_percentage')
+            speed_path = "{}{}".format(CPLD_I2C_PATH, '_duty_cycle_percentage')
             return self._api_helper.write_txt_file(speed_path, int(speed))
 
         return False
@@ -186,10 +206,32 @@ class Fan(FanBase):
                    fan module status LED
         Returns:
             bool: True if status LED state is set successfully, False if not
-        TODO: set_status_led required implementation !
-        Always return true as workaround for error in syslog.
         """
+        self.status_led_state = color
+        set_status = 0
+        if "off" == self.status_led_state:
+            set_status = 0
+        elif "amber" == self.status_led_state:
+            set_status = 3
+        elif "red" == self.status_led_state:
+            set_status = 3
+        elif "green" == self.status_led_state:
+            set_status = 1
+        else:
+            return False
+        self._api_helper.write_txt_file(FAN_LED_FILE, set_status)
         return True
+
+    def get_status_led(self):
+        """
+        Gets the state of the fan module status LED
+        Args:
+            No
+        Returns:
+            string: representing the color with which is the status of
+                   fan modules
+        """
+        return self.status_led_state
 
     def get_presence(self):
         """
