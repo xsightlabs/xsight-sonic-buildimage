@@ -152,15 +152,15 @@ class Psu(PsuBase):
         Retrieves current temperature reading from PSU
         Returns:
             A float number of current temperature in Celsius up to nearest thousandth
-            of one degree Celsius, e.g. 30.125 
+            of one degree Celsius, e.g. 30.125
         """
-        temp_path = "{}{}".format(self.hwmon_path, 'psu_temp1_input')        
+        temp_path = "{}{}".format(self.hwmon_path, 'psu_temp1_input')
         val=self._api_helper.read_txt_file(temp_path)
         if val is not None:
             return float(val)/1000
         else:
             return 0
-    
+
     def get_temperature_high_threshold(self):
         """
         Retrieves the high threshold temperature of PSU
@@ -174,19 +174,23 @@ class Psu(PsuBase):
         """
         Retrieves the high threshold PSU voltage output
         Returns:
-            A float number, the high threshold output voltage in volts, 
-            e.g. 12.1 
+            A float number, the high threshold output voltage in volts,
+            e.g. 12.1
         """
-        return 13.0
+        vout_path = "{}{}".format(self.hwmon_path, 'psu_mfr_vout_max')
+        vout_val=self._api_helper.read_txt_file(vout_path)
+        return float(vout_val) / 1000
 
     def get_voltage_low_threshold(self):
         """
         Retrieves the low threshold PSU voltage output
         Returns:
-            A float number, the low threshold output voltage in volts, 
-            e.g. 12.1 
+            A float number, the low threshold output voltage in volts,
+            e.g. 12.1
         """
-        return 11.0
+        vout_path = "{}{}".format(self.hwmon_path, 'psu_mfr_vout_min')
+        vout_val=self._api_helper.read_txt_file(vout_path)
+        return float(vout_val) / 1000
 
     def get_name(self):
         """
