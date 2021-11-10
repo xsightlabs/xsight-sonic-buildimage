@@ -48,27 +48,31 @@ enum chips {
 /* Each client has this additional data
  */
 struct dps850_data {
-	struct device	  *hwmon_dev;
-	struct mutex		update_lock;
-	char				valid;		 /* !=0 if registers are valid */
-	unsigned long	   last_updated;   /* In jiffies */
-	u8	 chip;			/* chip id */
-	u8   vout_mode;	 	/* Register value */
-	u16  v_in;		  	/* Register value */
-	u16  v_out;		 	/* Register value */
-	u16  i_in;		  	/* Register value */
-	u16  i_out;		 	/* Register value */
-	u16  p_in;		  	/* Register value */
-	u16  p_out;		 	/* Register value */
-	u16  temp_input[3]; /* Register value */
-	u16  fan_speed;		/* Register value */
-	u8   mfr_model[16]; /* Register value */
-	u8   mfr_serial[16]; /* Register value */
+  struct device	  *hwmon_dev;
+  struct mutex		update_lock;
+  char				valid;		 /* !=0 if registers are valid */
+  unsigned long	   last_updated;   /* In jiffies */
+  u8	 chip;			/* chip id */
+  u8   vout_mode;	/* Register value */
+  u16  v_in;			/* Register value */
+  u16  v_out;			/* Register value */
+  u16  v_out_min; /* Register value */
+  u16  v_out_max; /* Register value */
+  u16  i_in;			/* Register value */
+  u16  i_out;			/* Register value */
+  u16  p_in;			/* Register value */
+  u16  p_out;			/* Register value */
+  u16  temp_input[3];  /* Register value */
+  u16  fan_speed;		   /* Register value */
+  u8   mfr_model[16];  /* Register value */
+  u8   mfr_serial[16]; /* Register value */
 };
 
 static ssize_t show_linear(struct device *dev, struct device_attribute *da,
 			 char *buf);
 static ssize_t show_vout_by_mode(struct device *dev, struct device_attribute *da,
+			 char *buf);
+static ssize_t show_vout_min_max(struct device *dev, struct device_attribute *da,
 			 char *buf);
 static ssize_t show_ascii(struct device *dev, struct device_attribute *da,
 			 char *buf);
@@ -76,49 +80,55 @@ static struct dps850_data *dps850_update_device(struct device *dev);
 static int dps850_write_word(struct i2c_client *client, u8 reg, u16 value);
 
 enum dps850_sysfs_attributes {
-	PSU_V_IN,
-	PSU_V_OUT,
-	PSU_I_IN,
-	PSU_I_OUT,
-	PSU_P_IN,
-	PSU_P_OUT,
-	PSU_TEMP1_INPUT,
-	PSU_TEMP2_INPUT,
-	PSU_TEMP3_INPUT,
-	PSU_FAN1_SPEED,
-	PSU_MFR_MODEL,
-	PSU_MFR_SERIAL
+  PSU_V_IN,
+  PSU_V_OUT,
+  PSU_V_OUT_MIN,
+  PSU_V_OUT_MAX,
+  PSU_I_IN,
+  PSU_I_OUT,
+  PSU_P_IN,
+  PSU_P_OUT,
+  PSU_TEMP1_INPUT,
+  PSU_TEMP2_INPUT,
+  PSU_TEMP3_INPUT,
+  PSU_FAN1_SPEED,
+  PSU_MFR_MODEL,
+  PSU_MFR_SERIAL
 };
 
 /* sysfs attributes for hwmon
  */
 static SENSOR_DEVICE_ATTR(psu_v_in,	S_IRUGO, show_linear,	  NULL, PSU_V_IN);
 static SENSOR_DEVICE_ATTR(psu_v_out,S_IRUGO, show_vout_by_mode,NULL, PSU_V_OUT);
+static SENSOR_DEVICE_ATTR(psu_mfr_vout_min,	S_IRUGO, show_vout_min_max,	  NULL, PSU_V_OUT_MIN);
+static SENSOR_DEVICE_ATTR(psu_mfr_vout_max,	S_IRUGO, show_vout_min_max,	  NULL, PSU_V_OUT_MAX);
 static SENSOR_DEVICE_ATTR(psu_i_in,	S_IRUGO, show_linear,	  NULL, PSU_I_IN);
 static SENSOR_DEVICE_ATTR(psu_i_out,S_IRUGO, show_linear,	  NULL, PSU_I_OUT);
 static SENSOR_DEVICE_ATTR(psu_p_in,	S_IRUGO, show_linear,	  NULL, PSU_P_IN);
 static SENSOR_DEVICE_ATTR(psu_p_out,S_IRUGO, show_linear,	  NULL, PSU_P_OUT);
-static SENSOR_DEVICE_ATTR(psu_temp1_input, 	S_IRUGO, show_linear,	NULL, PSU_TEMP1_INPUT);
-static SENSOR_DEVICE_ATTR(psu_temp2_input, 	S_IRUGO, show_linear,	NULL, PSU_TEMP2_INPUT);
-static SENSOR_DEVICE_ATTR(psu_temp3_input, 	S_IRUGO, show_linear,	NULL, PSU_TEMP3_INPUT);
+static SENSOR_DEVICE_ATTR(psu_temp1_input, S_IRUGO, show_linear,	NULL, PSU_TEMP1_INPUT);
+static SENSOR_DEVICE_ATTR(psu_temp2_input, S_IRUGO, show_linear,	NULL, PSU_TEMP2_INPUT);
+static SENSOR_DEVICE_ATTR(psu_temp3_input, S_IRUGO, show_linear,	NULL, PSU_TEMP3_INPUT);
 static SENSOR_DEVICE_ATTR(psu_fan1_speed_rpm, S_IRUGO, show_linear, NULL, PSU_FAN1_SPEED);
 static SENSOR_DEVICE_ATTR(psu_mfr_model,	S_IRUGO, show_ascii,  NULL, PSU_MFR_MODEL);
 static SENSOR_DEVICE_ATTR(psu_mfr_serial,	S_IRUGO, show_ascii, NULL, PSU_MFR_SERIAL);
 
 static struct attribute *dps850_attributes[] = {
-	&sensor_dev_attr_psu_v_out.dev_attr.attr,
-	&sensor_dev_attr_psu_i_out.dev_attr.attr,
-	&sensor_dev_attr_psu_p_out.dev_attr.attr,
-	&sensor_dev_attr_psu_v_in.dev_attr.attr,
-	&sensor_dev_attr_psu_i_in.dev_attr.attr,
-	&sensor_dev_attr_psu_p_in.dev_attr.attr,
-	&sensor_dev_attr_psu_temp1_input.dev_attr.attr,
-	&sensor_dev_attr_psu_temp2_input.dev_attr.attr,
-	&sensor_dev_attr_psu_temp3_input.dev_attr.attr,
-	&sensor_dev_attr_psu_fan1_speed_rpm.dev_attr.attr,
-	&sensor_dev_attr_psu_mfr_model.dev_attr.attr,
-	&sensor_dev_attr_psu_mfr_serial.dev_attr.attr,
-	NULL
+  &sensor_dev_attr_psu_v_out.dev_attr.attr,
+  &sensor_dev_attr_psu_i_out.dev_attr.attr,
+  &sensor_dev_attr_psu_p_out.dev_attr.attr,
+  &sensor_dev_attr_psu_v_in.dev_attr.attr,
+  &sensor_dev_attr_psu_i_in.dev_attr.attr,
+  &sensor_dev_attr_psu_p_in.dev_attr.attr,
+  &sensor_dev_attr_psu_temp1_input.dev_attr.attr,
+  &sensor_dev_attr_psu_temp2_input.dev_attr.attr,
+  &sensor_dev_attr_psu_temp3_input.dev_attr.attr,
+  &sensor_dev_attr_psu_fan1_speed_rpm.dev_attr.attr,
+  &sensor_dev_attr_psu_mfr_model.dev_attr.attr,
+  &sensor_dev_attr_psu_mfr_serial.dev_attr.attr,
+  &sensor_dev_attr_psu_mfr_vout_min.dev_attr.attr,
+  &sensor_dev_attr_psu_mfr_vout_max.dev_attr.attr,
+  NULL
 };
 
 static int two_complement_to_int(u16 data, u8 valid_bit, int mask)
@@ -141,8 +151,8 @@ static ssize_t show_linear(struct device *dev, struct device_attribute *da,
 
 	if (!data->valid) {
 		return 0;
-	}	
-	
+	}
+
 	switch (attr->index) {
 	case PSU_V_IN:
 		value = data->v_in;
@@ -186,8 +196,8 @@ static ssize_t show_ascii(struct device *dev, struct device_attribute *da,
 
 	if (!data->valid) {
 		return 0;
-	}	
-	
+	}
+
 	switch (attr->index) {
 	case PSU_MFR_MODEL: /* psu_mfr_model */
 		ptr = data->mfr_model + 1; /* The first byte is the length of string. */
@@ -217,6 +227,32 @@ static ssize_t show_vout_by_mode(struct device *dev, struct device_attribute *da
 	mantissa = data->v_out;
 
 	return (exponent > 0) ? sprintf(buf, "%d\n", (mantissa << exponent) * multiplier) :
+							sprintf(buf, "%d\n", (mantissa * multiplier) / (1 << -exponent));
+}
+
+static ssize_t show_vout_min_max(struct device *dev, struct device_attribute *da,
+			 char *buf)
+{
+  struct sensor_device_attribute *attr = to_sensor_dev_attr(da);
+  struct dps850_data *data = dps850_update_device(dev);
+  int exponent, mantissa;
+  int multiplier = 1000;
+
+  if (!data->valid) {
+	  return 0;
+	}
+
+  switch (attr->index) {
+  case PSU_V_OUT_MIN:
+    mantissa = data->v_out_min;
+		break;
+  case PSU_V_OUT_MAX:
+    mantissa = data->v_out_max;
+    break;
+  }
+  exponent = two_complement_to_int(data->vout_mode, 5, 0x1f);
+
+  return (exponent > 0) ? sprintf(buf, "%d\n", (mantissa << exponent) * multiplier) :
 							sprintf(buf, "%d\n", (mantissa * multiplier) / (1 << -exponent));
 }
 
@@ -402,17 +438,19 @@ static struct dps850_data *dps850_update_device(struct device *dev)
 		|| !data->valid) {
 		int i, status, length;
 		u8 command, buf;
-		struct reg_data_byte regs_byte[] = { {0x20, &data->vout_mode}};
-		struct reg_data_word regs_word[] = { {0x88, &data->v_in},
-											 {0x8b, &data->v_out},
-											 {0x89, &data->i_in},
-											 {0x8c, &data->i_out},
-											 {0x96, &data->p_out},
-											 {0x97, &data->p_in},
-											 {0x8d, &(data->temp_input[0])},
-											 {0x8e, &(data->temp_input[1])},
-											 {0x8f, &(data->temp_input[2])},
-											 {0x90, &data->fan_speed}};
+		struct reg_data_byte regs_byte[] = {  {0x20, &data->vout_mode}};
+		struct reg_data_word regs_word[] = {  {0x88, &data->v_in},
+                                          {0x8b, &data->v_out},
+                                          {0x89, &data->i_in},
+                                          {0x8c, &data->i_out},
+                                          {0x96, &data->p_out},
+                                          {0x97, &data->p_in},
+                                          {0x8d, &(data->temp_input[0])},
+                                          {0x8e, &(data->temp_input[1])},
+                                          {0x8f, &(data->temp_input[2])},
+                                          {0x90, &data->fan_speed},
+                                          {0xa4, &data->v_out_min},
+                                          {0xa5, &data->v_out_max}};
 
 		dev_dbg(&client->dev, "Starting dps850 update\n");
 		data->valid = 0;
