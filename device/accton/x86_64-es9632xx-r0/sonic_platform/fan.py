@@ -64,7 +64,7 @@ class Fan(FanBase):
             A string with fan name either from fan tray or from psu
         """
         if self.is_psu_fan:
-            fan_name = "PSU {} fan {}".format(self.psu_index, self.fan_index)
+            fan_name = "PSU {} fan {}".format(self.psu_index+1, self.fan_index)
         else:
             fan_name = "FanTray{} fan {}".format(self.fan_tray_index, self.fan_index)
 
@@ -248,10 +248,13 @@ class Fan(FanBase):
             else:
                 return False
         else:
-            # Need to check if PSU is present
             present_path = "{}{}".format(self.psu_hwmon_path, 'psu_v_in')
             val = self._api_helper.read_txt_file(present_path)
             if len(val) != 0:
+                try:
+                    int(val, 10)
+                except ValueError:
+                    return False
                 return True
             else:
                 return False
