@@ -34,514 +34,504 @@
 #include <linux/delay.h>
 #include <linux/version.h>
 
-#define I2C_RW_RETRY_COUNT		10
-#define I2C_RW_RETRY_INTERVAL	60 /* ms */
+#define I2C_RW_RETRY_COUNT    10
+#define I2C_RW_RETRY_INTERVAL 60 /* ms */
 
-/* Addresses scanned
+/*
+ * Addresses scanned
  */
 static const unsigned short normal_i2c[] = { I2C_CLIENT_END };
 
 enum chips {
-	DPS850
+        DPS850
 };
 
 /* Each client has this additional data
  */
 struct dps850_data {
-  struct device	  *hwmon_dev;
-  struct mutex		update_lock;
-  char				valid;		 /* !=0 if registers are valid */
-  unsigned long	   last_updated;   /* In jiffies */
-  u8	 chip;			/* chip id */
-  u8   vout_mode;	/* Register value */
-  u16  v_in;			/* Register value */
-  u16  v_out;			/* Register value */
-  u16  v_out_min; /* Register value */
-  u16  v_out_max; /* Register value */
-  u16  i_in;			/* Register value */
-  u16  i_out;			/* Register value */
-  u16  p_in;			/* Register value */
-  u16  p_out;			/* Register value */
-  u16  temp_input[3];  /* Register value */
-  u16  fan_speed;		   /* Register value */
-  u8   mfr_model[16];  /* Register value */
-  u8   mfr_serial[16]; /* Register value */
+        struct device   *hwmon_dev;
+        struct mutex    update_lock;
+        char            valid;          /* !=0 if registers are valid */
+        unsigned long   last_updated;   /* In jiffies */
+        u8              chip;           /* chip id */
+        u8              vout_mode;      /* Register value */
+        u16             v_in;           /* Register value */
+        u16             v_out;          /* Register value */
+        u16             v_out_min;      /* Register value */
+        u16             v_out_max;      /* Register value */
+        u16             i_in;           /* Register value */
+        u16             i_out;          /* Register value */
+        u16             p_in;           /* Register value */
+        u16             p_out;          /* Register value */
+        u16             temp_input[3];  /* Register value */
+        u16             fan_speed;      /* Register value */
+        u8              mfr_model[16];  /* Register value */
+        u8              mfr_serial[16]; /* Register value */
 };
 
 static ssize_t show_linear(struct device *dev, struct device_attribute *da,
-			 char *buf);
+                           char *buf);
 static ssize_t show_vout_by_mode(struct device *dev, struct device_attribute *da,
-			 char *buf);
+                                 char *buf);
 static ssize_t show_vout_min_max(struct device *dev, struct device_attribute *da,
-			 char *buf);
+                                 char *buf);
 static ssize_t show_ascii(struct device *dev, struct device_attribute *da,
-			 char *buf);
+                          char *buf);
 static struct dps850_data *dps850_update_device(struct device *dev);
 static int dps850_write_word(struct i2c_client *client, u8 reg, u16 value);
 
 enum dps850_sysfs_attributes {
-  PSU_V_IN,
-  PSU_V_OUT,
-  PSU_V_OUT_MIN,
-  PSU_V_OUT_MAX,
-  PSU_I_IN,
-  PSU_I_OUT,
-  PSU_P_IN,
-  PSU_P_OUT,
-  PSU_TEMP1_INPUT,
-  PSU_TEMP2_INPUT,
-  PSU_TEMP3_INPUT,
-  PSU_FAN1_SPEED,
-  PSU_MFR_MODEL,
-  PSU_MFR_SERIAL
+        PSU_V_IN,
+        PSU_V_OUT,
+        PSU_V_OUT_MIN,
+        PSU_V_OUT_MAX,
+        PSU_I_IN,
+        PSU_I_OUT,
+        PSU_P_IN,
+        PSU_P_OUT,
+        PSU_TEMP1_INPUT,
+        PSU_TEMP2_INPUT,
+        PSU_TEMP3_INPUT,
+        PSU_FAN1_SPEED,
+        PSU_MFR_MODEL,
+        PSU_MFR_SERIAL
 };
 
 /* sysfs attributes for hwmon
  */
-static SENSOR_DEVICE_ATTR(psu_v_in,	S_IRUGO, show_linear,	  NULL, PSU_V_IN);
-static SENSOR_DEVICE_ATTR(psu_v_out,S_IRUGO, show_vout_by_mode,NULL, PSU_V_OUT);
-static SENSOR_DEVICE_ATTR(psu_mfr_vout_min,	S_IRUGO, show_vout_min_max,	  NULL, PSU_V_OUT_MIN);
-static SENSOR_DEVICE_ATTR(psu_mfr_vout_max,	S_IRUGO, show_vout_min_max,	  NULL, PSU_V_OUT_MAX);
-static SENSOR_DEVICE_ATTR(psu_i_in,	S_IRUGO, show_linear,	  NULL, PSU_I_IN);
-static SENSOR_DEVICE_ATTR(psu_i_out,S_IRUGO, show_linear,	  NULL, PSU_I_OUT);
-static SENSOR_DEVICE_ATTR(psu_p_in,	S_IRUGO, show_linear,	  NULL, PSU_P_IN);
-static SENSOR_DEVICE_ATTR(psu_p_out,S_IRUGO, show_linear,	  NULL, PSU_P_OUT);
-static SENSOR_DEVICE_ATTR(psu_temp1_input, S_IRUGO, show_linear,	NULL, PSU_TEMP1_INPUT);
-static SENSOR_DEVICE_ATTR(psu_temp2_input, S_IRUGO, show_linear,	NULL, PSU_TEMP2_INPUT);
-static SENSOR_DEVICE_ATTR(psu_temp3_input, S_IRUGO, show_linear,	NULL, PSU_TEMP3_INPUT);
+static SENSOR_DEVICE_ATTR(psu_v_in, S_IRUGO, show_linear, NULL, PSU_V_IN);
+static SENSOR_DEVICE_ATTR(psu_v_out,S_IRUGO, show_vout_by_mode, NULL, PSU_V_OUT);
+static SENSOR_DEVICE_ATTR(psu_mfr_vout_min, S_IRUGO, show_vout_min_max, NULL, PSU_V_OUT_MIN);
+static SENSOR_DEVICE_ATTR(psu_mfr_vout_max, S_IRUGO, show_vout_min_max, NULL, PSU_V_OUT_MAX);
+static SENSOR_DEVICE_ATTR(psu_i_in, S_IRUGO, show_linear, NULL, PSU_I_IN);
+static SENSOR_DEVICE_ATTR(psu_i_out, S_IRUGO, show_linear, NULL, PSU_I_OUT);
+static SENSOR_DEVICE_ATTR(psu_p_in, S_IRUGO, show_linear, NULL, PSU_P_IN);
+static SENSOR_DEVICE_ATTR(psu_p_out, S_IRUGO, show_linear, NULL, PSU_P_OUT);
+static SENSOR_DEVICE_ATTR(psu_temp1_input, S_IRUGO, show_linear, NULL, PSU_TEMP1_INPUT);
+static SENSOR_DEVICE_ATTR(psu_temp2_input, S_IRUGO, show_linear, NULL, PSU_TEMP2_INPUT);
+static SENSOR_DEVICE_ATTR(psu_temp3_input, S_IRUGO, show_linear, NULL, PSU_TEMP3_INPUT);
 static SENSOR_DEVICE_ATTR(psu_fan1_speed_rpm, S_IRUGO, show_linear, NULL, PSU_FAN1_SPEED);
-static SENSOR_DEVICE_ATTR(psu_mfr_model,	S_IRUGO, show_ascii,  NULL, PSU_MFR_MODEL);
-static SENSOR_DEVICE_ATTR(psu_mfr_serial,	S_IRUGO, show_ascii, NULL, PSU_MFR_SERIAL);
+static SENSOR_DEVICE_ATTR(psu_mfr_model, S_IRUGO, show_ascii, NULL, PSU_MFR_MODEL);
+static SENSOR_DEVICE_ATTR(psu_mfr_serial, S_IRUGO, show_ascii, NULL, PSU_MFR_SERIAL);
 
 static struct attribute *dps850_attributes[] = {
-  &sensor_dev_attr_psu_v_out.dev_attr.attr,
-  &sensor_dev_attr_psu_i_out.dev_attr.attr,
-  &sensor_dev_attr_psu_p_out.dev_attr.attr,
-  &sensor_dev_attr_psu_v_in.dev_attr.attr,
-  &sensor_dev_attr_psu_i_in.dev_attr.attr,
-  &sensor_dev_attr_psu_p_in.dev_attr.attr,
-  &sensor_dev_attr_psu_temp1_input.dev_attr.attr,
-  &sensor_dev_attr_psu_temp2_input.dev_attr.attr,
-  &sensor_dev_attr_psu_temp3_input.dev_attr.attr,
-  &sensor_dev_attr_psu_fan1_speed_rpm.dev_attr.attr,
-  &sensor_dev_attr_psu_mfr_model.dev_attr.attr,
-  &sensor_dev_attr_psu_mfr_serial.dev_attr.attr,
-  &sensor_dev_attr_psu_mfr_vout_min.dev_attr.attr,
-  &sensor_dev_attr_psu_mfr_vout_max.dev_attr.attr,
-  NULL
+        &sensor_dev_attr_psu_v_out.dev_attr.attr,
+        &sensor_dev_attr_psu_i_out.dev_attr.attr,
+        &sensor_dev_attr_psu_p_out.dev_attr.attr,
+        &sensor_dev_attr_psu_v_in.dev_attr.attr,
+        &sensor_dev_attr_psu_i_in.dev_attr.attr,
+        &sensor_dev_attr_psu_p_in.dev_attr.attr,
+        &sensor_dev_attr_psu_temp1_input.dev_attr.attr,
+        &sensor_dev_attr_psu_temp2_input.dev_attr.attr,
+        &sensor_dev_attr_psu_temp3_input.dev_attr.attr,
+        &sensor_dev_attr_psu_fan1_speed_rpm.dev_attr.attr,
+        &sensor_dev_attr_psu_mfr_model.dev_attr.attr,
+        &sensor_dev_attr_psu_mfr_serial.dev_attr.attr,
+        &sensor_dev_attr_psu_mfr_vout_min.dev_attr.attr,
+        &sensor_dev_attr_psu_mfr_vout_max.dev_attr.attr,
+        NULL
 };
 
 static int two_complement_to_int(u16 data, u8 valid_bit, int mask)
 {
-	u16  valid_data  = data & mask;
-	bool is_negative = valid_data >> (valid_bit - 1);
+        u16 valid_data = data & mask;
+        bool is_negative = valid_data >> (valid_bit - 1);
 
-	return is_negative ? (-(((~valid_data) & mask) + 1)) : valid_data;
+        return is_negative ? (-(((~valid_data) & mask) + 1)) : valid_data;
 }
 
 static ssize_t show_linear(struct device *dev, struct device_attribute *da,
-			 char *buf)
+                           char *buf)
 {
-	struct sensor_device_attribute *attr = to_sensor_dev_attr(da);
-	struct dps850_data *data = dps850_update_device(dev);
+        struct sensor_device_attribute *attr = to_sensor_dev_attr(da);
+        struct dps850_data *data = dps850_update_device(dev);
 
-	u16 value = 0;
-	int exponent, mantissa;
-	int multiplier = 1000;
+        u16 value = 0;
+        int exponent, mantissa;
+        int multiplier = 1000;
 
-	if (!data->valid) {
-		return 0;
-	}
+        if (!data->valid) {
+                return 0;
+        }
 
-	switch (attr->index) {
-	case PSU_V_IN:
-		value = data->v_in;
-		break;
-	case PSU_I_IN:
-		value = data->i_in;
-		break;
-	case PSU_I_OUT:
-		value = data->i_out;
-		break;
-	case PSU_P_IN:
-		value = data->p_in;
-		break;
-	case PSU_P_OUT:
-		value = data->p_out;
-		break;
-	case PSU_TEMP1_INPUT:
-	case PSU_TEMP2_INPUT:
-	case PSU_TEMP3_INPUT:
-		value = data->temp_input[attr->index-PSU_TEMP1_INPUT];
-		break;
-	case PSU_FAN1_SPEED:
-		value = data->fan_speed;
-		multiplier = 1;
-		break;
-	}
+        switch (attr->index) {
+        case PSU_V_IN:
+                value = data->v_in;
+                break;
+        case PSU_I_IN:
+                value = data->i_in;
+                break;
+        case PSU_I_OUT:
+                value = data->i_out;
+                break;
+        case PSU_P_IN:
+                value = data->p_in;
+                break;
+        case PSU_P_OUT:
+                value = data->p_out;
+                break;
+        case PSU_TEMP1_INPUT:
+        case PSU_TEMP2_INPUT:
+        case PSU_TEMP3_INPUT:
+                value = data->temp_input[attr->index-PSU_TEMP1_INPUT];
+                break;
+        case PSU_FAN1_SPEED:
+                value = data->fan_speed;
+                multiplier = 1;
+                break;
+        }
 
-	exponent = two_complement_to_int(value >> 11, 5, 0x1f);
-	mantissa = two_complement_to_int(value & 0x7ff, 11, 0x7ff);
+        exponent = two_complement_to_int(value >> 11, 5, 0x1f);
+        mantissa = two_complement_to_int(value & 0x7ff, 11, 0x7ff);
 
-	return (exponent >= 0) ? sprintf(buf, "%d\n", (mantissa << exponent) * multiplier) :
-							 sprintf(buf, "%d\n", (mantissa * multiplier) / (1 << -exponent));
+        return (exponent >= 0) ? sprintf(buf, "%d\n", (mantissa << exponent) * multiplier) :
+               sprintf(buf, "%d\n", (mantissa * multiplier) / (1 << -exponent));
 }
 
 static ssize_t show_ascii(struct device *dev, struct device_attribute *da,
-			 char *buf)
+                          char *buf)
 {
-	struct sensor_device_attribute *attr = to_sensor_dev_attr(da);
-	struct dps850_data *data = dps850_update_device(dev);
-	u8 *ptr = NULL;
+        struct sensor_device_attribute *attr = to_sensor_dev_attr(da);
+        struct dps850_data *data = dps850_update_device(dev);
+        u8 *ptr = NULL;
 
-	if (!data->valid) {
-		return 0;
-	}
+        if (!data->valid) {
+                return 0;
+        }
 
-	switch (attr->index) {
-	case PSU_MFR_MODEL: /* psu_mfr_model */
-		ptr = data->mfr_model + 1; /* The first byte is the length of string. */
-		break;
-	case PSU_MFR_SERIAL: /* psu_mfr_serial */
-		ptr = data->mfr_serial + 1; /* The first byte is the length of string. */
-		break;
-	default:
-		return 0;
-	}
+        switch (attr->index) {
+        case PSU_MFR_MODEL: /* psu_mfr_model */
+                ptr = data->mfr_model + 1; /* The first byte is the length of string. */
+                break;
+        case PSU_MFR_SERIAL: /* psu_mfr_serial */
+                ptr = data->mfr_serial + 1; /* The first byte is the length of string. */
+                break;
+        default:
+                return 0;
+        }
 
-	return sprintf(buf, "%s\n", ptr);
+        return sprintf(buf, "%s\n", ptr);
 }
 
 static ssize_t show_vout_by_mode(struct device *dev, struct device_attribute *da,
-			 char *buf)
+                                 char *buf)
 {
-	struct dps850_data *data = dps850_update_device(dev);
-	int exponent, mantissa;
-	int multiplier = 1000;
+        struct dps850_data *data = dps850_update_device(dev);
+        int exponent, mantissa;
+        int multiplier = 1000;
 
-	if (!data->valid) {
-		return 0;
-	}
+        if (!data->valid) {
+                return 0;
+        }
 
-	exponent = two_complement_to_int(data->vout_mode, 5, 0x1f);
-	mantissa = data->v_out;
+        exponent = two_complement_to_int(data->vout_mode, 5, 0x1f);
+        mantissa = data->v_out;
 
-	return (exponent > 0) ? sprintf(buf, "%d\n", (mantissa << exponent) * multiplier) :
-							sprintf(buf, "%d\n", (mantissa * multiplier) / (1 << -exponent));
+        return (exponent > 0) ? sprintf(buf, "%d\n", (mantissa << exponent) * multiplier) :
+               sprintf(buf, "%d\n", (mantissa * multiplier) / (1 << -exponent));
 }
 
 static ssize_t show_vout_min_max(struct device *dev, struct device_attribute *da,
-			 char *buf)
+                                 char *buf)
 {
-  struct sensor_device_attribute *attr = to_sensor_dev_attr(da);
-  struct dps850_data *data = dps850_update_device(dev);
-  int exponent, mantissa;
-  int multiplier = 1000;
+        struct sensor_device_attribute *attr = to_sensor_dev_attr(da);
+        struct dps850_data *data = dps850_update_device(dev);
+        int exponent, mantissa;
+        int multiplier = 1000;
 
-  if (!data->valid) {
-	  return 0;
-	}
+        if (!data->valid) {
+                return 0;
+        }
 
-  switch (attr->index) {
-  case PSU_V_OUT_MIN:
-    mantissa = data->v_out_min;
-		break;
-  case PSU_V_OUT_MAX:
-    mantissa = data->v_out_max;
-    break;
-  }
-  exponent = two_complement_to_int(data->vout_mode, 5, 0x1f);
+        switch (attr->index) {
+        case PSU_V_OUT_MIN:
+                mantissa = data->v_out_min;
+                break;
+        case PSU_V_OUT_MAX:
+                mantissa = data->v_out_max;
+                break;
+        }
 
-  return (exponent > 0) ? sprintf(buf, "%d\n", (mantissa << exponent) * multiplier) :
-							sprintf(buf, "%d\n", (mantissa * multiplier) / (1 << -exponent));
+        exponent = two_complement_to_int(data->vout_mode, 5, 0x1f);
+
+        return (exponent > 0) ? sprintf(buf, "%d\n", (mantissa << exponent) * multiplier) :
+               sprintf(buf, "%d\n", (mantissa * multiplier) / (1 << -exponent));
 }
 
 static const struct attribute_group dps850_group = {
-	.attrs = dps850_attributes,
+        .attrs = dps850_attributes,
 };
 
 static int dps850_probe(struct i2c_client *client,
-			const struct i2c_device_id *dev_id)
+                        const struct i2c_device_id *dev_id)
 {
-	struct dps850_data *data;
-	int status;
+        struct dps850_data *data;
+        int status;
 
-	if (!i2c_check_functionality(client->adapter,
-		I2C_FUNC_SMBUS_BYTE_DATA |
-		I2C_FUNC_SMBUS_WORD_DATA |
-		I2C_FUNC_SMBUS_I2C_BLOCK)) {
-		status = -EIO;
-		goto exit;
-	}
+        if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE_DATA |
+                                                      I2C_FUNC_SMBUS_WORD_DATA |
+                                                      I2C_FUNC_SMBUS_I2C_BLOCK)) {
+                status = -EIO;
+                goto exit;
+        }
 
-	data = kzalloc(sizeof(struct dps850_data), GFP_KERNEL);
-	if (!data) {
-		status = -ENOMEM;
-		goto exit;
-	}
+        data = kzalloc(sizeof(struct dps850_data), GFP_KERNEL);
+        if (!data) {
+                status = -ENOMEM;
+                goto exit;
+        }
 
-	i2c_set_clientdata(client, data);
-	mutex_init(&data->update_lock);
-	data->chip = dev_id->driver_data;
-	dev_info(&client->dev, "chip found\n");
+        i2c_set_clientdata(client, data);
+        mutex_init(&data->update_lock);
+        data->chip = dev_id->driver_data;
+        dev_info(&client->dev, "chip found\n");
 
-	/* Register sysfs hooks */
-	status = sysfs_create_group(&client->dev.kobj, &dps850_group);
-	if (status) {
-		goto exit_free;
-	}
+        /* Register sysfs hooks */
+        status = sysfs_create_group(&client->dev.kobj, &dps850_group);
+        if (status) {
+                goto exit_free;
+        }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0)
-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "dps850",
-                                                      NULL, NULL, NULL);
+        data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "dps850",
+                                                          NULL, NULL, NULL);
 #else
-	data->hwmon_dev = hwmon_device_register(&client->dev);
+        data->hwmon_dev = hwmon_device_register(&client->dev);
 #endif
-	if (IS_ERR(data->hwmon_dev)) {
-		status = PTR_ERR(data->hwmon_dev);
-		goto exit_remove;
-	}
+        if (IS_ERR(data->hwmon_dev)) {
+                status = PTR_ERR(data->hwmon_dev);
+                goto exit_remove;
+        }
 
-	dev_info(&client->dev, "%s: psu '%s'\n",
-		 dev_name(data->hwmon_dev), client->name);
+        dev_info(&client->dev, "%s: psu '%s'\n",
+                 dev_name(data->hwmon_dev), client->name);
 
-	return 0;
+        return 0;
 
 exit_remove:
-	sysfs_remove_group(&client->dev.kobj, &dps850_group);
+        sysfs_remove_group(&client->dev.kobj, &dps850_group);
 exit_free:
-	kfree(data);
+        kfree(data);
 exit:
-
-	return status;
+        return status;
 }
 
 static int dps850_remove(struct i2c_client *client)
 {
-	struct dps850_data *data = i2c_get_clientdata(client);
+        struct dps850_data *data = i2c_get_clientdata(client);
 
-	hwmon_device_unregister(data->hwmon_dev);
-	sysfs_remove_group(&client->dev.kobj, &dps850_group);
-	kfree(data);
+        hwmon_device_unregister(data->hwmon_dev);
+        sysfs_remove_group(&client->dev.kobj, &dps850_group);
+        kfree(data);
 
-	return 0;
+        return 0;
 }
 
 static const struct i2c_device_id dps850_id[] = {
-	{ "dps850", DPS850 },
-	{}
+        { "dps850", DPS850 },
+        {}
 };
 MODULE_DEVICE_TABLE(i2c, dps850_id);
 
 static struct i2c_driver dps850_driver = {
-	.class		= I2C_CLASS_HWMON,
-	.driver = {
-		.name	= "dps850",
-	},
-	.probe	  = dps850_probe,
-	.remove	  = dps850_remove,
-	.id_table = dps850_id,
-	.address_list = normal_i2c,
+        .class		= I2C_CLASS_HWMON,
+        .driver = {
+                .name	= "dps850",
+        },
+        .probe	  = dps850_probe,
+        .remove	  = dps850_remove,
+        .id_table = dps850_id,
+        .address_list = normal_i2c,
 };
 
 static int dps850_read_byte(struct i2c_client *client, u8 reg)
 {
-	int status = 0, retry = I2C_RW_RETRY_COUNT;
+        int status = 0, retry = I2C_RW_RETRY_COUNT;
 
-	while (retry) {
-		status = i2c_smbus_read_byte_data(client, reg);
-		if (unlikely(status < 0)) {
-			msleep(I2C_RW_RETRY_INTERVAL);
-			retry--;
-			continue;
-		}
+        while (retry) {
+                status = i2c_smbus_read_byte_data(client, reg);
+                if (unlikely(status < 0)) {
+                        msleep(I2C_RW_RETRY_INTERVAL);
+                        retry--;
+                        continue;
+                }
+                break;
+        }
 
-		break;
-	}
-
-	return status;
+        return status;
 }
 
 static int dps850_read_word(struct i2c_client *client, u8 reg)
 {
-	int status = 0, retry = I2C_RW_RETRY_COUNT;
+        int status = 0, retry = I2C_RW_RETRY_COUNT;
 
-	while (retry) {
-		status = i2c_smbus_read_word_data(client, reg);
-		if (unlikely(status < 0)) {
-			msleep(I2C_RW_RETRY_INTERVAL);
-			retry--;
-			continue;
-		}
+        while (retry) {
+                status = i2c_smbus_read_word_data(client, reg);
+                if (unlikely(status < 0)) {
+                        msleep(I2C_RW_RETRY_INTERVAL);
+                        retry--;
+                        continue;
+                }
+                break;
+        }
 
-		break;
-	}
-
-	return status;
+        return status;
 }
 
 static int dps850_write_word(struct i2c_client *client, u8 reg, u16 value)
 {
-	int status = 0, retry = I2C_RW_RETRY_COUNT;
+        int status = 0, retry = I2C_RW_RETRY_COUNT;
 
-	while (retry) {
-		status = i2c_smbus_write_word_data(client, reg, value);
-		if (unlikely(status < 0)) {
-			msleep(I2C_RW_RETRY_INTERVAL);
-			retry--;
-			continue;
-		}
+        while (retry) {
+                status = i2c_smbus_write_word_data(client, reg, value);
+                if (unlikely(status < 0)) {
+                        msleep(I2C_RW_RETRY_INTERVAL);
+                        retry--;
+                        continue;
+                }
+                break;
+        }
 
-		break;
-	}
-
-	return status;
+        return status;
 }
 
 static int dps850_read_block(struct i2c_client *client, u8 command, u8 *data,
-			  int data_len)
+                             int data_len)
 {
-	int status = 0, retry = I2C_RW_RETRY_COUNT;
+        int status = 0, retry = I2C_RW_RETRY_COUNT;
 
-	while (retry) {
-		status = i2c_smbus_read_i2c_block_data(client, command, data_len, data);
-		if (unlikely(status < 0)) {
-			msleep(I2C_RW_RETRY_INTERVAL);
-			retry--;
-			continue;
-		}
+        while (retry) {
+                status = i2c_smbus_read_i2c_block_data(client, command, data_len, data);
+                if (unlikely(status < 0)) {
+                        msleep(I2C_RW_RETRY_INTERVAL);
+                        retry--;
+                        continue;
+                }
+                break;
+        }
 
-		break;
-	}
-
-	return status;
+        return status;
 }
 
 struct reg_data_byte {
-	u8   reg;
-	u8  *value;
+        u8  reg;
+        u8  *value;
 };
 
 struct reg_data_word {
-	u8   reg;
-	u16 *value;
+        u8  reg;
+        u16 *value;
 };
 
 static struct dps850_data *dps850_update_device(struct device *dev)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct dps850_data *data = i2c_get_clientdata(client);
+        struct i2c_client *client = to_i2c_client(dev);
+        struct dps850_data *data = i2c_get_clientdata(client);
 
-	mutex_lock(&data->update_lock);
+        mutex_lock(&data->update_lock);
 
-	if (time_after(jiffies, data->last_updated + HZ + HZ / 2)
-		|| !data->valid) {
-		int i, status, length;
-		u8 command, buf;
-		struct reg_data_byte regs_byte[] = {  {0x20, &data->vout_mode}};
-		struct reg_data_word regs_word[] = {  {0x88, &data->v_in},
-                                          {0x8b, &data->v_out},
-                                          {0x89, &data->i_in},
-                                          {0x8c, &data->i_out},
-                                          {0x96, &data->p_out},
-                                          {0x97, &data->p_in},
-                                          {0x8d, &(data->temp_input[0])},
-                                          {0x8e, &(data->temp_input[1])},
-                                          {0x8f, &(data->temp_input[2])},
-                                          {0x90, &data->fan_speed},
-                                          {0xa4, &data->v_out_min},
-                                          {0xa5, &data->v_out_max}};
+        if (time_after(jiffies, data->last_updated + HZ + HZ / 2)
+                       || !data->valid) {
+                int i, status, length;
+                u8 command, buf;
+                struct reg_data_byte regs_byte[] = {  {0x20, &data->vout_mode} };
+                struct reg_data_word regs_word[] = {  {0x88, &data->v_in},
+                                                      {0x8b, &data->v_out},
+                                                      {0x89, &data->i_in},
+                                                      {0x8c, &data->i_out},
+                                                      {0x96, &data->p_out},
+                                                      {0x97, &data->p_in},
+                                                      {0x8d, &(data->temp_input[0])},
+                                                      {0x8e, &(data->temp_input[1])},
+                                                      {0x8f, &(data->temp_input[2])},
+                                                      {0x90, &data->fan_speed},
+                                                      {0xa4, &data->v_out_min},
+                                                      {0xa5, &data->v_out_max} };
 
-		dev_dbg(&client->dev, "Starting dps850 update\n");
-		data->valid = 0;
+                dev_dbg(&client->dev, "Starting dps850 update\n");
+                data->valid = 0;
 
-		/* Read byte data */
-		for (i = 0; i < ARRAY_SIZE(regs_byte); i++) {
-			status = dps850_read_byte(client, regs_byte[i].reg);
+                /* Read byte data */
+                for (i = 0; i < ARRAY_SIZE(regs_byte); i++) {
+                        status = dps850_read_byte(client, regs_byte[i].reg);
 
-			if (status < 0) {
-				dev_dbg(&client->dev, "reg %d, err %d\n",
-						regs_byte[i].reg, status);
-				goto exit;
-			}
-			else {
-				*(regs_byte[i].value) = status;
-			}
-		}
+                        if (status < 0) {
+                                dev_dbg(&client->dev, "reg %d, err %d\n", regs_byte[i].reg, status);
+                                goto exit;
+                        }	else {
+                                *(regs_byte[i].value) = status;
+                        }
+                }
 
-		/* Read word data */
-		for (i = 0; i < ARRAY_SIZE(regs_word); i++) {
-			status = dps850_read_word(client, regs_word[i].reg);
+                /* Read word data */
+                for (i = 0; i < ARRAY_SIZE(regs_word); i++) {
+                        status = dps850_read_word(client, regs_word[i].reg);
 
-			if (status < 0) {
-				dev_dbg(&client->dev, "reg %d, err %d\n",
-						regs_word[i].reg, status);
-				goto exit;
-			}
-			else {
-				*(regs_word[i].value) = status;
-			}
-		}
+                        if (status < 0) {
+                                dev_dbg(&client->dev, "reg %d, err %d\n", regs_word[i].reg, status);
+                                goto exit;
+                        } else {
+                                *(regs_word[i].value) = status;
+                        }
+                }
 
-		/* Read mfr_model */
-		command = 0x9a;
-		length  = 1;
-		memset(data->mfr_model, 0, sizeof(data->mfr_model));
-		
-		/* Read first byte to determine the length of data */
-		status = dps850_read_block(client, command, &buf, length);
-		if (status < 0) {
-			dev_dbg(&client->dev, "reg %d, err %d\n", command, status);
-			goto exit;
-		}
-		
-		status = dps850_read_block(client, command, data->mfr_model, buf+1);
-		data->mfr_model[buf+1] = '\0';
+                /* Read mfr_model */
+                command = 0x9a;
+                length  = 1;
+                memset(data->mfr_model, 0, sizeof(data->mfr_model));
 
-		if (status < 0) {
-			dev_dbg(&client->dev, "reg %d, err %d\n", command, status);
-			goto exit;
-		}
+                /* Read first byte to determine the length of data */
+                status = dps850_read_block(client, command, &buf, length);
+                if (status < 0) {
+                        dev_dbg(&client->dev, "reg %d, err %d\n", command, status);
+                        goto exit;
+                }
 
+                status = dps850_read_block(client, command, data->mfr_model, buf+1);
+                data->mfr_model[buf+1] = '\0';
 
-		/* Read mfr_serial */
-		command = 0x9e;
-		length  = 1;
-		memset(data->mfr_serial, 0, sizeof(data->mfr_serial));
-		
-		/* Read first byte to determine the length of data */
-		status = dps850_read_block(client, command, &buf, length);
-		if (status < 0) {
-			dev_dbg(&client->dev, "reg %d, err %d\n", command, status);
-			goto exit;
-		}
-		
- 		status = dps850_read_block(client, command, data->mfr_serial, buf+1);
-		data->mfr_serial[buf+1] = '\0';
+                if (status < 0) {
+                        dev_dbg(&client->dev, "reg %d, err %d\n", command, status);
+                        goto exit;
+                }
 
-		if (status < 0) {
-			dev_dbg(&client->dev, "reg %d, err %d\n", command, status);
-			goto exit;
-		}
+                /* Read mfr_serial */
+                command = 0x9e;
+                length = 1;
+                memset(data->mfr_serial, 0, sizeof(data->mfr_serial));
 
-		data->last_updated = jiffies;
-		data->valid = 1;
-	}
+                /* Read first byte to determine the length of data */
+                status = dps850_read_block(client, command, &buf, length);
+                if (status < 0) {
+                        dev_dbg(&client->dev, "reg %d, err %d\n", command, status);
+                        goto exit;
+                }
 
+                status = dps850_read_block(client, command, data->mfr_serial, buf+1);
+                data->mfr_serial[buf+1] = '\0';
+
+                if (status < 0) {
+                        dev_dbg(&client->dev, "reg %d, err %d\n", command, status);
+                        goto exit;
+                }
+
+                data->last_updated = jiffies;
+                data->valid = 1;
+        }
 exit:
-	mutex_unlock(&data->update_lock);
+        mutex_unlock(&data->update_lock);
 
-	return data;
+        return data;
 }
 
 static int __init dps850_init(void)
 {
-	return i2c_add_driver(&dps850_driver);
+        return i2c_add_driver(&dps850_driver);
 }
 
 static void __exit dps850_exit(void)
 {
-	i2c_del_driver(&dps850_driver);
+        i2c_del_driver(&dps850_driver);
 }
 
 MODULE_AUTHOR("Brandon Chuang <brandon_chuang@accton.com.tw>");
@@ -550,4 +540,3 @@ MODULE_LICENSE("GPL");
 
 module_init(dps850_init);
 module_exit(dps850_exit);
-
