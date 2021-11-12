@@ -282,3 +282,12 @@ class Psu(PsuBase):
             float: Power in watts
         """
         return self.get_power()
+
+    def get_revision(self):
+        """
+        Retrieves the hardware revision of the device
+
+        Returns:
+            string: Revision value of device
+        """
+        return self.get_serial()

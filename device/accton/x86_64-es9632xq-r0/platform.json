@@ -1,6 +1,20 @@
 {
     "chassis": {
       "name": "es9632xq-O32x400G",
+      "components": [
+          {
+              "name": "BIOS"
+          },
+          {
+              "name": "CPLD1"
+          },
+          {
+              "name": "CPLD2"
+          },
+          {
+              "name": "CPLD3"
+          }
+      ],
       "psus": [
         {
           "name": "PSU-1",
@@ -18,6 +32,44 @@
                }
              ]
          }
+      ],
+      "fans": [
+          {
+              "name": "FanTray0 fan 0"
+          },
+          {
+              "name": "FanTray0 fan 1"
+          },
+          {
+              "name": "FanTray1 fan 0"
+          },
+          {
+              "name": "FanTray1 fan 1"
+          },
+          {
+              "name": "FanTray2 fan 0"
+          },
+          {
+              "name": "FanTray2 fan 1"
+          },
+          {
+              "name": "FanTray3 fan 0"
+          },
+          {
+              "name": "FanTray3 fan 1"
+          },
+          {
+              "name": "FanTray4 fan 0"
+          },
+          {
+              "name": "FanTray4 fan 1"
+          },
+          {
+              "name": "FanTray5 fan 0"
+          },
+          {
+              "name": "FanTray5 fan 1"
+          }
       ],
       "thermals": [
         {
@@ -42,7 +94,6 @@
           "name": "Temp sensor 7"
         }
       ],
-      "fans": [],
       "fan_drawers": [
         {
           "name": "FanTray 0",
