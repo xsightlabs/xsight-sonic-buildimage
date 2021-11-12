@@ -243,7 +243,39 @@ class Chassis(ChassisBase):
         Returns:
             integer: Number of fans
         """
-        return 0
+        return len(self._fan_list)
+
+    def get_all_fans(self):
+        """
+        Retrieves list of fans
+        Returns:
+            list: List of fans
+        """
+        return self._fan_list
+
+    def get_num_fan_drawers(self):
+        """
+        Retrieves number of fan drawers
+        Returns:
+            integer: Number of fan drawers
+        """
+        return len(self._fan_drawer_list)
+
+    def get_revision(self):
+        """
+        Retrieves the hardware revision of the device
+        Returns:
+            string: Revision value of device
+        """
+        return self.get_serial();
+
+    def get_num_components(self):
+        """
+        Retrieves number of components
+        Returns:
+            integer: Number of components
+        """
+        return NUM_COMPONENT
 
     def get_status_led(self):
         val = self._api_helper.read_txt_file(SYSLED_FNODE)
