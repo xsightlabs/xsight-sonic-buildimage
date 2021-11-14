@@ -42,3 +42,41 @@ class FanDrawer(FanDrawerBase):
             bool: True if it is replaceable.
         """
         return True
+
+    def get_presence(self):
+        """
+        Indicate presence of the device.
+        Returns:
+            bool: True if it is presented.
+        """
+        if FANS_PER_FANTRAY == len(self._fan_list):
+            return True
+        else:
+            return Flase
+
+    def get_model(self):
+        """
+        Retrieves the fan_draver model
+        Returns:
+            string: The model of the device
+
+        """
+        return "R40W12BGNL9-07T17"
+
+    def get_status(self):
+        """
+        Returns Fan Status.
+        Returns:
+            bool: True if status Ok, False if not
+        """
+        return True
+
+    def get_maximum_consumed_power(self):
+        """
+        Returns the maximum power could be consumed by fans in drawer.
+        Returns:
+            flat: maximum power
+
+        """
+        return 46.4 * FANS_PER_FANTRAY
+
