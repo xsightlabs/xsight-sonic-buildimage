@@ -1,4 +1,5 @@
 #!/bin/bash
+DEFAULT_MTU=9200
 ONIE_MACHINE=`sed -n -e 's/^.*onie_machine=//p' /host/machine.conf`
 
 set -x
@@ -23,7 +24,7 @@ do
     if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
         ip link add eth${i} type dummy
     fi
-    ifconfig eth${i} up
+    ip link set dev eth${i} mtu ${DEFAULT_MTU} up
 done
 
 /home/admin/xbm/bin/xbm --device-id 0 --name standalone0 --thrift-port 49153 \

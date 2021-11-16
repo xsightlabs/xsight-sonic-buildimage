@@ -11,6 +11,7 @@ NETDEV_MODE=1
 HW_IRQ_MODE=1
 PCI_MODE=1
 TX_CHECKSUMMING_MODE=0
+DEFAULT_MTU=9200
 ONIE_MACHINE=`sed -n -e 's/^.*onie_machine=//p' /host/machine.conf`
 CFG_FILE="/etc/sonic/xlink.cfg"
 
@@ -52,8 +53,8 @@ if [[ ${XPCI_NETDEV_ATTACH_IF} == "xcpu" ]]; then
     echo ">>> Configuring CPU port VETH devices"
     # Setup CPU port
     ip link add name veth0 type veth peer name xcpu
-    ip link set dev veth0 up
-    ip link set dev xcpu up
+    ip link set dev veth0 mtu ${DEFAULT_MTU} up
+    ip link set dev xcpu mtu ${DEFAULT_MTU} up
 fi
 
 if [[ ${SYS_MODE,,} == "xbm" ]]; then
