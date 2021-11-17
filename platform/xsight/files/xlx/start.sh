@@ -54,8 +54,9 @@ if [[ ${XPCI_NETDEV_ATTACH_IF} == "xcpu" ]]; then
     # Setup CPU port
     ip link add name veth0 type veth peer name xcpu
     ip link set dev veth0 mtu ${DEFAULT_MTU} up
-    ip link set dev xcpu mtu ${DEFAULT_MTU} up
 fi
+
+ip link set dev ${XPCI_NETDEV_ATTACH_IF} mtu ${DEFAULT_MTU} up
 
 if [[ ${SYS_MODE,,} == "xbm" ]]; then
     HW_IRQ_MODE=0
