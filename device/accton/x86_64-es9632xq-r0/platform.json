@@ -161,6 +161,104 @@
             }
           ]
         }
+      ],
+      "sfps": [
+        {
+            "name": "Ethernet0"
+        },
+        {
+            "name": "Ethernet8"
+        },
+        {
+            "name": "Ethernet16"
+        },
+        {
+            "name": "Ethernet24"
+        },
+        {
+            "name": "Ethernet32"
+        },
+        {
+            "name": "Ethernet40"
+        },
+        {
+            "name": "Ethernet48"
+        },
+        {
+            "name": "Ethernet56"
+        },
+        {
+            "name": "Ethernet64"
+        },
+        {
+            "name": "Ethernet72"
+        },
+        {
+            "name": "Ethernet80"
+        },
+        {
+            "name": "Ethernet88"
+        },
+        {
+            "name": "Ethernet96"
+        },
+        {
+            "name": "Ethernet104"
+        },
+        {
+            "name": "Ethernet112"
+        },
+        {
+            "name": "Ethernet120"
+        },
+        {
+            "name": "Ethernet128"
+        },
+        {
+            "name": "Ethernet136"
+        },
+        {
+            "name": "Ethernet144"
+        },
+        {
+            "name": "Ethernet152"
+        },
+        {
+            "name": "Ethernet160"
+        },
+        {
+            "name": "Ethernet168"
+        },
+        {
+            "name": "Ethernet176"
+        },
+        {
+            "name": "Ethernet184"
+        },
+        {
+            "name": "Ethernet192"
+        },
+        {
+            "name": "Ethernet200"
+        },
+        {
+            "name": "Ethernet208"
+        },
+        {
+            "name": "Ethernet216"
+        },
+        {
+            "name": "Ethernet224"
+        },
+        {
+            "name": "Ethernet232"
+        },
+        {
+            "name": "Ethernet240"
+        },
+        {
+            "name": "Ethernet248"
+        }
       ]
     },
     "interfaces": {
