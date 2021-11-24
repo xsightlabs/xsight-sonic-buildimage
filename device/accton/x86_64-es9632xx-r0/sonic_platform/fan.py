@@ -308,3 +308,14 @@ class Fan(FanBase):
         except (ValueError, IOError) as e:
             raise RuntimeError("Failed to set cooling level - {}".format(e))
 
+    def get_position_in_parent(self):
+        """
+        Retrieves 1-based relative physical position in parent device.
+        Returns:
+            integer: The 1-based relative physical position in parent device
+        """
+        if self.is_psu_fan:
+            return (self.psu_index + 1)
+        else:
+            return (self.fan_index + 1)
+
