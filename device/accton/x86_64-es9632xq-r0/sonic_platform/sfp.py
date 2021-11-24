@@ -1539,7 +1539,7 @@ class Sfp(SfpBase):
         logger.log_debug("get_lpmode() is not yet implemented")
         return False
 
-        if self._port_num > PORT_END: 
+        if self._port_num > self.PORT_END:
             # SFP doesn't support this feature
             return False
         else:
@@ -1571,7 +1571,7 @@ class Sfp(SfpBase):
         logger.log_debug("get_power_set() is not yet implemented")
         return False
 
-        if self._port_num > PORT_END:
+        if self._port_num > self.PORT_END:
             # SFP doesn't support this feature
             return False
         else:
@@ -2037,11 +2037,10 @@ class Sfp(SfpBase):
         """
         # Check for invalid port_num
 
-        if self._port_num > PORT_END:
+        if self._port_num > self.PORT_END:
             return False # SFP doesn't support this feature
-        else:
-            if not self.get_presence():
-                return False
+        elif not self.get_presence():
+            return False
 
         cpld_path = self._cpld_mapping[1]
         reset_path = "{}{}{}{}".format(CPLD_I2C_PATH, cpld_path, '/module_reset_', self._port_num)
@@ -2121,7 +2120,7 @@ class Sfp(SfpBase):
         Returns:
             A boolean, True if lpmode is set successfully, False if not
         """
-        if self._port_num > PORT_END:
+        if self._port_num > self.PORT_END:
             return False # SFP doesn't support this feature
         else:
             if not self.get_presence():
@@ -2151,7 +2150,7 @@ class Sfp(SfpBase):
             A boolean, True if power-override and power_set are set successfully,
             False if not
         """
-        if self._port_num > PORT_END:
+        if self._port_num > self.PORT_END:
             return False # SFP doesn't support this feature
         else:
             if not self.get_presence():
@@ -2189,7 +2188,7 @@ class Sfp(SfpBase):
         sfputil_helper = SfpUtilHelper()
         sfputil_helper.read_porttab_mappings(
             self.__get_path_to_port_config_file())
-        name = sfputil_helper.logical[self.index] or "Unknown"
+        name = sfputil_helper.logical[self._index] or "Unknown"
         return name
 
     def get_presence(self):

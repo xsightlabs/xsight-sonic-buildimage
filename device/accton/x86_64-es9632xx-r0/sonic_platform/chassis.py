@@ -217,7 +217,7 @@ class Chassis(ChassisBase):
         for index in range(0, PORT_END):
             sfp_event = self._sfp_list[index].get_transceiver_change_event(2000)
             if sfp_event is not None:
-                sfp_dict[index] = sfp_event
+                sfp_dict[index+1] = sfp_event
 
         return True, {'sfp': sfp_dict}
 
