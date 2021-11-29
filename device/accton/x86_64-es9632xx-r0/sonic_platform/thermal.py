@@ -233,3 +233,11 @@ class Thermal(ThermalBase):
         logger.log_debug("Thermal:check_thermal_zone_temperature: All temperatures looks OK")
         return True
 
+    def get_position_in_parent(self):
+        """
+        Retrieves 1-based relative physical position in parent device.
+        Returns:
+            integer: The 1-based relative physical position in parent device
+        """
+        return (self.index + 1)
+
