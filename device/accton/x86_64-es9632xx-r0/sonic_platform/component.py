@@ -23,10 +23,10 @@ CPLD_ADDR_MAPPING = {
 SYSFS_PATH = "/sys/bus/i2c/devices/"
 BIOS_VERSION_PATH = "/sys/class/dmi/id/bios_version"
 COMPONENT_LIST= [
+   ("BIOS", "Basic Input/Output System"),
    ("CPLD1", "CPLD 1"),
    ("CPLD2", "CPLD 2"),
-   ("CPLD3", "CPLD 3"),
-   ("BIOS", "Basic Input/Output System")
+   ("CPLD3", "CPLD 3")
 
 ]
 
@@ -113,6 +113,7 @@ class Component(ComponentBase):
 
     def install_firmware(self, image_path):
         """
+        TODO: Need to implement
         Install firmware to module
         Args:
             image_path: A string, path to firmware image
@@ -120,3 +121,89 @@ class Component(ComponentBase):
             A boolean, True if install successfully, False if not
         """
         raise NotImplementedError
+
+    def update_firmware(self, image_path):
+        """
+        TODO: Need to implement
+        Updates firmware of the component
+        This API performs firmware update: it assumes firmware installation and loading in a single call.
+        In case platform component requires some extra steps (apart from calling Low Level Utility)
+        to load the installed firmware (e.g, reboot, power cycle, etc.) - this will be done automatically by API
+        Args:
+            image_path: A string, path to firmware image
+        Raises:
+            RuntimeError: update failed
+        """
+        raise NotImplementedError
+
+    def get_presence(self):
+        """
+        Retrieves the presence of the component
+        Returns:
+            bool: True if component is present, False if not
+        """
+        return True
+
+    def get_model(self):
+        """
+        Retrieves the model number (or part number) of the device
+        Returns:
+            string: Model/part number of device
+        """
+        return 'N/A'
+
+    def get_serial(self):
+        """
+        Retrieves the serial number of the device
+        Returns:
+            string: Serial number of device
+        """
+        return 'N/A'
+
+    def get_status(self):
+        """
+        Retrieves the operational status of the device
+        Returns:
+            A boolean value, True if device is operating properly, False if not
+        """
+        return True
+
+    def get_position_in_parent(self):
+        """
+        Returns:
+            integer: The 1-based relative physical position in parent device
+        """
+        return 1
+
+    def is_replaceable(self):
+        """
+        Indicate whether this device is replaceable.
+        Returns:
+            bool: True if it is replaceable.
+        """
+        return False
+
+    def get_available_firmware_version(self, image_path):
+        """
+        TODO: Need to implement
+        Retrieves the available firmware version of the component
+        Note: the firmware version will be read from image
+        Args:
+            image_path: A string, path to firmware image
+        Returns:
+            A string containing the available firmware version of the component
+        """
+        raise NotImplementedError
+
+    def get_firmware_update_notification(self, image_path):
+        """
+        Retrieves a notification on what should be done in order to complete
+        the component firmware update
+        Args:
+            image_path: A string, path to firmware image
+        Returns:
+            A string containing the component firmware update notification if required.
+            By default 'None' value will be used, which indicates that no actions are required
+        """
+        return "None"
+
