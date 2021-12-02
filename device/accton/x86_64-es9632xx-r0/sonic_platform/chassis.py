@@ -20,6 +20,7 @@ NUM_PSU = 2
 NUM_THERMAL = 7
 PORT_END = 32
 NUM_COMPONENT = 4
+POSITION_INDEX = 1
 HOST_REBOOT_CAUSE_PATH = "/host/reboot-cause/"
 PMON_REBOOT_CAUSE_PATH = "/usr/share/sonic/platform/api_files/reboot-cause/"
 REBOOT_CAUSE_FILE = "reboot-cause.txt"
@@ -263,11 +264,11 @@ class Chassis(ChassisBase):
 
     def get_revision(self):
         """
-        Retrieves the hardware revision of the device
+        Retrieves the hardware revision number for the chassis
         Returns:
-            string: Revision value of device
+            A string containing the hardware revision number for this chassis.
         """
-        return self.get_serial();
+        return self._eeprom.get_revision()
 
     def get_num_components(self):
         """
@@ -294,3 +295,6 @@ class Chassis(ChassisBase):
 
     def initizalize_system_led(self):
         return True
+
+    def get_position_in_parent(self):
+        return POSITION_INDEX

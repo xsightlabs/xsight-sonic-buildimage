@@ -101,5 +101,8 @@ class Tlv(eeprom_tlvinfo.TlvInfoDecoder):
     def get_mac(self):
         return self._eeprom.get('0x24', "Undefined.")
 
+    def get_revision(self):
+        return self._eeprom.get('0x27', "Undefined.")
+
     def get_pn(self):
         return self._eeprom.get('0x22', "Undefined.")  

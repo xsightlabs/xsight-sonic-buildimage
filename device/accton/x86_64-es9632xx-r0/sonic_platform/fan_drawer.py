@@ -63,6 +63,15 @@ class FanDrawer(FanDrawerBase):
         """
         return "R40W12BGNL9-07T17"
 
+    def get_serial(self):
+        """
+        Retrieves the fan_draver serial
+        Returns:
+            string: The serial of the device
+
+        """
+        return "N/A"
+
     def get_status(self):
         """
         Returns Fan Status.
@@ -87,3 +96,4 @@ class FanDrawer(FanDrawerBase):
             integer: The 1-based relative physical position in parent device
         """
         return (self.fantrayindex + 1)
+

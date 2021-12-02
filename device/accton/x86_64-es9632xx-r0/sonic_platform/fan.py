@@ -79,6 +79,15 @@ class Fan(FanBase):
         """
         return "R40W12BGNL9-07T17"
 
+    def get_serial(self):
+        """
+        Retrieves the fan serial
+        Returns:
+            string: The serial of the device
+
+        """
+        return "N/A"
+
     def is_replaceable(self):
         """
         Indicate whether this device is replaceable.
