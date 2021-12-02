@@ -133,6 +133,14 @@ class Thermal(ThermalBase):
         """
         return "lm75"
 
+    def get_serial(self):
+        """
+        Retrieves the model of the thermal device
+            Returns:
+            string: The model of the thermal device
+        """
+        return "N/A"
+
     def is_replaceable(self):
         """
         Retrieves is the thermal device replaceable
