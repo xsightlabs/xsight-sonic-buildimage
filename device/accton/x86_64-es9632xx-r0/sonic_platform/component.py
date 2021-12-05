@@ -1,5 +1,5 @@
 #############################################################################
-# Celestica
+# Accton
 #
 # Component contains an implementation of SONiC Platform Base API and
 # provides the components firmware management function
@@ -8,8 +8,11 @@
 
 import shlex
 import subprocess
+import sys
+import os
 
 try:
+    from sonic_py_common import logger
     from sonic_platform_base.component_base import ComponentBase
     from .helper import APIHelper
 except ImportError as e:
@@ -24,11 +27,17 @@ SYSFS_PATH = "/sys/bus/i2c/devices/"
 BIOS_VERSION_PATH = "/sys/class/dmi/id/bios_version"
 COMPONENT_LIST= [
    ("BIOS", "Basic Input/Output System"),
+   ("ONIE", "Open Network Install Environment"),
    ("CPLD1", "CPLD 1"),
    ("CPLD2", "CPLD 2"),
    ("CPLD3", "CPLD 3")
 
 ]
+
+SYSLOG_IDENTIFIER = "component"
+logger = logger.Logger(SYSLOG_IDENTIFIER)
+logger.set_min_log_priority_debug()
+logger.log_debug("Load {} module".format(__name__))
 
 class Component(ComponentBase):
     """Platform-specific Component class"""
@@ -65,6 +74,19 @@ class Component(ComponentBase):
                 return bios_version.strip()
         except Exception as e:
             return None
+
+    def __get_onie_version(self):
+        onie_mnt = "/tmp/onie"
+        user = subprocess.check_output("whoami", shell=True).decode(sys.stdout.encoding).strip()
+        sudo = "" if user == "root" else "sudo "
+        if not os.path.isdir(onie_mnt):
+            subprocess.call(sudo + "mkdir " + onie_mnt, shell=True)
+        if not os.path.ismount(onie_mnt):
+            subprocess.call(sudo + "mount LABEL=ONIE-BOOT " + onie_mnt, shell=True)
+        onie_version = subprocess.check_output("grep onie_version= /tmp/onie/grub/grub.cfg", shell=True)
+        onie_version = onie_version.decode(sys.stdout.encoding).strip().split("onie_version=", 1)[-1]
+        subprocess.call(sudo + "umount " + onie_mnt + " && " + sudo + "rm -rf " + onie_mnt, shell=True)
+        return onie_version
 
     def __get_cpld_version(self):
         # Retrieves the CPLD firmware version
@@ -105,6 +127,8 @@ class Component(ComponentBase):
         fw_version = None
         if self.name == "BIOS":
             fw_version = self.__get_bios_version()
+        elif "ONIE" in self.name:
+            fw_version = self.__get_onie_version()
         elif "CPLD" in self.name:
             cpld_version = self.__get_cpld_version()
             fw_version = cpld_version.get(self.name)
