@@ -183,7 +183,7 @@
         "Ethernet252": {
             "index": "31,31",
             "lanes": "252,253",
-	    "alias_at_lanes": "E250/1,E250/2",
+	    "alias_at_lanes": "E252/1,E252/2",
             "breakout_modes": "1x100G"
         },
         "Ethernet254": {
