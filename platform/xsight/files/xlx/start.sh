@@ -16,6 +16,10 @@ ONIE_MACHINE=`sed -n -e 's/^.*onie_machine=//p' /host/machine.conf`
 CFG_FILE="/etc/sonic/xlink.cfg"
 
 if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
+    # Probing cpu ixgbe net interfaces
+    if [[ ! -d /sys/module/ixgbe ]]; then
+        insmod /home/admin/xlx/ixgbe.ko
+    fi
     # Working on HW box. Determine what to run XBM/ASIC
     if [[ -f ${CFG_FILE} ]]; then
         SYS_MODE=`sed -n -e 's/^.*sys_mode[[:blank:]]*=[[:blank:]]*//p' ${CFG_FILE}`
@@ -26,7 +30,6 @@ if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
         XPCI_NETDEV_ATTACH_IF=${DEFAULT_ASIC_NETDEV_NAME}
     fi
 
-    # Probe patched ixgbe module if required
     if [[ ! -d /sys/class/xpci/xpci ]]; then
         ip link set dev ${SECOND_ASIC_NETDEV_NAME} down
         ip link set dev ${DEFAULT_ASIC_NETDEV_NAME} down

@@ -1,7 +1,1 @@
-systemctl stop systemd-udevd.service
-rmmod ixgbe
-rmmod igb
-modprobe igb
-modprobe ixgbe
-systemctl start systemd-udevd.service
 #DEBHELPER#
