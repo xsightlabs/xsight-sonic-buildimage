@@ -12,4 +12,4 @@ $(addprefix $(DEST)/, $(MAIN_TARGET)): $(DEST)/% :
 	make
 	popd
 	popd
-	mv ./ixgbe/src/$* $(DEST)/
+	mv ./ixgbe/src/$* /sonic/platform/xsight/files/xlx/
