@@ -7,6 +7,7 @@
 #############################################################################
 
 import os
+import time
 
 try:
     from sonic_platform_base.chassis_base import ChassisBase
@@ -171,7 +172,6 @@ class Chassis(ChassisBase):
         sw_reboot_cause = self._api_helper.read_txt_file(
             reboot_cause_path) or "Unknown"
 
-
         return ('REBOOT_CAUSE_NON_HARDWARE', sw_reboot_cause)
 
     def get_sfp(self, index):
@@ -219,6 +219,13 @@ class Chassis(ChassisBase):
             sfp_event = self._sfp_list[index].get_transceiver_change_event(2000)
             if sfp_event is not None:
                 sfp_dict[index+1] = sfp_event
+
+        if timeout == 0:
+            sleep_sec = 0.5
+        else:
+            sleep_sec = timeout / float(1000)
+
+        time.sleep(sleep_sec)
 
         return True, {'sfp': sfp_dict}
 

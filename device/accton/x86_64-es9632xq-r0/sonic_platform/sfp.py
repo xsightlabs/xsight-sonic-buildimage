@@ -268,8 +268,6 @@ NULL_VAL = 'N/A'
 SFP_STATUS_INSERTED = '1'
 SFP_STATUS_REMOVED = '0'
 
-
-
 class Sfp(SfpBase):
     """Platform-specific Sfp class"""
 
@@ -331,6 +329,7 @@ class Sfp(SfpBase):
         self._port_num = self._index + 1
         self._api_helper = APIHelper()
         self.port_to_eeprom_mapping = {}
+        self.data = {'present': False}
 
         eeprom_path = '/sys/bus/i2c/devices/{0}-0050/eeprom'
         for x in range(self.PORT_START, self.PORT_END + 1):
@@ -1306,32 +1305,24 @@ class Sfp(SfpBase):
 
         return transceiver_dom_threshold_info_dict
 
-    data = {'valid': 0, 'last': 0, 'present': 0}
-
     def get_transceiver_change_event(self, timeout=2000):
         """
         Checks if transceiver has been inserted/removed
         Returns:
             SFP_STATUS_INSERTED, SFP_STATUS_REMOVED or None
         """
-        now = time.time()
- 
-        if now < (self.data['last'] + timeout) and self.data['valid']:
-            return None
-
         present = self.get_presence()
-        if present ^ self.data['present']:
+        if present != self.data['present']:
             if present == True:
                 sfp_event = SFP_STATUS_INSERTED
+                logger.log_debug("get_transceiver_change_event: port {}: SFP_STATUS_INSERTED".format(self._port_num))
             else:
                 sfp_event = SFP_STATUS_REMOVED
+                logger.log_debug("get_transceiver_change_event: port {}: SFP_STATUS_REMOVED".format(self._port_num))
         else:
             sfp_event = None
 
         self.data['present'] = present
-        self.data['last'] = now
-        self.data['valid'] = 1
-
         return sfp_event
 
     def get_reset_status(self):
@@ -2199,7 +2190,8 @@ class Sfp(SfpBase):
         """
         cpld_path = self._cpld_mapping[0]
         present_path = "{}{}{}{}".format(CPLD_I2C_PATH, cpld_path, '/module_present_', self._port_num)
-        val=self._api_helper.read_txt_file(present_path)
+        val = self._api_helper.read_txt_file(present_path)
+
         if val is not None:
             return int(val, 10)==1
         else:
