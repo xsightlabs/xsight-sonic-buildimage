@@ -1,7 +1,7 @@
 {
     "thermal_control_algorithm": {
         "run_at_boot_up": "true",
-        "fan_speed_when_suspend": "60"
+        "fan_speed_when_suspend": "50"
     },
     "info_types": [
         {
@@ -30,24 +30,6 @@
                 {
                     "type": "fan.all.set_speed",
                     "speed": "100"
-                }
-            ]
-        },
-        {
-            "name": "any psu absence",
-            "conditions": [
-                {
-                    "type": "psu.any.absence"
-                }
-            ],
-            "actions": [
-                {
-                    "type": "thermal_control.control",
-                    "status": "true"
-                },
-                {
-                    "type": "fan.all.set_speed",
-                    "speed": "80"
                 }
             ]
         },
