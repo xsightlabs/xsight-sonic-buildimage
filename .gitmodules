@@ -37,7 +37,7 @@
 	url = https://github.com/p4lang/ptf.git
 [submodule "src/sonic-utilities"]
 	path = src/sonic-utilities
-	url = http://x-git01.xsight.ent:7990/scm/xs/sonic-utilities.git
+  url = https://bbk.xsightlabs.com/scm/xs/sonic-utilities.git
 	branch = 202211-xsight
 [submodule "platform/broadcom/sonic-platform-modules-arista"]
 	path = platform/broadcom/sonic-platform-modules-arista
