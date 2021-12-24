@@ -222,9 +222,14 @@ class Psu(PsuBase):
         power_path="{}{}".format(self.cpld_path, 'psu_power_good')
         val=self._api_helper.read_txt_file(power_path)
         if val is not None:
-            return int(val, 10) == 1
+            if int(val, 10) == 1:
+                self.set_status_led("STATUS_LED_COLOR_GREEN")
+                return True
+            else:
+                self.set_status_led("STATUS_LED_COLOR_AMBER")
+                return False
         else:
-            return 0
+            return False
 
     def get_model(self):
         """
