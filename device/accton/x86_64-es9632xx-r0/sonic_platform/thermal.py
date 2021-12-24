@@ -197,25 +197,25 @@ class Thermal(ThermalBase):
         return 'untrust'
 
     @classmethod
-    def get_min_amb_temperature(cls):
+    def get_temperatures(cls):
         """
-        Calculating ambient temperature inside the box,
+        Representing important temperatures in device
         Returns:
-            float - ambient temperature
+            array of temperatures
         """
         from sonic_platform import platform
-        ambient = None
+        temperatures = []
         platform_chassis = platform.Platform().get_chassis()
         if platform_chassis is not None:
             thermals_num = platform_chassis.get_num_thermals()
-            ambient = 0.0
+            indX = 0
             for thermal_ins in platform_chassis.get_all_thermals():
-                ambient += thermal_ins.get_temperature()
-            ambient /= thermals_num
+                temperatures.append(thermal_ins.get_temperature())
+                indX += 1
         else:
             logger.log_error("Thermal: Chassis is not available !")
-        logger.log_debug("Thermal:get_min_amb_temperature Returns: {}".format(ambient))
-        return ambient
+        logger.log_debug("Thermal:get_temperatures {}".format(temperatures))
+        return temperatures
 
     @classmethod
     def check_thermal_zone_temperature(cls):

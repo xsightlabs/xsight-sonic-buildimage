@@ -78,24 +78,31 @@ class AllPsuPresenceCondition(PsuCondition):
 
 class MinCoolingLevelChangeCondition(ThermalPolicyConditionBase):
     trust_state = None
-    temperature = None
+    previous_temperatures = None
+    temperatures = None
     
     def is_match(self, thermal_info_dict):
         from .thermal import Thermal
 
         trust_state = Thermal.check_module_temperature_trustable()
-        temperature = int(Thermal.get_min_amb_temperature())
+        MinCoolingLevelChangeCondition.temperatures = Thermal.get_temperatures()
 
         change_cooling_level = False
         if trust_state != MinCoolingLevelChangeCondition.trust_state:
             MinCoolingLevelChangeCondition.trust_state = trust_state
             change_cooling_level = True
 
-        if temperature != MinCoolingLevelChangeCondition.temperature:
-            MinCoolingLevelChangeCondition.temperature = temperature
+        if MinCoolingLevelChangeCondition.previous_temperatures is not None:
+            indX = 0
+            for indX in range(3):
+                if MinCoolingLevelChangeCondition.temperatures[indX] != MinCoolingLevelChangeCondition.previous_temperatures[indX]:
+                    change_cooling_level = True
+        else:
             change_cooling_level = True
-        # See on top of thermal.py how to enable log_debug
-        logger.log_debug("MinCoolingLevelChangeCondition: temperature {} change_cooling_level {}".format(temperature, change_cooling_level))
+
+        # MinCoolingLevelChangeCondition.previous_temperatures = MinCoolingLevelChangeCondition.temperatures
+        logger.log_debug("MinCoolingLevelChangeCondition: temperatures {} change_cooling_level {}".format(
+            str(MinCoolingLevelChangeCondition.temperatures), change_cooling_level))
         return change_cooling_level
 
 

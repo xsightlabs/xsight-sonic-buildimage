@@ -157,27 +157,55 @@ class ChangeMinCoolingLevelAction(ThermalPolicyActionBase):
         from .thermal_conditions import UpdateCoolingLevelToMinCondition
 
         trust_state = MinCoolingLevelChangeCondition.trust_state
-        temperature = MinCoolingLevelChangeCondition.temperature
-        minimum_table = DEVICE_DATA['es9632xx-O32x400G']['thermal']['minimum_table']['unk_{}'.format(trust_state)]
+        temperatures = MinCoolingLevelChangeCondition.temperatures
+        current_stage = []
+        thermal_U31_x48 = DEVICE_DATA['es9632xx-O32x400G']['thermal']['threshold_table']['thermal_U31_x48']
+        thermal_U61_x49 = DEVICE_DATA['es9632xx-O32x400G']['thermal']['threshold_table']['thermal_U61_x49']
+        thermal_U86_x4A = DEVICE_DATA['es9632xx-O32x400G']['thermal']['threshold_table']['thermal_U86_x4A']
 
-        for key, cooling_level in minimum_table.items():
+        cooling_stage = 0
+        min_cooling_level = 50
+
+        for key, cooling_level in thermal_U31_x48.items():
             temp_range = key.split(':')
             temp_min = int(temp_range[0].strip())
             temp_max = int(temp_range[1].strip())
-            if temp_min <= temperature <= temp_max:
-                Fan.min_cooling_level = cooling_level - 10
+            temp_stage = int(temp_range[2].strip())
+            if temp_min <= int(temperatures[0]) <= temp_max:
+                current_stage.append(temp_stage)
+                if cooling_stage < temp_stage:
+                    cooling_stage = temp_stage
+                    min_cooling_level = cooling_level
+                break
+
+        for key, cooling_level in thermal_U61_x49.items():
+            temp_range = key.split(':')
+            temp_min = int(temp_range[0].strip())
+            temp_max = int(temp_range[1].strip())
+            temp_stage = int(temp_range[2].strip())
+            if temp_min <= int(temperatures[1]) <= temp_max:
+                current_stage.append(temp_stage)
+                if cooling_stage < temp_stage:
+                    cooling_stage = temp_stage
+                    min_cooling_level = cooling_level
+                break
+
+        for key, cooling_level in thermal_U86_x4A.items():
+            temp_range = key.split(':')
+            temp_min = int(temp_range[0].strip())
+            temp_max = int(temp_range[1].strip())
+            temp_stage = int(temp_range[2].strip())
+            if temp_min <= int(temperatures[2]) <= temp_max:
+                current_stage.append(temp_stage)
+                if cooling_stage < temp_stage:
+                    cooling_stage = temp_stage
+                    min_cooling_level = cooling_level
                 break
 
         # See on top of thermal.py how to enable log_debug
-        logger.log_debug("ChangeMinCoolingLevelAction: temperature {} Fan.min_cooling_level {} ".format(temperature, Fan.min_cooling_level))
-        current_cooling_level = Fan.get_cooling_level()
-        if current_cooling_level < Fan.min_cooling_level:
-            Fan.set_cooling_level(Fan.min_cooling_level, Fan.min_cooling_level)
-            SetAllFanSpeedAction.set_psu_fan_speed(thermal_info_dict, Fan.min_cooling_level * 10)
-        else:
-            Fan.set_cooling_level(Fan.min_cooling_level, current_cooling_level)
-            UpdateCoolingLevelToMinAction.update_cooling_level_to_minimum(thermal_info_dict)
-
+        logger.log_notice("ChangeMinCoolingLevelAction: temperatures {}; Current Cooling level - {}; Next cooling level - {} ".format(
+            temperatures, Fan.get_cooling_level(), min_cooling_level))
+        Fan.set_cooling_level(min_cooling_level, Fan.min_cooling_level)
 
 class UpdatePsuFanSpeedAction(ThermalPolicyActionBase):
     def execute(self, thermal_info_dict):
