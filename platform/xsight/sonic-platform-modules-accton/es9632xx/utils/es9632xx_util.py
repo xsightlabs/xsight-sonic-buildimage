@@ -257,20 +257,29 @@ def device_install():
     global FORCE
 
     for i in range(0, len(mknod)):
-        # for pca954x need times to built new i2c buses
-        if mknod[i].find('pca954') != -1:
-            time.sleep(1)
-
         (status, output) = log_os_system(mknod[i], 1)
         if status:
             print output
             if FORCE == 0:
                 return status
 
+        # for pca954x need time to built new i2c buses
+        if mknod[i].find('pca954') != -1:
+            time.sleep(0.3)
+
     for i in range(0, len(sfp_map)):
         (status, output) = \
-            log_os_system('echo osfp 0x50 > /sys/bus/i2c/devices/i2c-'
+            log_os_system('echo optoe3 0x50 > /sys/bus/i2c/devices/i2c-'
                             + str(sfp_map[i]) + '/new_device', 1)
+        if status:
+            print output
+            if FORCE == 0:
+                return status
+
+        num = i + 1
+        (status, output) = \
+            log_os_system('echo port' + str(num) + ' > /sys/bus/i2c/devices/'
+                            + str(sfp_map[i]) + '-0050/port_name', 1)
         if status:
             print output
             if FORCE == 0:
