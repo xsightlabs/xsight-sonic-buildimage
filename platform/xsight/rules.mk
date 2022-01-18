@@ -5,6 +5,7 @@ include $(PLATFORM_PATH)/one-image.mk
 include $(PLATFORM_PATH)/libsaithrift-dev.mk
 #include $(PLATFORM_PATH)/docker-ptf-xsight.mk
 include $(PLATFORM_PATH)/platform-modules-accton.mk
+include $(PLATFORM_PATH)/xplt.mk
 
 SONIC_ALL += $(SONIC_ONE_IMAGE) \
              $(DOCKER_FPM) \
