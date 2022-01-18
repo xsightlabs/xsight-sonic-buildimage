@@ -66,8 +66,21 @@ if [[ ${SYS_MODE,,} == "xbm" ]]; then
     PCI_MODE=0
 fi
 echo ">>> Re-load NetDev"
+
+# Reset X1 and PCI bus
+if [ -f /tmp/xbooted ]; then
+    if [[ ${SYS_MODE,,} != "xbm" ]]; then
+        /opt/xplt/utils/es9632x_reset_x1.sh
+        if [ $? -ne 0 ]; then
+            echo "ERROR: On running es9632x_reset_x1.sh"
+        fi
+    fi
+    rmmod xpci
+else
+    touch /tmp/xbooted
+fi
+
 #read -p "--- Press enter to continue ---"
-rmmod xpci
 # TODO: change insmod to modprobe after moving xdrivers build into sonic-buildimage
 # debug_level = 1 - Error
 #               2 - Notice
