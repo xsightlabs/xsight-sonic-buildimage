@@ -14,6 +14,7 @@ TX_CHECKSUMMING_MODE=0
 DEFAULT_MTU=9200
 ONIE_MACHINE=`sed -n -e 's/^.*onie_machine=//p' /host/machine.conf`
 CFG_FILE="/etc/sonic/xlink.cfg"
+XPLT_UTL="/opt/xplt/utils"
 
 if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
     # Probing cpu ixgbe net interfaces
@@ -69,15 +70,17 @@ echo ">>> Re-load NetDev"
 
 # Reset X1 and PCI bus
 if [ -f /tmp/xbooted ]; then
-    if [[ ${SYS_MODE,,} != "xbm" ]]; then
-        /opt/xplt/utils/es9632x_reset_x1.sh
-        if [ $? -ne 0 ]; then
-            echo "ERROR: On running es9632x_reset_x1.sh"
+    if [ ${SYS_MODE,,} != "xbm" ]; then
+        if [ -d $XPLT_UTL ]; then
+            $XPLT_UTL/es9632x_reset_x1.sh
+            if [ $? -ne 0 ]; then
+                echo "ERROR: On running es9632x_reset_x1.sh"
+            fi
+        else
+            echo "ERROR: No $XPLT_UTL found!"
         fi
     fi
     rmmod xpci
-else
-    touch /tmp/xbooted
 fi
 
 #read -p "--- Press enter to continue ---"
@@ -93,6 +96,18 @@ insmod /home/admin/xlx/xpci.ko attach_if=${XPCI_NETDEV_ATTACH_IF} num_of_ports=$
 
 echo ">>> Sleeping 5"
 sleep 5
+
+if [ ! -f /tmp/xbooted ]; then
+    if [ ${SYS_MODE,,} != "xbm" ]; then
+        if [ -d $XPLT_UTL ]; then
+            echo "INFO: Configure xcvrs"
+            cd $XPLT_UTL/xcvrs && sudo ./py config.py -m 1
+        else
+            echo "ERROR: No $XPLT_UTL found!"
+        fi
+    fi
+    touch /tmp/xbooted
+fi
 
 #echo ">>> Set XPCI debug level to INFO(3)"
 #echo ${DEBUG_LEVEL} > /proc/sys/dev/xpci_dev/debug_level
