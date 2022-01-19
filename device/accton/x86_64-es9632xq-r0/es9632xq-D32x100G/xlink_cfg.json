@@ -1,4 +1,5 @@
 {
+ "comment": "this file is only for usage on VM",
  "driver": "/etc/xsight/xdrv_config.json",
  "ifu_map": [
   19,
