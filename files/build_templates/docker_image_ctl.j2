@@ -651,6 +651,13 @@ start() {
         --env "CONTAINER_NAME"=$DOCKERNAME \
         --env "SYSLOG_TARGET_IP"=$SYSLOG_TARGET_IP \
         --env "PLATFORM"=$PLATFORM \
+{%- if sonic_asic_platform == "xsight" %}
+{%- if docker_container_name == "syncd" %}
+        -p 0.0.0.0:51000 \
+        -p 0.0.0.0:51002 \
+        -p 0.0.0.0:51001 \
+{%- endif %}
+{%- endif %}
         --name=$DOCKERNAME \
 {%- if docker_container_name == "gbsyncd" %}
         -v /var/run/docker-syncd$DEV:/var/run/sswsyncd \
