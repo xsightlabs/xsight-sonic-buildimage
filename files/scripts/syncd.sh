@@ -150,7 +150,7 @@ function stopplatform2() {
         elif [ x"$sonic_asic_platform" == x"nvidia-bluefield" ]; then
             /usr/bin/bfnet.sh stop
         elif [ x$sonic_asic_platform == x'xsight' ]; then
-            /home/admin/xlx/down.sh
+            /home/admin/xlx/down.sh $DEBUGLOG
         fi
     fi
 }
