@@ -160,7 +160,7 @@ function stopplatform2() {
             /etc/init.d/xpnet.sh stop
             /etc/init.d/xpnet.sh start
         elif [ x$sonic_asic_platform == x'xsight' ]; then
-            /home/admin/xlx/down.sh
+            /home/admin/xlx/down.sh $DEBUGLOG
         fi
     fi
 }
