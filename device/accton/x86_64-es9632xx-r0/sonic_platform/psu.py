@@ -19,11 +19,6 @@ I2C_PATH ="/sys/bus/i2c/devices/{0}-00{1}/"
 
 PSULED_FNODES= ["/sys/class/leds/es9632_led::psu1/brightness",
                 "/sys/class/leds/es9632_led::psu2/brightness"]
-PSULED_MODES = {
-    "0" : "STATUS_LED_COLOR_OFF",
-    "1" : "STATUS_LED_COLOR_GREEN",
-    "3" : "STATUS_LED_COLOR_AMBER"
-}
 
 PSU_NAME_LIST = ["PSU-1", "PSU-2"]
 PSU_NUM_FAN = [1, 1]
@@ -65,6 +60,11 @@ class Psu(PsuBase):
         self.i2c_addr = PSU_CPLD_I2C_MAPPING[self.index]["addr"]
         self.cpld_path = I2C_PATH.format(self.i2c_num, self.i2c_addr)
         self.__initialize_fan()
+        self.PSULED_MODES = {
+            "0" : self.STATUS_LED_COLOR_OFF,
+            "1" : self.STATUS_LED_COLOR_GREEN,
+            "3" : self.STATUS_LED_COLOR_AMBER
+        }
 
     def __initialize_fan(self):
         from sonic_platform.fan import Fan
@@ -129,7 +129,7 @@ class Psu(PsuBase):
             bool: True if status LED state is set successfully, False if not
         """
         mode = None
-        for key, val in PSULED_MODES.items():
+        for key, val in self.PSULED_MODES.items():
             if val == color:
                 mode = key
                 break
@@ -145,7 +145,7 @@ class Psu(PsuBase):
             A string, one of the predefined STATUS_LED_COLOR_* strings above
         """
         val = self._api_helper.read_txt_file(PSULED_FNODES[self.index])
-        return PSULED_MODES[val] if val in PSULED_MODES else "UNKNOWN"
+        return self.PSULED_MODES[val] if val in self.PSULED_MODES else "UNKNOWN"
 
     def get_temperature(self):
         """
@@ -223,10 +223,10 @@ class Psu(PsuBase):
         val=self._api_helper.read_txt_file(power_path)
         if val is not None:
             if int(val, 10) == 1:
-                self.set_status_led("STATUS_LED_COLOR_GREEN")
+                self.set_status_led(self.STATUS_LED_COLOR_GREEN)
                 return True
             else:
-                self.set_status_led("STATUS_LED_COLOR_AMBER")
+                self.set_status_led(self.STATUS_LED_COLOR_AMBER)
                 return False
         else:
             return False

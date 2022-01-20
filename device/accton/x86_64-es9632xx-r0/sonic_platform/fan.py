@@ -6,9 +6,9 @@
 #
 #############################################################################
 
-
 try:
     from sonic_platform_base.fan_base import FanBase
+    from sonic_platform import platform
     from .helper import APIHelper
     from .thermal import logger
 except ImportError as e:
@@ -240,7 +240,12 @@ class Fan(FanBase):
             string: representing the color with which is the status of
                    fan modules
         """
-        return self.status_led_state
+        if not self.is_psu_fan:
+            return self.status_led_state
+        else:
+            platform_chassis = platform.Platform().get_chassis()
+            psu = platform_chassis.get_psu(self.psu_index)
+            return psu.get_status_led()
 
     def get_presence(self):
         """
