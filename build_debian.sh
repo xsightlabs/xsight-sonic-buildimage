@@ -531,7 +531,6 @@ sudo cp files/image_config/pip/pip.conf $FILESYSTEM_ROOT/etc/pip.conf
 
 # For building Python packages
 sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install python3-setuptools python3-wheel
-sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip3 install 'ioctl_opt'
 
 # docker Python API package is needed by Ansible docker module as well as some SONiC applications
 sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip3 install 'docker==7.1.0'
@@ -666,20 +665,6 @@ fi
 
 ## Setup ebtable rules (rule file in text format)
 sudo cp files/image_config/ebtables/ebtables.filter.cfg ${FILESYSTEM_ROOT}/etc
-
-## xSight: Add and enable determine-reset-cause.service
-sudo cp -a files/image_config/platform/determine-reboot-cause.service $FILESYSTEM_ROOT/lib/systemd/system/determine-reboot-cause.service
-sudo LANG=C chroot $FILESYSTEM_ROOT systemctl enable determine-reboot-cause.service
-
-## xSight: XXX add xbm scripts. To be moved to platform package
-sudo LANG=C chroot $FILESYSTEM_ROOT apt-get -y install libjsoncpp1 libssl1.1 libthrift-0.11.0
-sudo cp -a platform/xsight/files/xbm $FILESYSTEM_ROOT/home/admin/
-sudo cp -a platform/xsight/files/xlx $FILESYSTEM_ROOT/home/admin/
-sudo cp -a platform/xsight/files/xlink.cfg $FILESYSTEM_ROOT/etc/sonic/
-sudo chmod +x $FILESYSTEM_ROOT/home/admin/xbm/cfg/*.sh
-sudo chmod +x $FILESYSTEM_ROOT/home/admin/xlx/*.sh
-sudo LANG=C chroot $FILESYSTEM_ROOT chown -R $USERNAME /home/admin/xbm
-sudo LANG=C chroot $FILESYSTEM_ROOT chown -R $USERNAME /home/admin/xlx
 
 ## Debug Image specific changes
 ## Update motd for debug image
