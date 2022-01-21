@@ -72,6 +72,7 @@ echo ">>> Re-load NetDev"
 if [ -f /tmp/xbooted ]; then
     if [ ${SYS_MODE,,} != "xbm" ]; then
         if [ -d $XPLT_UTL ]; then
+            echo ">>> Resetting X1"
             $XPLT_UTL/es9632x_reset_x1.sh
             if [ $? -ne 0 ]; then
                 echo "ERROR: On running es9632x_reset_x1.sh"
@@ -100,8 +101,8 @@ sleep 5
 if [ ! -f /tmp/xbooted ]; then
     if [ ${SYS_MODE,,} != "xbm" ]; then
         if [ -d $XPLT_UTL ]; then
-            echo "INFO: Configure xcvrs"
-            cd $XPLT_UTL/xcvrs && sudo ./py config.py -m 1
+            echo ">>> Configure xcvrs"
+            cd $XPLT_UTL/xcvrs && sudo /opt/xplt/venv/bin/python config.py -m 1
         else
             echo "ERROR: No $XPLT_UTL found!"
         fi
