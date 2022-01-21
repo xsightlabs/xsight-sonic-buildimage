@@ -196,6 +196,25 @@ sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip3 install thrift
 
 {# Xsight platform files and packages #}
 {% if sonic_asic_platform == "xsight" %}
+
+## Add and enable determine-reset-cause.service
+sudo cp -a files/image_config/platform/determine-reboot-cause.service $FILESYSTEM_ROOT/lib/systemd/system/determine-reboot-cause.service
+sudo LANG=C chroot $FILESYSTEM_ROOT systemctl enable determine-reboot-cause.service
+
+## add XBM stuff
+sudo LANG=C chroot $FILESYSTEM_ROOT apt-get -y install libjsoncpp1 libssl1.1 libthrift-0.11.0
+sudo cp -a platform/xsight/files/xbm $FILESYSTEM_ROOT/home/admin/
+sudo LANG=C chroot $FILESYSTEM_ROOT chown -R $USERNAME /home/admin/xbm
+sudo chmod +x $FILESYSTEM_ROOT/home/admin/xbm/cfg/*.sh
+
+## X1 scripts
+sudo cp -a platform/xsight/files/xlx $FILESYSTEM_ROOT/home/admin/
+sudo cp -a platform/xsight/files/xlink.cfg $FILESYSTEM_ROOT/etc/sonic/
+sudo chmod +x $FILESYSTEM_ROOT/home/admin/xlx/*.sh
+sudo LANG=C chroot $FILESYSTEM_ROOT chown -R $USERNAME /home/admin/xlx
+
+## xplt stuff
+sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip2 install 'ioctl_opt' #required for X1 reset scripts
 sudo LANG=C chroot $FILESYSTEM_ROOT apt-get -y install python-pip virtualenv
 sudo curl -o ./xplt.deb http://x-nexus:8081/repository/xplt-es9632x/deb/xplt_es9632xq_sonicnos-2.1.0-3-g7dac708_amd64.deb
 sudo dpkg --root=$FILESYSTEM_ROOT -i xplt.deb
