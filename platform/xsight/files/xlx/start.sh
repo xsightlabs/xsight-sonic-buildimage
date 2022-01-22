@@ -102,7 +102,7 @@ if [ ! -f /tmp/xbooted ]; then
     if [ ${SYS_MODE,,} != "xbm" ]; then
         if [ -d $XPLT_UTL ]; then
             echo ">>> Configure xcvrs"
-            cd $XPLT_UTL/xcvrs && sudo /opt/xplt/venv/bin/python config.py -m 1
+            cd $XPLT_UTL/xcvrs && /opt/xplt/venv/bin/python config.py -m 1
         else
             echo "ERROR: No $XPLT_UTL found!"
         fi
