@@ -726,9 +726,9 @@ start() {
         --env "PLATFORM"=$PLATFORM \
 {%- if sonic_asic_platform == "xsight" %}
 {%- if docker_container_name == "syncd" %}
-        -p 0.0.0.0:51000:51000/tcp \
-        -p 0.0.0.0:51002:51002/tcp \
-        -p 0.0.0.0:51001:51001/tcp \
+        -p 0.0.0.0:31000:31000/tcp \
+        -p 0.0.0.0:31002:31002/tcp \
+        -p 0.0.0.0:31001:31001/tcp \
 {%- endif %}
 {%- endif %}
         --name=$DOCKERNAME \
