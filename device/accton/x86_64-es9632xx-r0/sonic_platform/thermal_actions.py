@@ -1,5 +1,6 @@
 from sonic_platform_base.sonic_thermal_control.thermal_action_base import ThermalPolicyActionBase
 from sonic_platform_base.sonic_thermal_control.thermal_json_object import thermal_json_object
+from .helper import APIHelper
 from .thermal import logger
 
 class SetFanSpeedAction(ThermalPolicyActionBase):
@@ -148,6 +149,9 @@ class ThermalRecoverAction(ThermalPolicyActionBase):
 
 
 class ChangeMinCoolingLevelAction(ThermalPolicyActionBase):
+
+    thermal_policy_pause_countdown = 0
+
     def execute(self, thermal_info_dict):
         from .thermal_device_data import DEVICE_DATA
         from .fan import Fan
@@ -203,8 +207,24 @@ class ChangeMinCoolingLevelAction(ThermalPolicyActionBase):
                     min_cooling_level = cooling_level
                 break
 
-        # See on top of thermal.py how to enable log_debug
-        logger.log_notice("ChangeMinCoolingLevelAction: temperatures {}; Current Cooling level - {}; Next cooling level - {} ".format(
+        _api_helper = APIHelper()
+        policy_status = _api_helper.read_txt_file("/tmp/thermal_manager_pause_policy")
+        if policy_status is not None:
+            try:
+                ChangeMinCoolingLevelAction.thermal_policy_pause_countdown = int(policy_status, 10)
+                if ChangeMinCoolingLevelAction.thermal_policy_pause_countdown > 10 or \
+                   ChangeMinCoolingLevelAction.thermal_policy_pause_countdown <= 0:
+                    ChangeMinCoolingLevelAction.thermal_policy_pause_countdown = 0
+                    logger.log_warning("thermal_actions: Policy pause value out of range!")
+            except ValueError:
+                ChangeMinCoolingLevelAction.thermal_policy_pause_countdown = 0
+            _api_helper.run_command("rm -f /tmp/thermal_manager_pause_policy")
+
+        if ChangeMinCoolingLevelAction.thermal_policy_pause_countdown > 0:
+            ChangeMinCoolingLevelAction.thermal_policy_pause_countdown -= 1
+            return
+
+        logger.log_debug("ChangeMinCoolingLevelAction: {}; Current level: {}; Next level: {} ".format(
             temperatures, Fan.get_cooling_level(), min_cooling_level))
         Fan.set_cooling_level(min_cooling_level, Fan.min_cooling_level)
 

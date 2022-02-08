@@ -4,6 +4,7 @@ from sonic_platform_base.sonic_thermal_control.thermal_policy import ThermalPoli
 from .thermal_actions import *
 from .thermal_conditions import *
 from .thermal_infos import *
+from .helper import APIHelper
 
 
 class ThermalManager(ThermalManagerBase):
@@ -46,6 +47,19 @@ class ThermalManager(ThermalManagerBase):
         """
         from .thermal import Thermal
         return Thermal.set_thermal_algorithm_status(False)
+
+    @classmethod
+    def pause_thermal_algorithm(cls, timeout_minutes=1):
+        """
+        Pause thermal policy with timeout in minutes
+
+        Returns:
+            bool: True, if succeeded to place pause request. False - if failed.
+        """
+        _api_helper = APIHelper()
+        command = "echo {} > /tmp/thermal_manager_pause_policy".format(timeout_minutes)
+        status, result = _api_helper.run_command(command)
+        return status
 
     @classmethod
     def _add_private_thermal_policy(cls):
