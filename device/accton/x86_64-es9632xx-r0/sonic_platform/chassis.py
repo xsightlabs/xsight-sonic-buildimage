@@ -205,6 +205,14 @@ class Chassis(ChassisBase):
         from .thermal_manager import ThermalManager
         return ThermalManager
 
+    def set_thermal_policy_pause(self, timeout_minutes):
+        """
+        Returns:
+            True|False
+        """
+        from .thermal_manager import ThermalManager
+        return ThermalManager.pause_thermal_algorithm(timeout_minutes)
+
     def get_change_event(self, timeout=0):
         """
         Returns:
