@@ -268,18 +268,13 @@ NULL_VAL = 'N/A'
 SFP_STATUS_INSERTED = '1'
 SFP_STATUS_REMOVED = '0'
 
-
-
 class Sfp(SfpBase):
     """Platform-specific Sfp class"""
 
     HOST_CHK_CMD = "docker > /dev/null 2>&1"
-    PLATFORM = "x86_64-es9632xq-r0"
-    HWSKU = "es9632xq-O32x400G"
 
-    # Path to sysfs
     PLATFORM_ROOT_PATH = "/usr/share/sonic/device"
-    PMON_HWSKU_PATH = "/usr/share/sonic/hwsku"
+    PMON_JSON_PATH = "/usr/share/sonic/platform"
 
     # Port number
     PORT_START = 1
@@ -331,6 +326,7 @@ class Sfp(SfpBase):
         self._port_num = self._index + 1
         self._api_helper = APIHelper()
         self.port_to_eeprom_mapping = {}
+        self.data = {'present': False}
 
         eeprom_path = '/sys/bus/i2c/devices/{0}-0050/eeprom'
         for x in range(self.PORT_START, self.PORT_END + 1):
@@ -355,10 +351,9 @@ class Sfp(SfpBase):
         return os.system(self.HOST_CHK_CMD) == 0
 
     def __get_path_to_port_config_file(self):
-        platform_path = "/".join([self.PLATFORM_ROOT_PATH, self.PLATFORM])
-        hwsku_path = "/".join([platform_path, self.HWSKU]
-                              ) if self.__is_host() else self.PMON_HWSKU_PATH
-        config_file_path = "/".join([hwsku_path, "port_config.ini"])
+        platform_path = "/".join([self.PLATFORM_ROOT_PATH, self._api_helper.platform])
+        platform_json_path = platform_path if self.__is_host() else self.PMON_JSON_PATH
+        config_file_path = "/".join([platform_json_path, "platform.json"])
         return config_file_path
 
     def _convert_string_to_num(self, value_str):
@@ -1306,32 +1301,24 @@ class Sfp(SfpBase):
 
         return transceiver_dom_threshold_info_dict
 
-    data = {'valid': 0, 'last': 0, 'present': 0}
-
     def get_transceiver_change_event(self, timeout=2000):
         """
         Checks if transceiver has been inserted/removed
         Returns:
             SFP_STATUS_INSERTED, SFP_STATUS_REMOVED or None
         """
-        now = time.time()
- 
-        if now < (self.data['last'] + timeout) and self.data['valid']:
-            return None
-
         present = self.get_presence()
-        if present ^ self.data['present']:
+        if present != self.data['present']:
             if present == True:
                 sfp_event = SFP_STATUS_INSERTED
+                logger.log_debug("get_transceiver_change_event: port {}: SFP_STATUS_INSERTED".format(self._port_num))
             else:
                 sfp_event = SFP_STATUS_REMOVED
+                logger.log_debug("get_transceiver_change_event: port {}: SFP_STATUS_REMOVED".format(self._port_num))
         else:
             sfp_event = None
 
         self.data['present'] = present
-        self.data['last'] = now
-        self.data['valid'] = 1
-
         return sfp_event
 
     def get_reset_status(self):
@@ -1539,7 +1526,7 @@ class Sfp(SfpBase):
         logger.log_debug("get_lpmode() is not yet implemented")
         return False
 
-        if self._port_num > PORT_END: 
+        if self._port_num > self.PORT_END:
             # SFP doesn't support this feature
             return False
         else:
@@ -1571,7 +1558,7 @@ class Sfp(SfpBase):
         logger.log_debug("get_power_set() is not yet implemented")
         return False
 
-        if self._port_num > PORT_END:
+        if self._port_num > self.PORT_END:
             # SFP doesn't support this feature
             return False
         else:
@@ -2037,11 +2024,10 @@ class Sfp(SfpBase):
         """
         # Check for invalid port_num
 
-        if self._port_num > PORT_END:
+        if self._port_num > self.PORT_END:
             return False # SFP doesn't support this feature
-        else:
-            if not self.get_presence():
-                return False
+        elif not self.get_presence():
+            return False
 
         cpld_path = self._cpld_mapping[1]
         reset_path = "{}{}{}{}".format(CPLD_I2C_PATH, cpld_path, '/module_reset_', self._port_num)
@@ -2121,7 +2107,7 @@ class Sfp(SfpBase):
         Returns:
             A boolean, True if lpmode is set successfully, False if not
         """
-        if self._port_num > PORT_END:
+        if self._port_num > self.PORT_END:
             return False # SFP doesn't support this feature
         else:
             if not self.get_presence():
@@ -2151,7 +2137,7 @@ class Sfp(SfpBase):
             A boolean, True if power-override and power_set are set successfully,
             False if not
         """
-        if self._port_num > PORT_END:
+        if self._port_num > self.PORT_END:
             return False # SFP doesn't support this feature
         else:
             if not self.get_presence():
@@ -2187,9 +2173,8 @@ class Sfp(SfpBase):
             string: The name of the device
         """
         sfputil_helper = SfpUtilHelper()
-        sfputil_helper.read_porttab_mappings(
-            self.__get_path_to_port_config_file())
-        name = sfputil_helper.logical[self.index] or "Unknown"
+        sfputil_helper.read_porttab_mappings(self.__get_path_to_port_config_file())
+        name = sfputil_helper.logical[self._index] or "Unknown"
         return name
 
     def get_presence(self):
@@ -2200,7 +2185,8 @@ class Sfp(SfpBase):
         """
         cpld_path = self._cpld_mapping[0]
         present_path = "{}{}{}{}".format(CPLD_I2C_PATH, cpld_path, '/module_present_', self._port_num)
-        val=self._api_helper.read_txt_file(present_path)
+        val = self._api_helper.read_txt_file(present_path)
+
         if val is not None:
             return int(val, 10)==1
         else:
