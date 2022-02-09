@@ -9,7 +9,7 @@ echo ">>> Looking for running XBM process"
 if pgrep -x "xbm" >/dev/null
 then
     echo "XBM is running. Stopping it..."
-    pkill -x -9 xbm
+    pkill -x xbm
 else
     echo "XBM is not running"
 fi

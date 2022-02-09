@@ -11,5 +11,5 @@ function debug()
 
 if [[ ${ONIE_MACHINE,,} == *"kvm"* ]]; then
    debug "Stopping XBM"
-   pkill -x -9 xbm
+   pkill -x xbm
 fi
