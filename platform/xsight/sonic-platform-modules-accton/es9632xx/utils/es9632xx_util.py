@@ -24,7 +24,7 @@ options:
 command:
     install     : install drivers and generate related sysfs nodes
     clean       : uninstall drivers and remove related sysfs nodes
-    show        : show all systen status
+    show        : show all system status
     sff         : dump SFP eeprom
     set         : change board setting with fan|led|sfp
 """
@@ -122,12 +122,25 @@ def show_help():
 
 def show_set_help():
     cmd = sys.argv[0].split('/')[-1] + ' ' + ARGS[0]
-    print cmd + ' [led|sfp|fan]'
-    print '    use "' + cmd + ' led 0-4 "  to set led color'
-    print '    use "' + cmd + ' fan 0-100" to set fan duty percetage'
-    print '    use "' + cmd + ' sfp 1-48 {0|1}" to set sfp# tx_disable'
+    set_help = """{} [led|led_loc|led_diag|led_fan|led_psu1|led_psu2|sfp|fan]
+    use "{} fan 0-100" to set all fans duty percetage
+    use "{} sfp 1-48 {{0|1}}" to set sfp# tx_disable
+    use "{} led 0-4 " to set all leds to same color
+    led colors:
+        0 = off
+        1 = green
+        2 = green blinking
+        3 = amber
+        4 = amber blinking
+    use "{} led_xxx {{0|1|2|3|4}} to set specific led color
+    led:
+        led_loc     : set location led      {{0|3|4}}
+        led_diag    : set diagnostic led    {{0|1|2|3}}
+        led_fan     : set fan led           {{0|1|3}}
+        led_psu1    : set psu1 led          {{0|1|3}}
+        led_psu2    : set psu2 led          {{0|1|3}}""".format(cmd, cmd, cmd, cmd, cmd)
+    print(set_help)
     sys.exit(0)
-
 
 def show_eeprom_help():
     cmd = sys.argv[0].split('/')[-1] + ' ' + ARGS[0]
@@ -202,8 +215,9 @@ def driver_uninstall():
     return 0
 
 
-led_prefix = '/sys/class/leds/' + PROJECT_NAME + '_led::'
+led_prefix = '/sys/class/leds/' + PROJECT_NAME[:-2] + '_led::'
 hwmon_types = {'led': ['diag', 'fan', 'loc', 'psu1', 'psu2']}
+leds_dict = {'led_loc': 'loc', 'led_diag': 'diag', 'led_fan': 'fan', 'led_psu1': 'psu1', 'led_psu2': 'psu2'}
 hwmon_nodes = {'led': ['brightness']}
 hwmon_prefix = {'led': led_prefix}
 
@@ -546,6 +560,12 @@ def set_device(args):
                 ret = log_os_system('echo ' + args[1] + ' >' + k, 1)
                 if ret[0]:
                     return ret[0]
+
+    elif args[0] in leds_dict:
+        ret = set_specific_led(leds_dict[args[0]], args[1])
+        if ret:
+            return ret
+
     elif args[0] == 'fan':
         if int(args[1]) > 100:
             show_set_help()
@@ -587,6 +607,12 @@ def set_device(args):
 
     return
 
+def set_specific_led(led, mode):
+    for i in range(0, len(ALL_DEVICE['led'])):
+        for k in ALL_DEVICE['led']['led' + str(i + 1)]:
+            if led in k:
+                ret = log_os_system('echo ' + mode + ' >' + k, 1)
+                return ret[0]
 
 # get digits inside a string.
 # Ex: get 31 from "sfp31"
