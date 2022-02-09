@@ -2,7 +2,6 @@ from sonic_platform_base.sonic_thermal_control.thermal_action_base import Therma
 from sonic_platform_base.sonic_thermal_control.thermal_json_object import thermal_json_object
 from .thermal import logger
 
-
 class SetFanSpeedAction(ThermalPolicyActionBase):
     """
     Base thermal action class to set speed for fans
@@ -155,13 +154,15 @@ class ChangeMinCoolingLevelAction(ThermalPolicyActionBase):
         from .thermal_infos import ChassisInfo
         from .thermal_conditions import MinCoolingLevelChangeCondition
         from .thermal_conditions import UpdateCoolingLevelToMinCondition
+        from .helper import APIHelper
 
         trust_state = MinCoolingLevelChangeCondition.trust_state
         temperatures = MinCoolingLevelChangeCondition.temperatures
         current_stage = []
-        thermal_U31_x48 = DEVICE_DATA['es9632xx-O32x400G']['thermal']['threshold_table']['thermal_U31_x48']
-        thermal_U61_x49 = DEVICE_DATA['es9632xx-O32x400G']['thermal']['threshold_table']['thermal_U61_x49']
-        thermal_U86_x4A = DEVICE_DATA['es9632xx-O32x400G']['thermal']['threshold_table']['thermal_U86_x4A']
+        api_helper = APIHelper()
+        thermal_U31_x48 = DEVICE_DATA[api_helper.platform]['thermal']['threshold_table']['thermal_U31_x48']
+        thermal_U61_x49 = DEVICE_DATA[api_helper.platform]['thermal']['threshold_table']['thermal_U61_x49']
+        thermal_U86_x4A = DEVICE_DATA[api_helper.platform]['thermal']['threshold_table']['thermal_U86_x4A']
 
         cooling_stage = 0
         min_cooling_level = 50
