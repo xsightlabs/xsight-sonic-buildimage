@@ -38,11 +38,11 @@
 #define PSU_STATUS_I2C_ADDR			0x68
 #define PSU_STATUS_I2C_REG_OFFSET	0x3
 
-#define MODEL_NAME_LEN				13
-#define MODEL_NAME_REG_OFFSET		0x20
+#define MODEL_NAME_LEN				11
+#define MODEL_NAME_REG_OFFSET		0x15
 
 #define SERIAL_NUM_LEN				18
-#define SERIAL_NUM_REG_OFFSET		0x35
+#define SERIAL_NUM_REG_OFFSET		0x3A
 
 #define IS_POWER_GOOD(id, value)	(!!(value & BIT(id + 2)))
 #define IS_PRESENT(id, value)		(!(value & BIT(id)))
