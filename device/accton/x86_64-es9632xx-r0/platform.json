@@ -21,19 +21,33 @@
       "psus": [
         {
           "name": "PSU-1",
-            "fans": [
+          "status_led": {
+              "controllable": true,
+              "colors": ["off", "green", "amber"]
+          },
+          "fans": [
               {
-                "name": "PSU 1 fan 0"
+                  "name": "PSU 1 fan 0",
+                  "status_led": {
+                      "controllable": false
+	                }
               }
-            ]
+          ]
          },
          {
-           "name": "PSU-2",
-             "fans": [
-               {
-                 "name": "PSU 2 fan 0"
-               }
-             ]
+          "name": "PSU-2",
+          "status_led": {
+              "controllable": true,
+              "colors": ["off", "green", "amber"]
+	        },
+          "fans": [
+              {
+                  "name": "PSU 2 fan 0",
+                  "status_led": {
+                      "controllable": false
+	                }
+              }
+          ]
          }
       ],
       "fans": [
