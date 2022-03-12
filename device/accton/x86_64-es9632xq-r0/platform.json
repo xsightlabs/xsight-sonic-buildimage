@@ -22,14 +22,14 @@
           {
             "name": "PSU-1",
             "status_led": {
-                "controllable": true,
+                "controllable": "true",
                 "colors": ["off", "green", "amber"]
             },
             "fans": [
                 {
                     "name": "PSU 1 fan 0",
                     "status_led": {
-                        "controllable": false
+                        "controllable": "false"
                     }
                 }
             ]
@@ -37,14 +37,14 @@
           {
             "name": "PSU-2",
             "status_led": {
-                "controllable": true,
+                "controllable": "true",
                 "colors": ["off", "green", "amber"]
             },
             "fans": [
                 {
                     "name": "PSU 2 fan 0",
                     "status_led": {
-                        "controllable": false
+                        "controllable": "false"
                     }
                 }
             ]
