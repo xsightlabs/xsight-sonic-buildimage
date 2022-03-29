@@ -14,6 +14,7 @@ TX_CHECKSUMMING_MODE=0
 DEFAULT_MTU=9200
 ONIE_MACHINE=`sed -n -e 's/^.*onie_machine=//p' /host/machine.conf`
 CFG_FILE="/etc/sonic/xlink.cfg"
+LABEL_REVISION_FILE="/etc/sonic/hw_revision"
 XPLT_UTL="/opt/xplt/utils"
 
 if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
@@ -51,6 +52,11 @@ if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
         echo ">>> WARN! No such interface: ${XPCI_NETDEV_ATTACH_IF}, set to ${DEFAULT_ASIC_NETDEV_NAME}"
         XPCI_NETDEV_ATTACH_IF=${DEFAULT_ASIC_NETDEV_NAME}
     fi
+fi
+
+# Checking the label revision
+if [ ${SYS_MODE,,} != "xbm" ]; then
+    decode-syseeprom -d | grep "Label Revision" | awk '{print $5}' > ${LABEL_REVISION_FILE}
 fi
 
 if [[ ${XPCI_NETDEV_ATTACH_IF} == "xcpu" ]]; then
