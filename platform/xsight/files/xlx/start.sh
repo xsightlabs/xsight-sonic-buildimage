@@ -102,8 +102,3 @@ fi
 
 #echo ">>> Set XPCI debug level to INFO(3)"
 #echo ${DEBUG_LEVEL} > /proc/sys/dev/xpci_dev/debug_level
-
-if [[ ${SYS_MODE,,} == "xbm" ]]; then
-    echo ">>> Simulation mode. Use xbm!"
-    /home/admin/xbm/cfg/start.sh
-fi

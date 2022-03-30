@@ -216,12 +216,6 @@ sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip3 install thrift
 sudo cp -a files/image_config/platform/determine-reboot-cause.service $FILESYSTEM_ROOT/lib/systemd/system/determine-reboot-cause.service
 sudo LANG=C chroot $FILESYSTEM_ROOT systemctl enable determine-reboot-cause.service
 
-## add XBM stuff
-sudo LANG=C chroot $FILESYSTEM_ROOT apt-get -y install libjsoncpp1 libssl1.1 libthrift-0.11.0
-sudo cp -a platform/xsight/files/xbm $FILESYSTEM_ROOT/home/admin/
-sudo LANG=C chroot $FILESYSTEM_ROOT chown -R $USERNAME /home/admin/xbm
-sudo chmod +x $FILESYSTEM_ROOT/home/admin/xbm/cfg/*.sh
-
 ## X1 scripts
 sudo cp -a platform/xsight/files/xlx $FILESYSTEM_ROOT/home/admin/
 sudo cp -a platform/xsight/files/xlink.cfg $FILESYSTEM_ROOT/etc/sonic/
