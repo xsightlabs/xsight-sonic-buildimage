@@ -32,22 +32,6 @@ if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
         XPCI_NETDEV_ATTACH_IF=${DEFAULT_ASIC_NETDEV_NAME}
     fi
 
-    if [[ ! -d /sys/class/xpci/xpci ]]; then
-        ip link set dev ${SECOND_ASIC_NETDEV_NAME} down
-        ip link set dev ${DEFAULT_ASIC_NETDEV_NAME} down
-        sleep 1
-        ip link set dev ${DEFAULT_ASIC_NETDEV_NAME} up
-
-        ip link set dev ${DEFAULT_ASIC_NETDEV_NAME} down
-        ip link set dev ${DEFAULT_ASIC_NETDEV_NAME} up
-
-    else
-        ip link set dev ${SECOND_ASIC_NETDEV_NAME} down
-        ip link set dev ${DEFAULT_ASIC_NETDEV_NAME} down
-        sleep 1
-        ip link set dev ${DEFAULT_ASIC_NETDEV_NAME} up
-    fi
-
     if [[ ${SYS_MODE,,} != "xbm" && ! -d /sys/class/net/${XPCI_NETDEV_ATTACH_IF} ]]; then
         echo ">>> WARN! No such interface: ${XPCI_NETDEV_ATTACH_IF}, set to ${DEFAULT_ASIC_NETDEV_NAME}"
         XPCI_NETDEV_ATTACH_IF=${DEFAULT_ASIC_NETDEV_NAME}
