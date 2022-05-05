@@ -4,11 +4,23 @@ XSIGHT_URL = file:///sonic
 
 XSIGHT_LIBSAI = xsai-main_0.1_all.deb
 XSIGHT_LIBSAI_DEV = xsai-main-dev_0.1_all.deb
+XSIGHT_XBM = xbm_0.1_all.deb
 
 $(XSIGHT_LIBSAI)_URL = $(XSIGHT_URL)/$(XSIGHT_LIBSAI)
 $(XSIGHT_LIBSAI_DEV)_URL = $(XSIGHT_URL)/$(XSIGHT_LIBSAI_DEV)
 $(XSIGHT_LIBSAI)_DEPENDS += $(LIBTHRIFT_DEV)
 $(XSIGHT_LIBSAI)_RDEPENDS += $(LIBTHRIFT_DEV)
+
+XBM_EXISTS := $(or $(and $(wildcard $(XSIGHT_XBM)),y),n)
+
+ifeq ($(XBM_EXISTS),y)
+$(XSIGHT_XBM)_URL = $(XSIGHT_URL)/$(XSIGHT_XBM)
+$(XSIGHT_LIBSAI)_DEPENDS += $(XSIGHT_XBM)
+$(XSIGHT_LIBSAI)_RDEPENDS += $(XSIGHT_XBM)
+$(XSIGHT_LIBSAI)_UNINSTALLS += $(XSIGHT_XBM)
+SONIC_ONLINE_DEBS += $(XSIGHT_XBM)
+$(eval $(call add_derived_package,$(XSIGHT_XBM)))
+endif
 
 $(eval $(call add_derived_package,$(XSIGHT_LIBSAI),$(XSIGHT_LIBSAI_DEV)))
 
