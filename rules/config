@@ -177,7 +177,7 @@ ENABLE_AUTO_TECH_SUPPORT = y
 ENABLE_NATIVE_WRITE = y
 
 # INCLUDE_MACSEC - build docker-macsec for macsec support
-INCLUDE_MACSEC = y
+INCLUDE_MACSEC = n
 
 # INCLUDE_GBSYNCD - build docker-gbsyncd-* for gearbox support
 INCLUDE_GBSYNCD ?= y
@@ -297,7 +297,7 @@ REGISTRY_SERVER_PATH ?=
 BUILD_MULTIASIC_KVM = n
 
 # INCLUDE_MUX - build docker-mux for dual ToR (Gemini)
-INCLUDE_MUX = y
+INCLUDE_MUX = n
 
 # ENABLE_ASAN - enable address sanitizer
 ENABLE_ASAN ?= n
