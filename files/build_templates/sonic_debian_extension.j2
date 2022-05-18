@@ -223,11 +223,11 @@ sudo chmod +x $FILESYSTEM_ROOT/home/admin/xlx/*.sh
 sudo LANG=C chroot $FILESYSTEM_ROOT chown -R $USERNAME /home/admin/xlx
 
 ## xplt stuff
-sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip2 install 'ioctl_opt' #required for X1 reset scripts
-sudo LANG=C chroot $FILESYSTEM_ROOT apt-get -y install python-pip virtualenv
-sudo curl -o ./xplt.deb $XPLT_TOOLS_URL
-sudo dpkg --root=$FILESYSTEM_ROOT -i xplt.deb
-sudo rm -f xplt.deb
+#sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip2 install 'ioctl_opt' #required for X1 reset scripts
+#sudo LANG=C chroot $FILESYSTEM_ROOT apt-get -y install python-pip virtualenv
+#sudo curl -o ./xplt.deb $XPLT_TOOLS_URL
+#sudo dpkg --root=$FILESYSTEM_ROOT -i xplt.deb
+#sudo rm -f xplt.deb
 {% endif %}
 
 # Install system-health Python 3 package
