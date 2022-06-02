@@ -81,9 +81,9 @@ fi
 #               3 - Info
 #               4 - Debug
 #               5 - Debug with Packet trace
-insmod /home/admin/xlx/xpci.ko attach_if=${XPCI_NETDEV_ATTACH_IF} num_of_ports=${PORT_NUM} debug_level=${DEBUG_LEVEL} \
-                               netdev_mode=${NETDEV_MODE} hw_irq_mode=${HW_IRQ_MODE} pci_mode=${PCI_MODE} \
-                               tx_checksumming=${TX_CHECKSUMMING_MODE}
+modprobe xpci attach_if=${XPCI_NETDEV_ATTACH_IF} num_of_ports=${PORT_NUM} debug_level=${DEBUG_LEVEL} \
+              netdev_mode=${NETDEV_MODE} hw_irq_mode=${HW_IRQ_MODE} pci_mode=${PCI_MODE} \
+              tx_checksumming=${TX_CHECKSUMMING_MODE}
 
 echo ">>> Sleeping 5"
 sleep 5
