@@ -71,9 +71,9 @@ if [ -f /tmp/xbooted ]; then
             echo "ERROR: No $XPLT_UTL found!"
         fi
     fi
-    rmmod xpci
 fi
 
+rmmod xpci
 #read -p "--- Press enter to continue ---"
 # TODO: change insmod to modprobe after moving xdrivers build into sonic-buildimage
 # debug_level = 1 - Error
