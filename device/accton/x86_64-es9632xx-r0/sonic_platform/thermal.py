@@ -79,7 +79,7 @@ class Thermal(ThermalBase):
                     fd.write(str(temperature))
                 return True
             except IOError as e:
-                print("IOError")
+                print("IOError: {} in file: {}".format(e, self.hwmon_path))
 
 
     def get_temperature(self):
