@@ -63,7 +63,7 @@ if [ -f /tmp/xbooted ]; then
     if [ ${SYS_MODE,,} != "xbm" ]; then
         if [ -d $XPLT_UTL ]; then
             echo ">>> Resetting X1"
-            pushd $XPLT_UTL && $XPLT_UTL/es9632x_reset_x1.sh && popd
+            $XPLT_UTL/es9632x_reset_x1.sh
             if [ $? -ne 0 ]; then
                 echo "ERROR: On running es9632x_reset_x1.sh"
             fi
