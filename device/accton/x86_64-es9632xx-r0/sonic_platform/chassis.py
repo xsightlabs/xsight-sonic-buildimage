@@ -18,7 +18,6 @@ except ImportError as e:
 NUM_FAN_TRAY = 6
 NUM_FAN = 2
 NUM_PSU = 2
-NUM_THERMAL = 7
 PORT_END = 32
 NUM_COMPONENT = 5
 POSITION_INDEX = 1
@@ -74,7 +73,7 @@ class Chassis(ChassisBase):
 
     def __initialize_thermals(self):
         from sonic_platform.thermal import Thermal
-        for index in range(0, NUM_THERMAL):
+        for index in range(0, Thermal.NUMBER_OF_THERMALS):
             thermal = Thermal(index)
             self._thermal_list.append(thermal)
 

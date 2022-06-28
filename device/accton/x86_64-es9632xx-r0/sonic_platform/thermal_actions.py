@@ -151,6 +151,10 @@ class ThermalRecoverAction(ThermalPolicyActionBase):
 class ChangeMinCoolingLevelAction(ThermalPolicyActionBase):
 
     thermal_policy_pause_countdown = 0
+    THERMAL_U31 = 0
+    THERMAL_U61 = 1
+    THERMAL_U86 = 2
+    THERMAL_ASIC = 11
 
     def execute(self, thermal_info_dict):
         from .thermal_device_data import DEVICE_DATA
@@ -167,6 +171,7 @@ class ChangeMinCoolingLevelAction(ThermalPolicyActionBase):
         thermal_U31_x48 = DEVICE_DATA[api_helper.platform]['thermal']['threshold_table']['thermal_U31_x48']
         thermal_U61_x49 = DEVICE_DATA[api_helper.platform]['thermal']['threshold_table']['thermal_U61_x49']
         thermal_U86_x4A = DEVICE_DATA[api_helper.platform]['thermal']['threshold_table']['thermal_U86_x4A']
+        thermal_asic = DEVICE_DATA[api_helper.platform]['thermal']['threshold_table']['asic_average']
 
         cooling_stage = 0
         min_cooling_level = 50
@@ -176,7 +181,7 @@ class ChangeMinCoolingLevelAction(ThermalPolicyActionBase):
             temp_min = int(temp_range[0].strip())
             temp_max = int(temp_range[1].strip())
             temp_stage = int(temp_range[2].strip())
-            if temp_min <= int(temperatures[0]) <= temp_max:
+            if temp_min <= int(temperatures[ChangeMinCoolingLevelAction.THERMAL_U31]) <= temp_max:
                 current_stage.append(temp_stage)
                 if cooling_stage < temp_stage:
                     cooling_stage = temp_stage
@@ -188,7 +193,7 @@ class ChangeMinCoolingLevelAction(ThermalPolicyActionBase):
             temp_min = int(temp_range[0].strip())
             temp_max = int(temp_range[1].strip())
             temp_stage = int(temp_range[2].strip())
-            if temp_min <= int(temperatures[1]) <= temp_max:
+            if temp_min <= int(temperatures[ChangeMinCoolingLevelAction.THERMAL_U61]) <= temp_max:
                 current_stage.append(temp_stage)
                 if cooling_stage < temp_stage:
                     cooling_stage = temp_stage
@@ -200,7 +205,19 @@ class ChangeMinCoolingLevelAction(ThermalPolicyActionBase):
             temp_min = int(temp_range[0].strip())
             temp_max = int(temp_range[1].strip())
             temp_stage = int(temp_range[2].strip())
-            if temp_min <= int(temperatures[2]) <= temp_max:
+            if temp_min <= int(temperatures[ChangeMinCoolingLevelAction.THERMAL_U86]) <= temp_max:
+                current_stage.append(temp_stage)
+                if cooling_stage < temp_stage:
+                    cooling_stage = temp_stage
+                    min_cooling_level = cooling_level
+                break
+
+        for key, cooling_level in thermal_asic.items():
+            temp_range = key.split(':')
+            temp_min = int(temp_range[0].strip())
+            temp_max = int(temp_range[1].strip())
+            temp_stage = int(temp_range[2].strip())
+            if temp_min <= int(temperatures[ChangeMinCoolingLevelAction.THERMAL_ASIC]) <= temp_max:
                 current_stage.append(temp_stage)
                 if cooling_stage < temp_stage:
                     cooling_stage = temp_stage
