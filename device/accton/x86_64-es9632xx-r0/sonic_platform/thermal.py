@@ -13,6 +13,7 @@ import glob
 try:
     from sonic_platform_base.thermal_base import ThermalBase
     from sonic_py_common.logger import Logger
+    from swsscommon.swsscommon import SonicV2Connector
 except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
@@ -22,9 +23,14 @@ logger = Logger()
 
 class Thermal(ThermalBase):
     """Platform-specific Thermal class"""
+    NUMBER_OF_THERMALS = 13
+    ASIC_TEMP_SENSORS_OFFSET = 7
+    ASIC_CALCULATED_TEMP_OFFSET = 11
     THERMAL_NAME_LIST = []
     SYSFS_PATH = "/sys/bus/i2c/devices"
-
+    Thermals_db = SonicV2Connector()
+    Thermals_db.connect(Thermals_db.STATE_DB)
+ 
     def __init__(self, thermal_index=0):
         self.index = thermal_index
         # Add thermal name
@@ -35,21 +41,31 @@ class Thermal(ThermalBase):
         self.THERMAL_NAME_LIST.append("Temp sensor 5")
         self.THERMAL_NAME_LIST.append("Temp sensor 6")
         self.THERMAL_NAME_LIST.append("Temp sensor 7")
+        self.THERMAL_NAME_LIST.append("ASIC sensor 1")
+        self.THERMAL_NAME_LIST.append("ASIC sensor 2")
+        self.THERMAL_NAME_LIST.append("ASIC sensor 3")
+        self.THERMAL_NAME_LIST.append("ASIC sensor 4")
+        self.THERMAL_NAME_LIST.append("ASIC  average")
+        self.THERMAL_NAME_LIST.append("ASIC  maximum")
 
-        # Set hwmon path
-        i2c_path = {
-            0: "18-0048/hwmon/hwmon*/",
-            1: "18-0049/hwmon/hwmon*/",
-            2: "18-004a/hwmon/hwmon*/",
-            3: "18-004b/hwmon/hwmon*/",
-            4: "18-004d/hwmon/hwmon*/",
-            5: "18-004e/hwmon/hwmon*/",
-            6: "18-004f/hwmon/hwmon*/",
-        }.get(self.index, None)
+        if self.index < Thermal.ASIC_TEMP_SENSORS_OFFSET:
+            # Set hwmon path
+            i2c_path = {
+                0: "18-0048/hwmon/hwmon*/",
+                1: "18-0049/hwmon/hwmon*/",
+                2: "18-004a/hwmon/hwmon*/",
+                3: "18-004b/hwmon/hwmon*/",
+                4: "18-004d/hwmon/hwmon*/",
+                5: "18-004e/hwmon/hwmon*/",
+                6: "18-004f/hwmon/hwmon*/",
+            }.get(self.index, None)
 
-        self.hwmon_path = "{}/{}".format(self.SYSFS_PATH, i2c_path)
+            self.hwmon_path = "{}/{}".format(self.SYSFS_PATH, i2c_path)
+
         self.ss_key = self.THERMAL_NAME_LIST[self.index]
         self.ss_index = 1
+
+        self.tbl = Thermal.Thermals_db.get_all(Thermal.Thermals_db.STATE_DB, 'ASIC_TEMPERATURE_INFO')
 
     def __read_txt_file(self, file_path):
         for filename in glob.glob(file_path):
@@ -72,14 +88,17 @@ class Thermal(ThermalBase):
 
 
     def __set_threshold(self, file_name, temperature):
-        temp_file_path = os.path.join(self.hwmon_path, file_name)
-        for filename in glob.glob(temp_file_path):
-            try:
-                with open(filename, 'w') as fd:
-                    fd.write(str(temperature))
-                return True
-            except IOError as e:
-                print("IOError: {} in file: {}".format(e, self.hwmon_path))
+        if self.index < Thermal.ASIC_TEMP_SENSORS_OFFSET:
+            temp_file_path = os.path.join(self.hwmon_path, file_name)
+            for filename in glob.glob(temp_file_path):
+                try:
+                    with open(filename, 'w') as fd:
+                        fd.write(str(temperature))
+                    return True
+                except IOError as e:
+                    print("IOError: {} in file: {}".format(e, self.hwmon_path))
+        else:
+            return Flase
 
 
     def get_temperature(self):
@@ -89,8 +108,17 @@ class Thermal(ThermalBase):
             A float number of current temperature in Celsius up to nearest thousandth
             of one degree Celsius, e.g. 30.125
         """
-        temp_file = "temp{}_input".format(self.ss_index)
-        return self.__get_temp(temp_file)
+        if self.index < Thermal.ASIC_TEMP_SENSORS_OFFSET:
+            temp_file = "temp{}_input".format(self.ss_index)
+            return self.__get_temp(temp_file)
+        elif self.index >= Thermal.ASIC_TEMP_SENSORS_OFFSET and self.index < Thermal.ASIC_CALCULATED_TEMP_OFFSET:
+            return float(self.tbl.get("temperature_{}".format(self.index - Thermal.ASIC_TEMP_SENSORS_OFFSET), None))
+        elif self.index == Thermal.ASIC_CALCULATED_TEMP_OFFSET:
+            return float(self.tbl.get("average_temperature", None))
+        elif self.index == Thermal.ASIC_TEMP_SENSORS_OFFSET + 1:
+            return float(self.tbl.get("maximum_temperature", None))
+        else:
+            return None
 
     def get_high_threshold(self):
         """
@@ -99,8 +127,13 @@ class Thermal(ThermalBase):
             A float number, the high threshold temperature of thermal in Celsius
             up to nearest thousandth of one degree Celsius, e.g. 30.125
         """
-        temp_file = "temp{}_max".format(self.ss_index)
-        return self.__get_temp(temp_file)
+        if self.index < Thermal.ASIC_TEMP_SENSORS_OFFSET:
+            temp_file = "temp{}_max".format(self.ss_index)
+            return self.__get_temp(temp_file)
+        elif self.index >= Thermal.ASIC_TEMP_SENSORS_OFFSET and self.index < Thermal.ASIC_CALCULATED_TEMP_OFFSET:
+            return float(self.tbl.get("temperature_{}".format(self.index - Thermal.ASIC_TEMP_SENSORS_OFFSET), None))
+        else:
+            return None
 
     def set_high_threshold(self, temperature):
         """
@@ -111,10 +144,10 @@ class Thermal(ThermalBase):
         Returns:
             A boolean, True if threshold is set successfully, False if not
         """
-        temp_file = "temp{}_max".format(self.ss_index)
-        temperature = temperature *1000
-        self.__set_threshold(temp_file, temperature)
-
+        if self.index < Thermal.ASIC_TEMP_SENSORS_OFFSET:
+            temp_file = "temp{}_max".format(self.ss_index)
+            temperature = temperature * 1000
+            self.__set_threshold(temp_file, temperature)
         return True
 
     def get_name(self):
@@ -131,7 +164,10 @@ class Thermal(ThermalBase):
             Returns:
             string: The model of the thermal device
         """
-        return "lm75"
+        if self.index < Thermal.ASIC_TEMP_SENSORS_OFFSET:
+            return "lm75"
+        else:
+            return "XSight ASIC"
 
     def get_serial(self):
         """
@@ -155,13 +191,16 @@ class Thermal(ThermalBase):
         Returns:
             bool: True if Thermal is present, False if not
         """
-        temp_file = "temp{}_input".format(self.ss_index)
-        temp_file_path = os.path.join(self.hwmon_path, temp_file)
-        raw_txt = self.__read_txt_file(temp_file_path)
-        if raw_txt is not None:
-            return True
+        if self.index < Thermal.ASIC_TEMP_SENSORS_OFFSET:
+            temp_file = "temp{}_input".format(self.ss_index)
+            temp_file_path = os.path.join(self.hwmon_path, temp_file)
+            raw_txt = self.__read_txt_file(temp_file_path)
+            if raw_txt is not None:
+                return True
+            else:
+                return False
         else:
-            return False
+            return True
 
     def get_status(self):
         """
@@ -169,14 +208,15 @@ class Thermal(ThermalBase):
         Returns:
             A boolean value, True if device is operating properly, False if not
         """
-
-        file_str = "temp{}_input".format(self.ss_index)
-        file_path = os.path.join(self.hwmon_path, file_str)
-        raw_txt = self.__read_txt_file(file_path)
-        if raw_txt is None:
-            return False
-        else:
-            return int(raw_txt) != 0
+        if self.index < Thermal.ASIC_TEMP_SENSORS_OFFSET:
+            file_str = "temp{}_input".format(self.ss_index)
+            file_path = os.path.join(self.hwmon_path, file_str)
+            raw_txt = self.__read_txt_file(file_path)
+            if raw_txt is None:
+                return False
+            else:
+                return int(raw_txt) != 0
+        return True
 
     @classmethod
     def set_thermal_algorithm_status(cls, status, force=True):
