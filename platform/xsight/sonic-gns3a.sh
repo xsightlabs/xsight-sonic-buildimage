@@ -53,6 +53,44 @@ echo "
     \"qemu\": {
         \"adapter_type\": \"e1000\",
         \"adapters\": 10,
+        \"custom_adapters\": [
+            {
+                \"adapter_number\": 1,
+                \"port_name\": \"Ethernet0\"
+            },
+            {
+                \"adapter_number\": 2,
+                \"port_name\": \"Ethernet8\"
+            },
+            {
+                \"adapter_number\": 3,
+                \"port_name\": \"Ethernet16\"
+            },
+            {
+                \"adapter_number\": 4,
+                \"port_name\": \"Ethernet24\"
+            },
+            {
+                \"adapter_number\": 5,
+                \"port_name\": \"Ethernet32\"
+            },
+            {
+                \"adapter_number\": 6,
+                \"port_name\": \"Ethernet40\"
+            },
+            {
+                \"adapter_number\": 7,
+                \"port_name\": \"Ethernet48\"
+            },
+            {
+                \"adapter_number\": 8,
+                \"port_name\": \"Ethernet56\"
+            },
+            {
+                \"adapter_number\": 9,
+                \"port_name\": \"Ethernet64\"
+            }
+        ],
         \"ram\": 2048,
         \"hda_disk_interface\": \"virtio\",
         \"arch\": \"x86_64\",
