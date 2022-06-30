@@ -97,29 +97,10 @@ generate_onie_installer_image()
           $INSTALLER_PAYLOAD $SECURE_UPGRADE_SIGNING_CERT $SECURE_UPGRADE_DEV_SIGNING_KEY
 }
 
-# Generate asic-specific device list
-generate_device_list()
-{
-    local platforms_asic=$1
-
-    # Create an empty function, and later append to it
-    echo -n > $platforms_asic
-
-    for d in `find -L ./device  -maxdepth 2 -mindepth 2 -type d`; do
-        if [ -f $d/platform_asic ]; then
-            if [ "$TARGET_MACHINE" = "generic" ] || grep -Fxq "$TARGET_MACHINE" $d/platform_asic; then
-                echo "${d##*/}" >> "$platforms_asic";
-            fi;
-        fi;
-    done
-}
-
 if [ "$IMAGE_TYPE" = "onie" ]; then
     echo "Build ONIE installer"
     mkdir -p `dirname $OUTPUT_ONIE_IMAGE`
     sudo rm -f $OUTPUT_ONIE_IMAGE
-
-    generate_device_list "./installer/platforms_asic"
 
     generate_onie_installer_image
 
@@ -132,8 +113,6 @@ elif [ "$IMAGE_TYPE" = "raw" ]; then
     tmp_output_onie_image=${OUTPUT_ONIE_IMAGE}.tmp
     mkdir -p `dirname $OUTPUT_RAW_IMAGE`
     sudo rm -f $OUTPUT_RAW_IMAGE
-
-    generate_device_list "./installer/platforms_asic"
 
     generate_onie_installer_image "$tmp_output_onie_image"
 
@@ -162,8 +141,6 @@ elif [ "$IMAGE_TYPE" = "raw" ]; then
     echo "The raw image is in $OUTPUT_RAW_IMAGE"
 
 elif [ "$IMAGE_TYPE" = "kvm" ]; then
-
-    generate_device_list "./installer/platforms_asic"
 
     generate_onie_installer_image
     # Generate single asic KVM image
@@ -201,9 +178,6 @@ elif [ "$IMAGE_TYPE" = "aboot" ]; then
     zip -g $OUTPUT_ABOOT_IMAGE version
     zip -g $ABOOT_BOOT_IMAGE version
     rm version
-
-    generate_device_list ".platforms_asic"
-    zip -g $OUTPUT_ABOOT_IMAGE .platforms_asic
 
     if [ "$ENABLE_FIPS" = "y" ]; then
         echo "sonic_fips=1" >> kernel-cmdline-append
