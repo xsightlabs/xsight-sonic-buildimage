@@ -204,14 +204,6 @@ class TestJ2Files(TestCase):
         self.run_script(argument, output_file=self.output_file)
         self.assertTrue(utils.cmp(expected_mgmt_ipv6, self.output_file))
 
-    def test_ipinip(self):
-        ipinip_file = os.path.join(self.test_dir, '..', '..', '..', 'dockers', 'docker-orchagent', 'ipinip.json.j2')
-        argument = ['-m', self.t0_minigraph, '-p', self.t0_port_config, '-t', ipinip_file]
-        self.run_script(argument, output_file=self.output_file)
-
-        sample_output_file = os.path.join(self.test_dir, 'sample_output', utils.PYvX_DIR, 'ipinip.json')
-        assert utils.cmp(sample_output_file, self.output_file), self.run_diff(sample_output_file, self.output_file)
-
     def test_l2switch_template(self):
         argument = ['-k', 'Mellanox-SN2700', '--preset', 'l2', '-p', self.t0_port_config]
         output = self.run_script(argument)
