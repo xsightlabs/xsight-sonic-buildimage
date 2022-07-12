@@ -176,7 +176,7 @@ def driver_check():
 
 kos = [
     'modprobe i2c_dev',
-    'modprobe i2c_mux_pca954x force_deselect_on_exit=1',
+    'modprobe i2c_mux_pca954x',
     'modprobe dps850',
     'modprobe optoe',
     'modprobe es9632-cpld',
@@ -276,9 +276,20 @@ def device_install():
             if FORCE == 0:
                 return status
 
-        # for pca954x need time to built new i2c buses
         if mknod[i].find('pca954') != -1:
+            # Allow pca954x to build new i2c buses
             time.sleep(0.3)
+            # Configure pca954x to disconnect on idle
+            temp = mknod[i].split(os.sep)
+            node = temp[len(temp)-2].split('-')[1] + \
+                    '-00' + re.split('x| ', temp[0])[3]
+            (status, output) = \
+                log_os_system('echo -2 > /sys/bus/i2c/devices/'
+                                + node + '/idle_state', 1)
+            if status:
+                print(output)
+                if FORCE == 0:
+                    return status
 
     for i in range(0, len(sfp_map)):
         (status, output) = \
