@@ -23,9 +23,9 @@ logger = Logger()
 
 class Thermal(ThermalBase):
     """Platform-specific Thermal class"""
-    NUMBER_OF_THERMALS = 13
+    NUMBER_OF_THERMALS = 17
     ASIC_TEMP_SENSORS_OFFSET = 7
-    ASIC_CALCULATED_TEMP_OFFSET = 11
+    ASIC_CALCULATED_TEMP_OFFSET = 15
     THERMAL_NAME_LIST = []
     SYSFS_PATH = "/sys/bus/i2c/devices"
     Thermals_db = SonicV2Connector()
@@ -45,6 +45,10 @@ class Thermal(ThermalBase):
         self.THERMAL_NAME_LIST.append("ASIC sensor 2")
         self.THERMAL_NAME_LIST.append("ASIC sensor 3")
         self.THERMAL_NAME_LIST.append("ASIC sensor 4")
+        self.THERMAL_NAME_LIST.append("ASIC sensor 5")
+        self.THERMAL_NAME_LIST.append("ASIC sensor 6")
+        self.THERMAL_NAME_LIST.append("ASIC sensor 7")
+        self.THERMAL_NAME_LIST.append("ASIC sensor 8")
         self.THERMAL_NAME_LIST.append("ASIC  average")
         self.THERMAL_NAME_LIST.append("ASIC  maximum")
 
@@ -115,7 +119,7 @@ class Thermal(ThermalBase):
             return float(self.tbl.get("temperature_{}".format(self.index - Thermal.ASIC_TEMP_SENSORS_OFFSET), None))
         elif self.index == Thermal.ASIC_CALCULATED_TEMP_OFFSET:
             return float(self.tbl.get("average_temperature", None))
-        elif self.index == Thermal.ASIC_TEMP_SENSORS_OFFSET + 1:
+        elif self.index == Thermal.ASIC_CALCULATED_TEMP_OFFSET + 1:
             return float(self.tbl.get("maximum_temperature", None))
         else:
             return None
