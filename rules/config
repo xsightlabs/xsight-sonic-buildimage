@@ -137,7 +137,7 @@ INCLUDE_SYSTEM_TELEMETRY = n
 INCLUDE_ICCPD = y
 
 # INCLUDE_SFLOW - build docker-sflow for sFlow support
-INCLUDE_SFLOW = n
+INCLUDE_SFLOW = y
 
 # INCLUDE_MGMT_FRAMEWORK - build docker-sonic-mgmt-framework for CLI and REST server support
 INCLUDE_MGMT_FRAMEWORK = n
