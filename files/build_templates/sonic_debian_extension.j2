@@ -216,6 +216,10 @@ sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip3 install thrift
 sudo cp -a files/image_config/platform/determine-reboot-cause.service $FILESYSTEM_ROOT/lib/systemd/system/determine-reboot-cause.service
 sudo LANG=C chroot $FILESYSTEM_ROOT systemctl enable determine-reboot-cause.service
 
+## Add support for log output into journalctl from python services
+sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install \
+    python3-systemd
+
 ## X1 scripts
 sudo cp -a platform/xsight/files/xlx $FILESYSTEM_ROOT/home/admin/
 sudo cp -a platform/xsight/files/xlink.cfg $FILESYSTEM_ROOT/etc/sonic/

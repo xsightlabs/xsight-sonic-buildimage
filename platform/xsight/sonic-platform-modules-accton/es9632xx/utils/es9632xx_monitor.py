@@ -25,11 +25,14 @@
 
 try:
     import getopt
+    import os
+    import os.path
     import sys
     import logging
     import logging.config
     import time  # this is only being used as part of the example
     import signal
+    from systemd.journal import JournalHandler
     from es9632xx.fanutil import FanUtil
     from es9632xx.thermalutil import ThermalUtil
 except ImportError as e:
@@ -39,6 +42,9 @@ except ImportError as e:
 VERSION = '1.0'
 FUNCTION_NAME = 'es9632xx_monitor'
 DUTY_MAX = 100
+SHUTDOWN_FILE_PATH = '/run/systemd/pmon_system_shutdown'
+SYSTEM_HALT_ON_OVERHEAT = 1
+SYSTEM_WARN_ON_OVERHEAT = 2
 
 global log_file
 global log_level
@@ -97,7 +103,22 @@ def main(argv):
     # Loop forever, doing something useful hopefully:
     while True:
         #monitor.manage_fans()
-        time.sleep(10)
+        if os.path.exists(SHUTDOWN_FILE_PATH) and os.path.isfile(SHUTDOWN_FILE_PATH):
+            try:
+                file = open(SHUTDOWN_FILE_PATH)
+                file_content = file.readline()
+                if SYSTEM_HALT_ON_OVERHEAT == int(file_content):
+                    os.system("/opt/xplt/utils/es9632x_reset_x1.sh")
+                    os.system("/usr/sbin/shutdown -H now")
+                    logging.warning("System going to HALT due to high temperature !")
+                if SYSTEM_WARN_ON_OVERHEAT == int(file_content):
+                    logging.warning("System warning due to overheat !")
+                    os.remove(SHUTDOWN_FILE_PATH)
+            except:
+                time.sleep(1)
+        else:
+            time.sleep(2)
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])

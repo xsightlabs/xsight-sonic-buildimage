@@ -150,81 +150,79 @@ class ThermalRecoverAction(ThermalPolicyActionBase):
 
 class ChangeMinCoolingLevelAction(ThermalPolicyActionBase):
 
+    previous_cooling_stage = -1
     thermal_policy_pause_countdown = 0
+    MINIMAL_TEMPERATURE = -127
     THERMAL_U31 = 0
     THERMAL_U61 = 1
     THERMAL_U86 = 2
     THERMAL_ASIC = 11
+    SHUTDOWN_FILE = '/run/systemd/pmon_system_shutdown'
+    WARNING_COOLING_STAGE = 1
+    SHUTDOWN_COOLING_STAGE = 2
+    SYSTEM_HALT_ON_OVERHEAT = 1
+    SYSTEM_WARN_ON_OVERHEAT = 2
+
+    @staticmethod
+    def set_previous_cooling_stage(stage):
+        ChangeMinCoolingLevelAction.previous_cooling_stage = stage
+
+    def process_sensor_data(self, temperature_table, sensor_index):
+        temp_min = ChangeMinCoolingLevelAction.MINIMAL_TEMPERATURE
+        for indx in range(0, len(temperature_table)):
+            temp_range = temperature_table[indx].split(':')
+            temp_threshold = int(temp_range[0].strip())
+            temp_max = int(temp_range[1].strip())
+            cool_lvl = int(temp_range[2].strip())
+            logger.log_debug('threshold {} min {} max {} level {}'.format(temp_threshold, temp_min, temp_max, cool_lvl))
+            if temp_min <= int(self.temperatures[sensor_index]) <= temp_max: 
+                if self.cooling_stage < indx:
+                    self.cooling_stage = indx
+                break
+            temp_min = temp_max
+        if (temp_threshold > int(self.temperatures[sensor_index])):
+            self.cooling_stage_decrease += 1
+            logger.log_debug('cooling_stage {} cooling_stage_decrease {}'.format(self.cooling_stage, self.cooling_stage_decrease))
 
     def execute(self, thermal_info_dict):
         from .thermal_device_data import DEVICE_DATA
         from .fan import Fan
-        from .thermal_infos import ChassisInfo
         from .thermal_conditions import MinCoolingLevelChangeCondition
-        from .thermal_conditions import UpdateCoolingLevelToMinCondition
         from .helper import APIHelper
 
-        trust_state = MinCoolingLevelChangeCondition.trust_state
-        temperatures = MinCoolingLevelChangeCondition.temperatures
-        current_stage = []
         api_helper = APIHelper()
         thermal_U31_x48 = DEVICE_DATA[api_helper.platform]['thermal']['threshold_table']['thermal_U31_x48']
         thermal_U61_x49 = DEVICE_DATA[api_helper.platform]['thermal']['threshold_table']['thermal_U61_x49']
         thermal_U86_x4A = DEVICE_DATA[api_helper.platform]['thermal']['threshold_table']['thermal_U86_x4A']
         thermal_asic = DEVICE_DATA[api_helper.platform]['thermal']['threshold_table']['asic_average']
 
-        cooling_stage = 0
-        min_cooling_level = 50
+        self.temperatures = MinCoolingLevelChangeCondition.temperatures
+        self.cooling_stage_decrease = 0
+        self.cooling_stage = 0
+        self.cooling_stage_decrease = 0
+        min_cooling_level = 5
 
-        for key, cooling_level in thermal_U31_x48.items():
-            temp_range = key.split(':')
-            temp_min = int(temp_range[0].strip())
-            temp_max = int(temp_range[1].strip())
-            temp_stage = int(temp_range[2].strip())
-            if temp_min <= int(temperatures[ChangeMinCoolingLevelAction.THERMAL_U31]) <= temp_max:
-                current_stage.append(temp_stage)
-                if cooling_stage < temp_stage:
-                    cooling_stage = temp_stage
-                    min_cooling_level = cooling_level
-                break
+        self.process_sensor_data(thermal_U31_x48, ChangeMinCoolingLevelAction.THERMAL_U31)
+        self.process_sensor_data(thermal_U61_x49, ChangeMinCoolingLevelAction.THERMAL_U61)
+        self.process_sensor_data(thermal_U86_x4A, ChangeMinCoolingLevelAction.THERMAL_U86)
+        self.process_sensor_data(thermal_asic, ChangeMinCoolingLevelAction.THERMAL_ASIC)
 
-        for key, cooling_level in thermal_U61_x49.items():
-            temp_range = key.split(':')
-            temp_min = int(temp_range[0].strip())
-            temp_max = int(temp_range[1].strip())
-            temp_stage = int(temp_range[2].strip())
-            if temp_min <= int(temperatures[ChangeMinCoolingLevelAction.THERMAL_U61]) <= temp_max:
-                current_stage.append(temp_stage)
-                if cooling_stage < temp_stage:
-                    cooling_stage = temp_stage
-                    min_cooling_level = cooling_level
-                break
-
-        for key, cooling_level in thermal_U86_x4A.items():
-            temp_range = key.split(':')
-            temp_min = int(temp_range[0].strip())
-            temp_max = int(temp_range[1].strip())
-            temp_stage = int(temp_range[2].strip())
-            if temp_min <= int(temperatures[ChangeMinCoolingLevelAction.THERMAL_U86]) <= temp_max:
-                current_stage.append(temp_stage)
-                if cooling_stage < temp_stage:
-                    cooling_stage = temp_stage
-                    min_cooling_level = cooling_level
-                break
-
-        for key, cooling_level in thermal_asic.items():
-            temp_range = key.split(':')
-            temp_min = int(temp_range[0].strip())
-            temp_max = int(temp_range[1].strip())
-            temp_stage = int(temp_range[2].strip())
-            if temp_min <= int(temperatures[ChangeMinCoolingLevelAction.THERMAL_ASIC]) <= temp_max:
-                current_stage.append(temp_stage)
-                if cooling_stage < temp_stage:
-                    cooling_stage = temp_stage
-                    min_cooling_level = cooling_level
-                break
+        if (ChangeMinCoolingLevelAction.previous_cooling_stage > self.cooling_stage):
+            if (self.cooling_stage_decrease == len(thermal_asic) and 0 < ChangeMinCoolingLevelAction.previous_cooling_stage):
+                self.cooling_stage = ChangeMinCoolingLevelAction.previous_cooling_stage - 1
+        ChangeMinCoolingLevelAction.set_previous_cooling_stage(self.cooling_stage)
 
         _api_helper = APIHelper()
+        temp_range = thermal_asic[self.cooling_stage].split(':')
+        if self.cooling_stage == ChangeMinCoolingLevelAction.WARNING_COOLING_STAGE:
+            _api_helper.write_txt_file(ChangeMinCoolingLevelAction.SHUTDOWN_FILE, "{} {}".format(ChangeMinCoolingLevelAction.SYSTEM_WARN_ON_OVERHEAT))
+        elif self.cooling_stage == ChangeMinCoolingLevelAction.SHUTDOWN_COOLING_STAGE:
+            _api_helper.write_txt_file(ChangeMinCoolingLevelAction.SHUTDOWN_FILE, ChangeMinCoolingLevelAction.SYSTEM_HALT_ON_OVERHEAT)
+
+        cool_lvl = int(temp_range[2].strip())
+        min_cooling_level = cool_lvl
+        logger.log_debug("ChangeMinCoolingLevelAction: {}".format(ChangeMinCoolingLevelAction.previous_cooling_stage))
+
         policy_status = _api_helper.read_txt_file("/tmp/thermal_manager_pause_policy")
         if policy_status is not None:
             try:
@@ -242,7 +240,7 @@ class ChangeMinCoolingLevelAction(ThermalPolicyActionBase):
             return
 
         logger.log_debug("ChangeMinCoolingLevelAction: {}; Current level: {}; Next level: {} ".format(
-            temperatures, Fan.get_cooling_level(), min_cooling_level))
+            self.temperatures, Fan.get_cooling_level(), min_cooling_level))
         Fan.set_cooling_level(min_cooling_level, Fan.min_cooling_level)
 
 class UpdatePsuFanSpeedAction(ThermalPolicyActionBase):
