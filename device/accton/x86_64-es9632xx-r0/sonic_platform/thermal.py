@@ -11,6 +11,7 @@ import os.path
 import glob
 
 try:
+    from .chassis import *
     from sonic_platform_base.thermal_base import ThermalBase
     from sonic_py_common.logger import Logger
     from swsscommon.swsscommon import SonicV2Connector
@@ -26,11 +27,37 @@ class Thermal(ThermalBase):
     NUMBER_OF_THERMALS = 17
     ASIC_TEMP_SENSORS_OFFSET = 7
     ASIC_CALCULATED_TEMP_OFFSET = 15
+    XCVR_TEMP_SENSORS_OFFSET = NUMBER_OF_THERMALS
     THERMAL_NAME_LIST = []
+    TRANSCEIVER_LIST = []
+    TRANSCEIVER_TEMP_LIST = []
     SYSFS_PATH = "/sys/bus/i2c/devices"
     Thermals_db = SonicV2Connector()
     Thermals_db.connect(Thermals_db.STATE_DB)
- 
+
+    # Find all transceivers in DB
+    for i in range(0, PORT_END):
+        db_field_temp = None
+        db_field_warn = None
+        db_field_alarm = None
+        try:
+            db_key = Thermals_db.get_all(Thermals_db.STATE_DB, 'TRANSCEIVER_DOM_SENSOR|Ethernet{}'.format(i * 8))
+            db_field = db_key.get("temperature", None)
+            db_field_temp = float(db_field)
+            db_field = db_key.get("temphighwarning", None)
+            db_field_warn = float(db_field)
+            db_field = db_key.get("temphighalarm", None)
+            db_field_alarm = float(db_field)
+        except ValueError as e:
+            print("Error: {}".format(e))
+        TRANSCEIVER_LIST.append([db_field_temp, db_field_warn, db_field_alarm, i])
+
+    for i in range(0, len(TRANSCEIVER_LIST)):
+        if isinstance(TRANSCEIVER_LIST[i][1], float):
+            TRANSCEIVER_TEMP_LIST.append(TRANSCEIVER_LIST[i])
+
+    NUMBER_OF_THERMALS += len(TRANSCEIVER_TEMP_LIST)
+
     def __init__(self, thermal_index=0):
         self.index = thermal_index
         # Add thermal name
@@ -51,6 +78,9 @@ class Thermal(ThermalBase):
         self.THERMAL_NAME_LIST.append("ASIC sensor 8")
         self.THERMAL_NAME_LIST.append("ASIC  average")
         self.THERMAL_NAME_LIST.append("ASIC  maximum")
+        # append transceiver names
+        for i in range(0, len(Thermal.TRANSCEIVER_TEMP_LIST)):
+            self.THERMAL_NAME_LIST.append("Temp xcvr  {:02d}".format(Thermal.TRANSCEIVER_TEMP_LIST[i][3]))
 
         if self.index < Thermal.ASIC_TEMP_SENSORS_OFFSET:
             # Set hwmon path
@@ -114,13 +144,15 @@ class Thermal(ThermalBase):
         """
         if self.index < Thermal.ASIC_TEMP_SENSORS_OFFSET:
             temp_file = "temp{}_input".format(self.ss_index)
-            return self.__get_temp(temp_file)
+            return float(self.__get_temp(temp_file))
         elif self.index >= Thermal.ASIC_TEMP_SENSORS_OFFSET and self.index < Thermal.ASIC_CALCULATED_TEMP_OFFSET:
             return float(self.tbl.get("temperature_{}".format(self.index - Thermal.ASIC_TEMP_SENSORS_OFFSET), None))
         elif self.index == Thermal.ASIC_CALCULATED_TEMP_OFFSET:
             return float(self.tbl.get("average_temperature", None))
         elif self.index == Thermal.ASIC_CALCULATED_TEMP_OFFSET + 1:
             return float(self.tbl.get("maximum_temperature", None))
+        elif self.index >= Thermal.XCVR_TEMP_SENSORS_OFFSET:
+            return float(Thermal.TRANSCEIVER_TEMP_LIST[self.index - Thermal.XCVR_TEMP_SENSORS_OFFSET][0])
         else:
             return None
 
@@ -136,6 +168,8 @@ class Thermal(ThermalBase):
             return self.__get_temp(temp_file)
         elif self.index >= Thermal.ASIC_TEMP_SENSORS_OFFSET and self.index < Thermal.ASIC_CALCULATED_TEMP_OFFSET:
             return float(self.tbl.get("temperature_{}".format(self.index - Thermal.ASIC_TEMP_SENSORS_OFFSET), None))
+        elif self.index >= Thermal.XCVR_TEMP_SENSORS_OFFSET:
+            return Thermal.TRANSCEIVER_TEMP_LIST[self.index - Thermal.XCVR_TEMP_SENSORS_OFFSET][2]
         else:
             return None
 
@@ -248,6 +282,9 @@ class Thermal(ThermalBase):
             array of temperatures
         """
         from sonic_platform import platform
+        if True == Thermal.get_transceiver_temperatures(True):
+            logger.log_info("Detected changes in transceivers. Required reload of thermalctld")
+            os.system("supervisorctl restart thermalctld")
         temperatures = []
         platform_chassis = platform.Platform().get_chassis()
         if platform_chassis is not None:
@@ -284,6 +321,51 @@ class Thermal(ThermalBase):
             logger.log_error("Thermal: Chassis is not available !")
         logger.log_debug("Thermal:check_thermal_zone_temperature: All temperatures looks OK")
         return True
+
+    @staticmethod
+    def get_transceiver_temperatures(update_class_list = False):
+        """
+        The function getting transceiver parameters from DB
+        Args :
+            temperature: A float number up to nearest thousandth of one degree Celsius,
+        Returns:
+            True if there was a change in plugged transceivers.
+            (changed | removed | added transceiver)
+            False if there is no change.
+        """
+        is_settings_changed = False
+        xcvr_list = []
+        # Find all transceivers in DB
+        for i in range(0, PORT_END):
+            db_field_temp = None
+            db_field_warn = None
+            db_field_alarm = None
+            try:
+                db_key = Thermal.Thermals_db.get_all(Thermal.Thermals_db.STATE_DB, 'TRANSCEIVER_DOM_SENSOR|Ethernet{}'.format(i * 8))
+                db_field = db_key.get("temperature", None)
+                db_field_temp = float(db_field)
+                db_field = db_key.get("temphighwarning", None)
+                db_field_warn = float(db_field)
+                db_field = db_key.get("temphighalarm", None)
+                db_field_alarm = float(db_field)
+            except ValueError as e:
+                print("Error: {}".format(e))
+
+            if Thermal.TRANSCEIVER_LIST[i][1] != db_field_warn or Thermal.TRANSCEIVER_LIST[i][2] != db_field_alarm:
+                is_settings_changed = True
+
+            xcvr_list.append([db_field_temp, db_field_warn, db_field_alarm])
+
+        # Update temperatures
+        if True == update_class_list:
+            Thermal.TRANSCEIVER_LIST = xcvr_list
+        indx = 0
+        for i in range(0, len(Thermal.TRANSCEIVER_LIST)):
+            if isinstance(Thermal.TRANSCEIVER_LIST[i][1], float):
+                Thermal.TRANSCEIVER_TEMP_LIST[indx][0] = xcvr_list[i][0]
+                indx += 1
+
+        return is_settings_changed
 
     def get_position_in_parent(self):
         """
