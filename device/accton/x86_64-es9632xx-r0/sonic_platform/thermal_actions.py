@@ -149,15 +149,16 @@ class ThermalRecoverAction(ThermalPolicyActionBase):
 
 
 class ChangeMinCoolingLevelAction(ThermalPolicyActionBase):
-
+    from .thermal import Thermal
     previous_cooling_stage = -1
     thermal_policy_pause_countdown = 0
     MINIMAL_TEMPERATURE = -127
+    MINIMAL_COOLING_LEVEL = 5
     THERMAL_U31 = 0
     THERMAL_U61 = 1
     THERMAL_U86 = 2
-    THERMAL_ASIC = 11
-    SHUTDOWN_FILE = '/run/systemd/pmon_system_shutdown'
+    THERMAL_ASIC = Thermal.ASIC_CALCULATED_TEMP_OFFSET
+    SHUTDOWN_FILE = '/usr/share/sonic/firmware/pmon_system_shutdown'
     WARNING_COOLING_STAGE = 1
     SHUTDOWN_COOLING_STAGE = 2
     SYSTEM_HALT_ON_OVERHEAT = 1
@@ -171,59 +172,89 @@ class ChangeMinCoolingLevelAction(ThermalPolicyActionBase):
         temp_min = ChangeMinCoolingLevelAction.MINIMAL_TEMPERATURE
         for indx in range(0, len(temperature_table)):
             temp_range = temperature_table[indx].split(':')
-            temp_threshold = int(temp_range[0].strip())
-            temp_max = int(temp_range[1].strip())
-            cool_lvl = int(temp_range[2].strip())
-            logger.log_debug('threshold {} min {} max {} level {}'.format(temp_threshold, temp_min, temp_max, cool_lvl))
-            if temp_min <= int(self.temperatures[sensor_index]) <= temp_max: 
+            temp_threshold = float(temp_range[0].strip())
+            temp_max = float(temp_range[1].strip())
+            cool_lvl = float(temp_range[2].strip())
+            logger.log_debug('threshold: {} to {}; hyst: {}'.format(temp_min, temp_max, temp_threshold))
+            if temp_min <= float(self.temperatures[sensor_index]) <= temp_max:
+                if 1 == indx:
+                    self.indx_warn_sensors.append(sensor_index)
                 if self.cooling_stage < indx:
                     self.cooling_stage = indx
                 break
             temp_min = temp_max
-        if (temp_threshold > int(self.temperatures[sensor_index])):
+        if (temp_threshold > float(self.temperatures[sensor_index])):
             self.cooling_stage_decrease += 1
             logger.log_debug('cooling_stage {} cooling_stage_decrease {}'.format(self.cooling_stage, self.cooling_stage_decrease))
 
     def execute(self, thermal_info_dict):
+        from sonic_platform import platform
         from .thermal_device_data import DEVICE_DATA
+        from .thermal import Thermal
         from .fan import Fan
         from .thermal_conditions import MinCoolingLevelChangeCondition
         from .helper import APIHelper
 
+        self.indx_warn_sensors = []
         api_helper = APIHelper()
         thermal_U31_x48 = DEVICE_DATA[api_helper.platform]['thermal']['threshold_table']['thermal_U31_x48']
         thermal_U61_x49 = DEVICE_DATA[api_helper.platform]['thermal']['threshold_table']['thermal_U61_x49']
         thermal_U86_x4A = DEVICE_DATA[api_helper.platform]['thermal']['threshold_table']['thermal_U86_x4A']
         thermal_asic = DEVICE_DATA[api_helper.platform]['thermal']['threshold_table']['asic_average']
+        # Add all transceivers thermal sensors and limits
+        thermal_xcvr_list = []
+        for i in range(0, len(Thermal.TRANSCEIVER_TEMP_LIST)):
+            thermal_xcvr_list.append(["{}:{}:10".format(Thermal.TRANSCEIVER_TEMP_LIST[i][1] - 3, Thermal.TRANSCEIVER_TEMP_LIST[i][1] - 2),
+                                      "{}:{}:10".format(Thermal.TRANSCEIVER_TEMP_LIST[i][1] - 2, Thermal.TRANSCEIVER_TEMP_LIST[i][1]),
+                                      "{}:{}:10".format(Thermal.TRANSCEIVER_TEMP_LIST[i][2] - 2, Thermal.TRANSCEIVER_TEMP_LIST[i][2])])
+            logger.log_debug("added transceiver {} temperatures: {}".format(i, thermal_xcvr_list[i]))
 
         self.temperatures = MinCoolingLevelChangeCondition.temperatures
         self.cooling_stage_decrease = 0
         self.cooling_stage = 0
-        self.cooling_stage_decrease = 0
         min_cooling_level = 5
 
         self.process_sensor_data(thermal_U31_x48, ChangeMinCoolingLevelAction.THERMAL_U31)
         self.process_sensor_data(thermal_U61_x49, ChangeMinCoolingLevelAction.THERMAL_U61)
         self.process_sensor_data(thermal_U86_x4A, ChangeMinCoolingLevelAction.THERMAL_U86)
         self.process_sensor_data(thermal_asic, ChangeMinCoolingLevelAction.THERMAL_ASIC)
+        # Process all transceivers sensor
+        for i in range(0, len(thermal_xcvr_list)):
+            self.process_sensor_data(thermal_xcvr_list[i], Thermal.XCVR_TEMP_SENSORS_OFFSET + i)
+
+        if (ChangeMinCoolingLevelAction.previous_cooling_stage <= self.cooling_stage):
+            if 0 == self.cooling_stage:
+                cool_lvl = ChangeMinCoolingLevelAction.MINIMAL_COOLING_LEVEL
+            else:
+                temp_range = thermal_asic[self.cooling_stage].split(':')
+                cool_lvl = int(temp_range[2].strip())
+        min_cooling_level = cool_lvl
+        logger.log_debug("ChangeMinCoolingLevelAction: prev.stage: {} current: {}".format(
+            ChangeMinCoolingLevelAction.previous_cooling_stage, self.cooling_stage))
 
         if (ChangeMinCoolingLevelAction.previous_cooling_stage > self.cooling_stage):
             if (self.cooling_stage_decrease == len(thermal_asic) and 0 < ChangeMinCoolingLevelAction.previous_cooling_stage):
                 self.cooling_stage = ChangeMinCoolingLevelAction.previous_cooling_stage - 1
         ChangeMinCoolingLevelAction.set_previous_cooling_stage(self.cooling_stage)
 
-        _api_helper = APIHelper()
-        temp_range = thermal_asic[self.cooling_stage].split(':')
+        # Find sensor name by sensor index
+        warn_sensor_names = []
+        platform_chassis = platform.Platform().get_chassis()
+        if 0 < len(self.indx_warn_sensors):
+            for i in range(0, len(self.indx_warn_sensors)):
+                indx = self.indx_warn_sensors[i]
+                warn_sensor_names.append(platform_chassis.get_all_thermals()[indx].get_name())
+
         if self.cooling_stage == ChangeMinCoolingLevelAction.WARNING_COOLING_STAGE:
-            _api_helper.write_txt_file(ChangeMinCoolingLevelAction.SHUTDOWN_FILE, "{} {}".format(ChangeMinCoolingLevelAction.SYSTEM_WARN_ON_OVERHEAT))
+            str = ', '.join(warn_sensor_names)
+            api_helper.write_txt_file(ChangeMinCoolingLevelAction.SHUTDOWN_FILE_PATH,
+                                      "{}-{}".format(ChangeMinCoolingLevelAction.SYSTEM_WARN_ON_OVERHEAT, str))
         elif self.cooling_stage == ChangeMinCoolingLevelAction.SHUTDOWN_COOLING_STAGE:
-            _api_helper.write_txt_file(ChangeMinCoolingLevelAction.SHUTDOWN_FILE, ChangeMinCoolingLevelAction.SYSTEM_HALT_ON_OVERHEAT)
+            str = ', '.join(warn_sensor_names)
+            api_helper.write_txt_file(ChangeMinCoolingLevelAction.SHUTDOWN_FILE_PATH,
+                                      "{}-{}".format(ChangeMinCoolingLevelAction.SYSTEM_HALT_ON_OVERHEAT, str))
 
-        cool_lvl = int(temp_range[2].strip())
-        min_cooling_level = cool_lvl
-        logger.log_debug("ChangeMinCoolingLevelAction: {}".format(ChangeMinCoolingLevelAction.previous_cooling_stage))
-
-        policy_status = _api_helper.read_txt_file("/tmp/thermal_manager_pause_policy")
+        policy_status = api_helper.read_txt_file("/tmp/thermal_manager_pause_policy")
         if policy_status is not None:
             try:
                 ChangeMinCoolingLevelAction.thermal_policy_pause_countdown = int(policy_status, 10)
@@ -233,7 +264,7 @@ class ChangeMinCoolingLevelAction(ThermalPolicyActionBase):
                     logger.log_warning("thermal_actions: Policy pause value out of range!")
             except ValueError:
                 ChangeMinCoolingLevelAction.thermal_policy_pause_countdown = 0
-            _api_helper.run_command("rm -f /tmp/thermal_manager_pause_policy")
+            api_helper.run_command("rm -f /tmp/thermal_manager_pause_policy")
 
         if ChangeMinCoolingLevelAction.thermal_policy_pause_countdown > 0:
             ChangeMinCoolingLevelAction.thermal_policy_pause_countdown -= 1
