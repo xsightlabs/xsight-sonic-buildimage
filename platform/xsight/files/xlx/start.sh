@@ -100,5 +100,15 @@ if [ ! -f /tmp/xbooted ]; then
     touch /tmp/xbooted
 fi
 
+# update default config from custom.json
+FIRSTBOOT="/tmp/notify_firstboot_to_platform"
+[ -f $FIRSTBOOT ] && {
+    PLATFORM=$(sed -n 's/onie_platform=\(.*\)/\1/p' /host/machine.conf)
+    [ -f /usr/share/sonic/device/$PLATFORM/custom.json ] && {
+        sonic-cfggen --from-db -j /usr/share/sonic/device/$PLATFORM/custom.json --print-data > /etc/sonic/config_db.json
+        sonic-cfggen -j /usr/share/sonic/device/$PLATFORM/custom.json --write-to-db
+    }
+}
+
 #echo ">>> Set XPCI debug level to INFO(3)"
 #echo ${DEBUG_LEVEL} > /proc/sys/dev/xpci_dev/debug_level
