@@ -339,8 +339,6 @@ def main():
 
     data = {}
     hwsku = args.hwsku
-    custom_json = '/usr/share/sonic/device/{}/custom.json'.format(platform)
-    custom_json_exist = True if os.path.exists(custom_json) else False
     asic_name = args.namespace
     asic_id = None
     if asic_name is not None:
@@ -372,13 +370,6 @@ def main():
             deep_update(data, {'BREAKOUT_CFG': brkout_table})
 
     _process_json(args, data)
-    if custom_json_exist:
-        args.json = [custom_json]
-        try:
-            _process_json(args, data)
-        except Exception:
-            # Continue without custom.json
-            pass
 
     if args.yang is not None:
         #TODO: Remove this check onces SONiC moves to python3.x
