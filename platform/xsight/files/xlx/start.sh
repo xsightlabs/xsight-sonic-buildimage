@@ -20,7 +20,7 @@ XPLT_UTL="/opt/xplt/utils"
 if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
     # Probing cpu ixgbe net interfaces
     if [[ ! -d /sys/module/ixgbe ]]; then
-        insmod /home/admin/xlx/ixgbe.ko
+        modprobe ixgbe
     fi
     # Working on HW box. Determine what to run XBM/ASIC
     if [[ -f ${CFG_FILE} ]]; then
