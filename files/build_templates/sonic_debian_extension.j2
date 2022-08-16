@@ -211,6 +211,10 @@ sudo cp -a platform/xsight/files/xlink.cfg $FILESYSTEM_ROOT/etc/sonic/
 sudo chmod +x $FILESYSTEM_ROOT/home/admin/xlx/*.sh
 sudo LANG=C chroot $FILESYSTEM_ROOT chown -R $USERNAME /home/admin/xlx
 
+## Default ixgbe module loading is happening to early for udev interface renaming
+## Thus blacklisting ixgbe. It will be loaded in xlx/start.sh.
+echo 'blacklist ixgbe' | sudo tee -a  $FILESYSTEM_ROOT/etc/modprobe.d/xpci.conf
+
 ## xplt stuff
 sudo curl -o ./xplt.deb $XPLT_TOOLS_URL
 sudo dpkg --root=$FILESYSTEM_ROOT -i xplt.deb

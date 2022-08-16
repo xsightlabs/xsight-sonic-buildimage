@@ -32,7 +32,7 @@ $(addprefix $(DEST)/, $(MAIN_TARGET)): $(DEST)/% :
 	dpkg -x $(DKMS_BMDEB)/$(MOD_DEB) $(DKMS_TMP)
 
 	sed -i '/^Depends:/c\Depends:' $(DKMS_TMP)/DEBIAN/control
-	echo "echo 'blacklist xpci' > /etc/modprobe.d/xpci.conf" >> $(DKMS_TMP)/DEBIAN/postinst
+	echo "echo 'blacklist xpci' >> /etc/modprobe.d/xpci.conf" >> $(DKMS_TMP)/DEBIAN/postinst
 
 	mkdir -p $(XPCI_NAME)/DEBS
 	pushd $(XPCI_NAME)/DEBS
