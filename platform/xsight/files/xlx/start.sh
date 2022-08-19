@@ -102,13 +102,26 @@ fi
 
 # update default config from custom.json
 FIRSTBOOT="/tmp/notify_firstboot_to_platform"
+PLATFORM=$(sed -n 's/onie_platform=\(.*\)/\1/p' /host/machine.conf)
+HWSKU=$(head -1 /usr/share/sonic/device/${PLATFORM}/default_sku | awk '{print $1}')
+
 [ -f $FIRSTBOOT ] && {
-    PLATFORM=$(sed -n 's/onie_platform=\(.*\)/\1/p' /host/machine.conf)
     [ -f /usr/share/sonic/device/$PLATFORM/custom.json ] && {
         sonic-cfggen --from-db -j /usr/share/sonic/device/$PLATFORM/custom.json --print-data > /etc/sonic/config_db.json
         sonic-cfggen -j /usr/share/sonic/device/$PLATFORM/custom.json --write-to-db
     }
 }
 
+if [ $PLATFORM == "x86_64-kvm_x86_64-r0" ]; then
+    copp_custom="/usr/share/sonic/device/$PLATFORM/$HWSKU/copp_custom.json"
+else
+    copp_custom="/usr/share/sonic/device/$PLATFORM/copp_custom.json"
+fi
+
+# update copp_cfg.json from copp_custom.json
+[ -f $copp_custom ] && {
+    sonic-cfggen -j /etc/sonic/copp_cfg.json -j $copp_custom --print-data > /tmp/copp_custom.json
+    sudo mv /tmp/copp_custom.json /etc/sonic/copp_cfg.json
+}
 #echo ">>> Set XPCI debug level to INFO(3)"
 #echo ${DEBUG_LEVEL} > /proc/sys/dev/xpci_dev/debug_level
