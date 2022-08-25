@@ -215,10 +215,6 @@ sudo LANG=C chroot $FILESYSTEM_ROOT chown -R $USERNAME /home/admin/xlx
 ## Thus blacklisting ixgbe. It will be loaded in xlx/start.sh.
 echo 'blacklist ixgbe' | sudo tee -a  $FILESYSTEM_ROOT/etc/modprobe.d/xpci.conf
 
-## xplt stuff
-sudo curl -o ./xplt.deb $XPLT_TOOLS_URL
-sudo dpkg --root=$FILESYSTEM_ROOT -i xplt.deb
-sudo rm -f xplt.deb
 {% endif %}
 
 # Install system-health Python 3 package
