@@ -48,8 +48,8 @@ class Thermal(ThermalBase):
             db_field_warn = float(db_field)
             db_field = db_key.get("temphighalarm", None)
             db_field_alarm = float(db_field)
-        except ValueError as e:
-            print("Error: {}".format(e))
+        except Exception as e:
+            pass
         TRANSCEIVER_LIST.append([db_field_temp, db_field_warn, db_field_alarm, i])
 
     for i in range(0, len(TRANSCEIVER_LIST)):
