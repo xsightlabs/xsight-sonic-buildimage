@@ -1,1 +1,16 @@
+{%- macro generate_tc_to_pg_map() %}
+    "TC_TO_PRIORITY_GROUP_MAP": {
+        "AZURE": {
+            "0": "0",
+            "1": "0",
+            "2": "1",
+            "3": "1",
+            "4": "2",
+            "5": "2",
+            "6": "3",
+            "7": "3"
+        }
+    },
+{%- endmacro %}
+
 {%- include 'qos_config.j2' %}
