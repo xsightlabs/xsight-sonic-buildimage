@@ -40,5 +40,7 @@
    240,
    248
   ],
- "ucode": "/etc/xsight/ucode.json"
+ "ucode": "/etc/xsight/ucode.json",
+
+ "tables_config": "/etc/xsight/xsw_auto_table_properties.json"
 }
