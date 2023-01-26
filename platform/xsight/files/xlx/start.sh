@@ -59,23 +59,22 @@ fi
 echo ">>> Re-load NetDev"
 
 # Reset X1 and PCI bus
-if [ -f /tmp/xbooted ]; then
-    if [ ${SYS_MODE,,} != "xbm" ]; then
-        if [ -d $XPLT_UTL ]; then
-            echo ">>> Resetting X1"
-            $XPLT_UTL/es9632x_reset_x1.sh
-            if [ $? -ne 0 ]; then
-                echo "ERROR: On running es9632x_reset_x1.sh"
-            fi
-        else
-            echo "ERROR: No $XPLT_UTL found!"
-        fi
-    fi
-fi
+#if [ -f /tmp/xbooted ]; then
+#    if [ ${SYS_MODE,,} != "xbm" ]; then
+#        if [ -d $XPLT_UTL ]; then
+#            echo ">>> Resetting X1"
+#            $XPLT_UTL/es9632x_reset_x1.sh
+#            if [ $? -ne 0 ]; then
+#                echo "ERROR: On running es9632x_reset_x1.sh"
+#            fi
+#        else
+#            echo "ERROR: No $XPLT_UTL found!"
+#        fi
+#    fi
+#fi
 
 rmmod xpci
 #read -p "--- Press enter to continue ---"
-# TODO: change insmod to modprobe after moving xdrivers build into sonic-buildimage
 # debug_level = 1 - Error
 #               2 - Notice
 #               3 - Info
