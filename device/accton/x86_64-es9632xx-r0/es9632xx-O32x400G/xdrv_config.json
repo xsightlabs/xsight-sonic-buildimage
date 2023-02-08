@@ -2,7 +2,7 @@
 "cdt_bypass": false,
 "mbr_bypass": false,
 "pfe_bypass": false,
-"bm_size": 80,
+"bm_size": 72,
 "device_list": [
 {
 "ip": "localhost",
