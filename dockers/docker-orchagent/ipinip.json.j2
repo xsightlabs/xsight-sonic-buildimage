@@ -1,5 +1,4 @@
-{# Remove this wrapper according to SON-1523 #}
-{% if "es9632" not in DEVICE_METADATA.localhost.platform and "kvm" not in DEVICE_METADATA.localhost.platform %}
+{% if "es9632" not in DEVICE_METADATA.localhost.platform %}
 {% if DEVICE_METADATA['localhost']['switch_type'] == "dpu" %}
 []
 {% else %}
@@ -159,7 +158,6 @@
 {%- if not loop.last -%}
 ,
 {% endif %}
-<<<<<<< HEAD
 {% endfor %}
 {% endif %}
 
