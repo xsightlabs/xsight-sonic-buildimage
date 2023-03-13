@@ -1,4 +1,3 @@
-{% if "es9632" not in DEVICE_METADATA.localhost.platform %}
 {% if DEVICE_METADATA['localhost']['switch_type'] == "dpu" %}
 []
 {% else %}
@@ -162,6 +161,5 @@
 {% endif %}
 
 ]
-{% endif %}
 {% endif %}
 
