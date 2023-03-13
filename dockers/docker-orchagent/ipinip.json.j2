@@ -1,5 +1,4 @@
-{# Remove this wrapper according to SON-1523 #}
-{% if "es9632" not in DEVICE_METADATA.localhost.platform and "kvm" not in DEVICE_METADATA.localhost.platform %}
+{% if "es9632" not in DEVICE_METADATA.localhost.platform %}
 {% set ipv4_addresses = [] %}
 {% set ipv6_addresses = [] %}
 {% set ipv4_loopback_addresses = [] %}
@@ -78,7 +77,5 @@
         "OP": "SET"
     }
 {% endif %}
-{% else %}{# platform kvm or es9632 #}
-[
-{% endif %}
 ]
+{% endif %}
