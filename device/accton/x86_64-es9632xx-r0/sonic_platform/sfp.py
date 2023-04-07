@@ -2232,3 +2232,13 @@ class Sfp(SfpBase):
             A boolean value, True if replaceable
         """
         return True
+
+    # Below part is added to avoid fail the xcvrd, shall be implemented later
+    def get_transceiver_status(self):
+        return {}
+
+    def get_transceiver_pm(self):
+        return {}
+
+    def get_xcvr_api(self):
+        return None
