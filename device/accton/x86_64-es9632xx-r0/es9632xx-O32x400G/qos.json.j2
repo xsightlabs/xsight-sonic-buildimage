@@ -1,3 +1,7 @@
+{# Workaround to allow custom QoS maps, should be reworked #}
+{%- set SYSTEM_DEFAULTS = {} -%}
+{%- set _ = SYSTEM_DEFAULTS.update({'tunnel_qos_remap': {'status': 'enabled'}}) -%}
+
 {%- macro generate_tc_to_pg_map() %}
     "TC_TO_PRIORITY_GROUP_MAP": {
         "AZURE": {
