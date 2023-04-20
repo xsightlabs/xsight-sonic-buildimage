@@ -14,7 +14,7 @@ from ctypes import create_string_buffer
 
 try:
     from sonic_py_common import logger
-    from sonic_platform_base.sfp_base import SfpBase
+    from sonic_platform_base.sonic_xcvr.sfp_optoe_base import SfpOptoeBase
     from sonic_platform_base.sonic_sfp.sff8472 import sff8472InterfaceId
     from sonic_platform_base.sonic_sfp.sff8472 import sff8472Dom
     from sonic_platform_base.sonic_sfp.sff8436 import sff8436InterfaceId
@@ -268,7 +268,7 @@ NULL_VAL = 'N/A'
 SFP_STATUS_INSERTED = '1'
 SFP_STATUS_REMOVED = '0'
 
-class Sfp(SfpBase):
+class Sfp(SfpOptoeBase):
     """Platform-specific Sfp class"""
 
     HOST_CHK_CMD = "docker > /dev/null 2>&1"
@@ -331,9 +331,9 @@ class Sfp(SfpBase):
         eeprom_path = '/sys/bus/i2c/devices/{0}-0050/eeprom'
         for x in range(self.PORT_START, self.PORT_END + 1):
             self.port_to_eeprom_mapping[x] = eeprom_path.format(self._port_to_i2c_mapping[x])
-        self._eeprom_path = self._get_eeprom_path()
+        self._eeprom_path = self.get_eeprom_path()
         self._dom_capability_detect()
-        SfpBase.__init__(self)
+        SfpOptoeBase.__init__(self)
 
     def __write_txt_file(self, file_path, value):
         try:
@@ -424,7 +424,7 @@ class Sfp(SfpBase):
         else:
             self.sfp_type = sfp_type
 
-    def _get_eeprom_path(self):
+    def get_eeprom_path(self):
         return self.port_to_eeprom_mapping[self._port_num]
 
     def _dom_capability_detect(self):
