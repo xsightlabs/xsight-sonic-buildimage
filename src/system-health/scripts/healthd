@@ -78,15 +78,15 @@ class HealthDaemon(DaemonBase):
             if not manager.config.config_file_exists():
                 self.log_warning("System health configuration file not found, exit...")
                 return
-            #sysmon = Sysmonitor()
-            #sysmon.task_run()
+            sysmon = Sysmonitor()
+            sysmon.task_run()
             while self._run_checker(manager, chassis):
                 pass
         except ImportError:
             self.log_warning("sonic_platform package not installed. Cannot start system-health daemon")
 
         self.deinit()
-        #sysmon.task_stop()
+        sysmon.task_stop()
 
     def _run_checker(self, manager, chassis):
         begin = time.time()
