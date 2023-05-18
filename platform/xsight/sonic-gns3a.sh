@@ -91,7 +91,7 @@ echo "
                 \"port_name\": \"Ethernet64\"
             }
         ],
-        \"ram\": 2048,
+        \"ram\": 4096,
         \"hda_disk_interface\": \"virtio\",
         \"arch\": \"x86_64\",
         \"console_type\": \"telnet\",
