@@ -1,6 +1,7 @@
 include $(PLATFORM_PATH)/xsight-sai.mk
 include $(PLATFORM_PATH)/docker-syncd-xsight.mk
 #include $(PLATFORM_PATH)/docker-syncd-xsight-rpc.mk
+include $(PLATFORM_PATH)/docker-saiserver-xsight.mk
 include $(PLATFORM_PATH)/one-image.mk
 include $(PLATFORM_PATH)/libsaithrift-dev.mk
 #include $(PLATFORM_PATH)/docker-ptf-xsight.mk
