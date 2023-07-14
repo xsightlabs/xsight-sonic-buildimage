@@ -1,23 +1,30 @@
 #!/usr/bin/env bash
+HWSKU_DIR=/usr/share/sonic/hwsku
 
-LABEL_REVISION_FILE="/etc/sonic/hw_revision"
+generate_profile()
+{
+    # There are two ways to specify the contents of the SAI_INIT_CONFIG_FILE and they are mutually exclusive
+    # via current method (sai.profile.j2) or new method (config.bcm.j2)
+    # If delta is large, use sai.profile.j2 which basically require the user to select which config file to use
+    # If delta is small, use config.bcm.j2 where additional SAI INIT config properties are added
+    #   based on specific device metadata requirement
+    #   in this case sai.profile should have been modified to use the path /etc/sai.d/config.bcm
+    # There is also a possibility that both sai.profile.j2 and config.bcm.j2 are absent.  in that cacse just copy
+    # sai.profile to the new /etc/said directory.
 
-ln -sf /usr/share/sonic/hwsku/xdrv_config.json /etc/xsight/xdrv_config.json
-ln -sf /usr/share/sonic/hwsku/xlink_cfg.json /etc/xsight/xlink_cfg.json
-ln -sf /usr/share/sonic/hwsku/lanes_polarity.json /etc/xsight/lanes_polarity.json
-/usr/bin/init_xsai.sh
+    # Create/Copy the sai.profile to /etc/sai.d/sai.profile
+    mkdir -p /etc/sai.d/
 
-if [ -f  ${LABEL_REVISION_FILE} ]; then
-    LABEL_REVISION=`cat ${LABEL_REVISION_FILE}`
-    if [[ x${LABEL_REVISION} == x"R0B" ]] || [[ x${LABEL_REVISION} == x"R0B2" ]]; then
-        ln -sf /etc/xsight/serdes_config_A0.json /etc/xsight/serdes_config.json
+    if [ -f $HWSKU_DIR/sai.profile.j2 ]; then
+        sonic-cfggen -d -t $HWSKU_DIR/sai.profile.j2 > /etc/sai.d/sai.profile
     else
-        ln -sf /etc/xsight/serdes_config_A1.json /etc/xsight/serdes_config.json
+        if [ -f $HWSKU_DIR/sai.profile ]; then
+            cp $HWSKU_DIR/sai.profile /etc/sai.d/sai.profile
+        fi
     fi
-fi
+}
 
 rm -f /var/run/rsyslogd.pid
-
 supervisorctl start rsyslogd
-
+#generate_profile
 supervisorctl start saiserver

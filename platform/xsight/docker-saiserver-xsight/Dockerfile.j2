@@ -6,12 +6,6 @@ ARG docker_container_name
 ## Make apt-get non-interactive
 ENV DEBIAN_FRONTEND=noninteractive
 
-## Pre-install the fundamental packages
-RUN apt-get update \
- && apt-get -y install  \
-    gdb                 \
-    libboost-atomic1.74.0
-
 COPY \
 {% for deb in docker_saiserver_xsight_debs.split(' ') -%}
 debs/{{ deb }}{{' '}}
@@ -23,8 +17,8 @@ debs/
 
 RUN apt-get install -y libjudy-dev libqt5core5a libqt5network5 libpcap0.8 libasan5 pciutils
 
-COPY ["start.sh", "/usr/bin/"]
-COPY ["profile.ini", "portmap.ini", "/etc/sai/"]
+COPY ["start.sh", "saiserver_start.sh", "/usr/bin/"]
+COPY ["files/syncd_init_common.sh", "/usr/bin/"]
 COPY ["supervisord.conf", "/etc/supervisor/conf.d/"]
 
 ## Clean up
