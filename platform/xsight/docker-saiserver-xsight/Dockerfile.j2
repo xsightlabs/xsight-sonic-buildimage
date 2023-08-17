@@ -15,11 +15,13 @@ debs/
 # Install locally-built Debian packages and implicitly install their dependencies
 {{ install_debian_packages(docker_saiserver_xsight_debs.split(' ')) }}
 
-RUN apt-get install -y libjudy-dev libqt5core5a libqt5network5 libpcap0.8 libasan5 pciutils
+RUN apt-get install -y gdb libpcap0.8 libjsoncpp24 libasan5 pciutils
 
 COPY ["start.sh", "saiserver_start.sh", "/usr/bin/"]
 COPY ["files/syncd_init_common.sh", "/usr/bin/"]
 COPY ["supervisord.conf", "/etc/supervisor/conf.d/"]
+RUN chmod +x /usr/bin/saiserver_start.sh /usr/bin/syncd_init_common.sh
+RUN ln -s /usr/lib/x86_64-linux-gnu/libjsoncpp.so.24 /usr/lib/x86_64-linux-gnu/libjsoncpp.so.1
 
 ## Clean up
 RUN apt-get clean -y; apt-get autoclean -y; apt-get autoremove -y
