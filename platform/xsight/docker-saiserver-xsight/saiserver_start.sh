@@ -7,6 +7,7 @@
 
 # Source the file that holds common code for systemd and supervisord
 . /usr/bin/syncd_init_common.sh
+. /etc/sonic/xlink.cfg
 
 get_saiserver_param()
 {
@@ -26,6 +27,17 @@ get_saiserver_param()
 ENABLE_SAITHRIFT=1
 config_syncd
 get_saiserver_param
+
+PLATFORM=$(sonic-cfggen --from-db --var 'DEVICE_METADATA.localhost.platform')
+
+if [[ "${PLATFORM}" =~ "kvm" ]]; then
+	PACKET_INTERFACE_CPU_IFNAME="xcpu"
+else
+	PACKET_INTERFACE_CPU_IFNAME="${xpci_netdev}"
+fi
+
+export PACKET_INTERFACE_CPU_IFNAME="${PACKET_INTERFACE_CPU_IFNAME}" 
+export PACKET_INTERFACE_ENABLE="true"
 
 echo exec /usr/sbin/saiserver -p ${SAI_PROFILE} -f ${PORT_CONFIG}
 exec /usr/sbin/saiserver -p ${SAI_PROFILE} -f ${PORT_CONFIG}
