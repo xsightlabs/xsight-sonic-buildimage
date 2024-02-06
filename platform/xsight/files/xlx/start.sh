@@ -128,4 +128,4 @@ FIRSTBOOT="/tmp/notify_firstboot_to_platform"
     }
 }
 #echo ">>> Set XPCI debug level to INFO(3)"
-#echo ${DEBUG_LEVEL} > /proc/sys/dev/xpci_dev/debug_level
+echo ${DEBUG_LEVEL} > /proc/sys/dev/xpci/debug_level
