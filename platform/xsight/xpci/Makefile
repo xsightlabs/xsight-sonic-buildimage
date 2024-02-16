@@ -22,8 +22,8 @@ $(addprefix $(DEST)/, $(MAIN_TARGET)): $(DEST)/% :
 #	fi
 #	done
 
-	sudo dkms build xpci/$(XPCI_VERSION) -k $(KVERSION) -a amd64
-	sudo dkms mkbmdeb xpci/$(XPCI_VERSION) -k $(KVERSION) -a amd64
+	sudo dkms build -m xpci/$(XPCI_VERSION) -k $(KVERSION)/amd64
+	sudo dkms mkbmdeb -m xpci/$(XPCI_VERSION) -k $(KVERSION)/amd64
 
 	# w/a: remove dependencies
 	mkdir -p $(DKMS_TMP)/DEBIAN
