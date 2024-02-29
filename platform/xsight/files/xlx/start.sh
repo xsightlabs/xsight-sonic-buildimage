@@ -100,32 +100,5 @@ if [ ! -f /tmp/xbooted ]; then
     touch /tmp/xbooted
 fi
 
-FIRSTBOOT="/tmp/notify_firstboot_to_platform"
-[ -f $FIRSTBOOT ] && {
-    PLATFORM=$(sed -n 's/onie_platform=\(.*\)/\1/p' /host/machine.conf)
-    HWSKU=$(head -1 /usr/share/sonic/device/${PLATFORM}/default_sku | awk '{print $1}')
-
-    # update default config from custom.json
-    [ -f /usr/share/sonic/device/$PLATFORM/custom.json ] && {
-        sonic-cfggen --from-db -j /usr/share/sonic/device/$PLATFORM/custom.json --print-data > /etc/sonic/config_db.json
-        sonic-cfggen -j /usr/share/sonic/device/$PLATFORM/custom.json --write-to-db
-    }
-
-    if [ $PLATFORM == "x86_64-kvm_x86_64-r0" ]; then
-        copp_custom="/usr/share/sonic/device/$PLATFORM/$HWSKU/copp_custom.json"
-    else
-        copp_custom="/usr/share/sonic/device/$PLATFORM/copp_custom.json"
-    fi
-
-    # update copp_cfg.j2 template from copp_custom.json
-    [ -f $copp_custom ] && {
-        sonic-cfggen -j /usr/share/sonic/templates/copp_cfg.j2 -j $copp_custom --print-data > /tmp/copp_custom.json
-        mv /tmp/copp_custom.json /usr/share/sonic/templates/copp_cfg.j2
-        # Regeneration /etc/sonic/copp_cfg.json
-        systemctl restart copp-config.service
-        # Restart coppmgrd after update /etc/sonic/copp_cfg.json
-        docker exec swss supervisorctl restart coppmgrd
-    }
-}
 #echo ">>> Set XPCI debug level to INFO(3)"
 echo ${DEBUG_LEVEL} > /proc/sys/dev/xpci/debug_level
