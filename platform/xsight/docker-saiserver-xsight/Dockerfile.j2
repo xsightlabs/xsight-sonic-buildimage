@@ -6,6 +6,13 @@ ARG docker_container_name
 ## Make apt-get non-interactive
 ENV DEBIAN_FRONTEND=noninteractive
 
+## Pre-install the thrift11 dependencies
+RUN apt-get update \
+ && apt-get -y install  \
+    libqt5core5a libqt5network5 \
+    libboost-atomic1.74.0
+
+
 COPY \
 {% for deb in docker_saiserver_xsight_debs.split(' ') -%}
 debs/{{ deb }}{{' '}}
