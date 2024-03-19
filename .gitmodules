@@ -48,8 +48,8 @@
 	branch = 202211-xsight
 [submodule "src/sonic-platform-daemons"]
 	path = src/sonic-platform-daemons
-	url = https://bbk.xsightlabs.com/scm/xs/sonic-platform-daemons.git
-	branch = 202211-xsight
+	url = https://github.com/sonic-net/sonic-platform-daemons
+	branch = 202311
 [submodule "src/sonic-platform-pde"]
 	path = src/sonic-platform-pde
 	url = https://github.com/sonic-net/sonic-platform-pdk-pde
