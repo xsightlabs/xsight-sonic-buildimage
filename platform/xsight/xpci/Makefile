@@ -4,7 +4,8 @@ SHELL = /bin/bash
 
 XPCI_NAME =  xpci-dkms_$(XPCI_VERSION)_amd64
 #SRC_DEB = $(XPCI_NAME).deb
-MOD_DEB = xpci-modules-$(KVERSION)_$(XPCI_VERSION)_amd64.deb
+MOD_DEB_NAME = xpci-modules-$(KVERSION)
+MOD_DEB = $(MOD_DEB_NAME)_$(XPCI_VERSION)_amd64.deb
 
 MAIN_TARGET = $(MOD_DEB)
 
@@ -23,16 +24,26 @@ $(addprefix $(DEST)/, $(MAIN_TARGET)): $(DEST)/% :
 #	done
 
 	sudo dkms build -m xpci/$(XPCI_VERSION) -k $(KVERSION)/amd64
-	sudo dkms mkbmdeb -m xpci/$(XPCI_VERSION) -k $(KVERSION)/amd64
 
-	# w/a: remove dependencies
 	mkdir -p $(DKMS_TMP)/DEBIAN
 
-	dpkg -e $(DKMS_BMDEB)/$(MOD_DEB) $(DKMS_TMP)/DEBIAN
-	dpkg -x $(DKMS_BMDEB)/$(MOD_DEB) $(DKMS_TMP)
+	mkdir -p $(DKMS_TMP)/lib/modules/$(KVERSION)/updates/dkms
 
-	sed -i '/^Depends:/c\Depends:' $(DKMS_TMP)/DEBIAN/control
+	cp /lib/modules/$(KVERSION)/updates/dkms/xpci.ko $(DKMS_TMP)/lib/modules/$(KVERSION)/updates/dkms
+
+	# Create the control file for the package
+	echo -e "Package: $(MOD_DEB_NAME)\n\
+	Version: $(XPCI_VERSION) \n\
+	Architecture: amd64 \n\
+	Maintainer: Anton Parkhomenko <aparkhomenko@larch-networks.com> \n\
+	Description: XPCI kernel module for SONiC project" \
+	> $(DKMS_TMP)/DEBIAN/control
+
+	echo "12" > $(DKMS_TMP)/DEBIAN/compat
+
 	echo "echo 'blacklist xpci' >> /etc/modprobe.d/xpci.conf" >> $(DKMS_TMP)/DEBIAN/postinst
+
+	chmod 755 $(DKMS_TMP)/DEBIAN/postinst
 
 	mkdir -p $(XPCI_NAME)/DEBS
 	pushd $(XPCI_NAME)/DEBS
