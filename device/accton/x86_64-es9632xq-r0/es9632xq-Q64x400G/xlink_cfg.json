@@ -1,7 +1,7 @@
 {
- "driver": "/etc/xsight/xdrv_config.json",
- "lanes_polarity": "/etc/xsight/lanes_polarity.json",
- "serdes_config": "/etc/xsight/serdes_config.json",
+ "driver": "xdrv_config.json",
+ "lanes_polarity": "lanes_polarity.json",
+ "serdes_config": "serdes_config.json",
  "version": "0.0",
  "management_ports": [
   256
@@ -73,7 +73,7 @@
   252
  ],
 
- "ucode": "/etc/xsight/ucode.json",
+ "ucode": "ucode.json",
 
- "tables_config": "/etc/xsight/xsw_auto_table_properties.json"
+ "tables_config": "xsw_auto_table_properties.json"
 }

@@ -1,6 +1,6 @@
 {
  "comment": "this file is only for usage on VM",
- "driver": "/etc/xsight/xdrv_config.json",
+ "driver": "xdrv_config.json",
  "ifu_map": [
   19,
   26,
@@ -74,7 +74,9 @@
   254
  ],
 
- "ucode": "/etc/xsight/ucode.json",
+ "ucode": "ucode.json",
 
- "tables_config": "/etc/xsight/xsw_auto_table_properties.json"
+ "serdes_config": "serdes_config.json",
+
+ "tables_config": "xsw_auto_table_properties.json"
 }
