@@ -11,6 +11,12 @@ $(addprefix $(DEST)/, $(MAIN_TARGET)): $(DEST)/% :
 
 	# Patch
 	pushd ./ixgbe-$(IXGBE_DRIVER_VERSION)
+	git init
+	git add -f *
+	git commit -m "unmodified ixgbe source"
+	# Apply patches
+	stg init
+	stg import -s ../patch/series
 
 	# Build the package
 	pushd src
