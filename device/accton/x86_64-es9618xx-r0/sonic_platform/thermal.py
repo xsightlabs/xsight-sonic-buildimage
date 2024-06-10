@@ -24,9 +24,9 @@ logger = Logger()
 
 class Thermal(ThermalBase):
     """Platform-specific Thermal class"""
-    NUMBER_OF_THERMALS = 17
-    ASIC_TEMP_SENSORS_OFFSET = 7
-    ASIC_CALCULATED_TEMP_OFFSET = 15
+    NUMBER_OF_THERMALS = 13
+    ASIC_TEMP_SENSORS_OFFSET = 8
+    ASIC_CALCULATED_TEMP_OFFSET = 11
     XCVR_TEMP_SENSORS_OFFSET = NUMBER_OF_THERMALS
     THERMAL_NAME_LIST = []
     TRANSCEIVER_LIST = []
@@ -68,14 +68,10 @@ class Thermal(ThermalBase):
         self.THERMAL_NAME_LIST.append("Temp sensor 5")
         self.THERMAL_NAME_LIST.append("Temp sensor 6")
         self.THERMAL_NAME_LIST.append("Temp sensor 7")
+        self.THERMAL_NAME_LIST.append("Temp sensor 8")
         self.THERMAL_NAME_LIST.append("ASIC sensor 1")
         self.THERMAL_NAME_LIST.append("ASIC sensor 2")
         self.THERMAL_NAME_LIST.append("ASIC sensor 3")
-        self.THERMAL_NAME_LIST.append("ASIC sensor 4")
-        self.THERMAL_NAME_LIST.append("ASIC sensor 5")
-        self.THERMAL_NAME_LIST.append("ASIC sensor 6")
-        self.THERMAL_NAME_LIST.append("ASIC sensor 7")
-        self.THERMAL_NAME_LIST.append("ASIC sensor 8")
         self.THERMAL_NAME_LIST.append("ASIC  average")
         self.THERMAL_NAME_LIST.append("ASIC  maximum")
         # append transceiver names
@@ -85,13 +81,14 @@ class Thermal(ThermalBase):
         if self.index < Thermal.ASIC_TEMP_SENSORS_OFFSET:
             # Set hwmon path
             i2c_path = {
-                0: "18-0048/hwmon/hwmon*/",
-                1: "18-0049/hwmon/hwmon*/",
-                2: "18-004a/hwmon/hwmon*/",
-                3: "18-004b/hwmon/hwmon*/",
-                4: "18-004d/hwmon/hwmon*/",
-                5: "18-004e/hwmon/hwmon*/",
-                6: "18-004f/hwmon/hwmon*/",
+                0: "11-0048/hwmon/hwmon*/",
+                1: "11-0049/hwmon/hwmon*/",
+                2: "11-004a/hwmon/hwmon*/",
+                3: "11-004b/hwmon/hwmon*/",
+                4: "11-004c/hwmon/hwmon*/",
+                5: "11-004d/hwmon/hwmon*/",
+                6: "11-004e/hwmon/hwmon*/",
+                7: "11-004f/hwmon/hwmon*/",
             }.get(self.index, None)
 
             self.hwmon_path = "{}/{}".format(self.SYSFS_PATH, i2c_path)
@@ -113,13 +110,15 @@ class Thermal(ThermalBase):
         return None
 
     def __get_temp(self, temp_file):
-        temp_file_path = os.path.join(self.hwmon_path, temp_file)
-        raw_temp = self.__read_txt_file(temp_file_path)
-        if raw_temp is not None:
-            return float(raw_temp)/1000
+        if self.index < Thermal.ASIC_TEMP_SENSORS_OFFSET:
+            temp_file_path = os.path.join(self.hwmon_path, temp_file)
+            raw_temp = self.__read_txt_file(temp_file_path)
+            if raw_temp is not None:
+                return float(raw_temp)/1000
+            else:
+                return 0
         else:
             return 0
-
 
     def __set_threshold(self, file_name, temperature):
         if self.index < Thermal.ASIC_TEMP_SENSORS_OFFSET:
@@ -132,8 +131,7 @@ class Thermal(ThermalBase):
                 except IOError as e:
                     print("IOError: {} in file: {}".format(e, self.hwmon_path))
         else:
-            return Flase
-
+            return False
 
     def get_temperature(self):
         """
@@ -288,7 +286,6 @@ class Thermal(ThermalBase):
         temperatures = []
         platform_chassis = platform.Platform().get_chassis()
         if platform_chassis is not None:
-            thermals_num = platform_chassis.get_num_thermals()
             indX = 0
             for thermal_ins in platform_chassis.get_all_thermals():
                 temperatures.append(thermal_ins.get_temperature())
@@ -327,7 +324,7 @@ class Thermal(ThermalBase):
         """
         The function getting transceiver parameters from DB
         Args :
-            temperature: A float number up to nearest thousandth of one degree Celsius,
+            update_class_list: A Boolean indicates if TRANSCEIVER_LIST should be updated.
         Returns:
             True if there was a change in plugged transceivers.
             (changed | removed | added transceiver)

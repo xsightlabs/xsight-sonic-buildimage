@@ -14,24 +14,23 @@ try:
 except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
-PSU_FAN_MAX_RPM = 25500
+PSU_FAN_MAX_RPM = 30000 # Taken from SPEC FSH082-610G Rev A12 at "9. Fans Control Requirement"
 TRAY_FAN_MAX_RPM = 31000
 TRAY_FANSPEED_TOLERANCE = 25
 
-FAN_LED_FILE = "/sys/class/leds/es9632_led::fan/brightness"
-CPLD_I2C_PATH = "/sys/bus/i2c/devices/17-0066/fan"
+FAN_LED_FILE = "/sys/class/leds/es9618xx_led::fan/brightness"
+CPLD_I2C_PATH = "/sys/bus/i2c/devices/10-0066/fan"
 PSU_HWMON_I2C_PATH ="/sys/bus/i2c/devices/{}-00{}/"
 PSU_I2C_MAPPING = {
     0: {
-        "num": 10,
+        "num": 3,
         "addr": "59"
     },
     1: {
-        "num": 9,
+        "num": 2,
         "addr": "58"
     },
 }
-
 
 class Fan(FanBase):
     """Platform-specific Fan class"""
@@ -66,7 +65,7 @@ class Fan(FanBase):
         if self.is_psu_fan:
             fan_name = "PSU {} fan {}".format(self.psu_index+1, self.fan_index)
         else:
-            fan_name = "FanTray{} fan {}".format(self.fan_tray_index, self.fan_index)
+            fan_name = "FanTray {} fan {}".format(self.fan_tray_index, self.fan_index)
 
         return fan_name
 
@@ -75,7 +74,6 @@ class Fan(FanBase):
         Retrieves the fan model
         Returns:
             string: The model of the device
-
         """
         return "R40W12BGNL9-07T17"
 
@@ -84,7 +82,6 @@ class Fan(FanBase):
         Retrieves the fan serial
         Returns:
             string: The serial of the device
-
         """
         return "N/A"
 
@@ -103,8 +100,6 @@ class Fan(FanBase):
             A string, either FAN_DIRECTION_INTAKE or FAN_DIRECTION_EXHAUST
             depending on fan direction
         """
-
-
         if not self.is_psu_fan:
             dir_str = "{}{}{}".format(CPLD_I2C_PATH, self.fan_tray_index+1, '_direction')
             val = self._api_helper.read_txt_file(dir_str)
@@ -127,7 +122,6 @@ class Fan(FanBase):
         Returns:
             An integer, the percentage of full fan speed, in the range 0 (off)
                  to 100 (full speed)
-
         """
         speed = 0
         if self.is_psu_fan:
@@ -198,9 +192,7 @@ class Fan(FanBase):
                    in the range 0 (off) to 100 (full speed)
         Returns:
             A boolean, True if speed is set successfully, False if not
-
         """
-
         if not self.is_psu_fan and self.get_presence():
             speed_path = "{}{}".format(CPLD_I2C_PATH, '_duty_cycle_percentage')
             return self._api_helper.write_txt_file(speed_path, int(speed))
