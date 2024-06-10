@@ -15,13 +15,12 @@ except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
 FANS_PER_FANTRAY = 2
-FAN_LED_FILE = "/sys/class/leds/es9632_led::fan/brightness"
+FAN_LED_FILE = "/sys/class/leds/es9618xx_led::fan/brightness"
 
 class FanDrawer(FanDrawerBase):
     """Platform-specific Fan class"""
 
     def __init__(self, fantray_index):
-
         FanDrawerBase.__init__(self)
         # FanTray is 0-based in platforms
         self._api_helper=APIHelper()
@@ -55,14 +54,13 @@ class FanDrawer(FanDrawerBase):
         if FANS_PER_FANTRAY == len(self._fan_list):
             return True
         else:
-            return Flase
+            return False
 
     def get_model(self):
         """
         Retrieves the fan_draver model
         Returns:
             string: The model of the device
-
         """
         return "R40W12BGNL9-07T17"
 
@@ -71,7 +69,6 @@ class FanDrawer(FanDrawerBase):
         Retrieves the fan_draver serial
         Returns:
             string: The serial of the device
-
         """
         return "N/A"
 
@@ -88,7 +85,6 @@ class FanDrawer(FanDrawerBase):
         Returns the maximum power could be consumed by fans in drawer.
         Returns:
             flat: maximum power
-
         """
         return 46.4 * FANS_PER_FANTRAY
 

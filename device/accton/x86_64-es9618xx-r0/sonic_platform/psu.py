@@ -7,39 +7,38 @@
 #############################################################################
 
 import os.path
-#import sonic_platform
+
 try:
     from sonic_platform_base.psu_base import PsuBase
     from .helper import APIHelper
 except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
-
 I2C_PATH ="/sys/bus/i2c/devices/{0}-00{1}/"
 
-PSULED_FNODES= ["/sys/class/leds/es9632_led::psu1/brightness",
-                "/sys/class/leds/es9632_led::psu2/brightness"]
+PSULED_FNODES= ["/sys/class/leds/es9618xx_led::psu1/brightness",
+                "/sys/class/leds/es9618xx_led::psu2/brightness"]
 
 PSU_NAME_LIST = ["PSU-1", "PSU-2"]
 PSU_NUM_FAN = [1, 1]
 PSU_HWMON_I2C_MAPPING = {
     0: {
-        "num": 10,
+        "num": 3,
         "addr": "59"
     },
     1: {
-        "num": 9,
+        "num": 2,
         "addr": "58"
     },
 }
 
 PSU_CPLD_I2C_MAPPING = {
     0: {
-        "num": 10,
+        "num": 3,
         "addr": "51"
     },
     1: {
-        "num": 9,
+        "num": 2,
         "addr": "50"
     },
 }
@@ -110,15 +109,6 @@ class Psu(PsuBase):
         else:
             return 0
 
-    def get_powergood_status(self):
-        """
-        Retrieves the powergood status of PSU
-        Returns:
-            A boolean, True if PSU has stablized its output voltages and passed all
-            its internal self-tests, False if not.
-        """
-        return self.get_status()
-
     def set_status_led(self, color):
         """
         Sets the state of the PSU status LED
@@ -177,9 +167,7 @@ class Psu(PsuBase):
             A float number, the high threshold output voltage in volts,
             e.g. 12.1
         """
-        vout_path = "{}{}".format(self.hwmon_path, 'psu_mfr_vout_max')
-        vout_val=self._api_helper.read_txt_file(vout_path)
-        return float(vout_val) / 1000
+        return False #Not supported
 
     def get_voltage_low_threshold(self):
         """
@@ -188,9 +176,7 @@ class Psu(PsuBase):
             A float number, the low threshold output voltage in volts,
             e.g. 12.1
         """
-        vout_path = "{}{}".format(self.hwmon_path, 'psu_mfr_vout_min')
-        vout_val=self._api_helper.read_txt_file(vout_path)
-        return float(vout_val) / 1000
+        return False #Not supported
 
     def get_name(self):
         """
@@ -253,7 +239,7 @@ class Psu(PsuBase):
         Returns:
             string: Serial number of device
         """
-        serial_path="{}{}".format(self.cpld_path, 'psu_serial_numer')
+        serial_path="{}{}".format(self.cpld_path, 'psu_serial_number')
         if not os.path.isfile(serial_path):
             return "Unknown"
 
