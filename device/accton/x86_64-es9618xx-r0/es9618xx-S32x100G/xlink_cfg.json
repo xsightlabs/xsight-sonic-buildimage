@@ -1,0 +1,48 @@
+{
+ "driver": "xdrv_config.json",
+ "lanes_polarity": "lanes_polarity.json",
+ "version": "0.0",
+ "management_ports": [
+  136
+ ],
+ "network_ports": [
+   0,
+   8,
+   16,
+   24,
+   32,
+   40,
+   48,
+   56,
+   64,
+   72,
+   80,
+   88,
+   96,
+   104,
+   112,
+   120,
+   10,
+   12,
+   14,
+   18,
+   20,
+   22,
+   26,
+   28,
+   30,
+   34,
+   36,
+   38,
+   42,
+   44,
+   46,
+   50
+ ],
+
+ "ucode": "ucode.json",
+
+ "serdes_config": "serdes_config.json",
+
+ "tables_config": "xsw_auto_table_properties.json"
+}
