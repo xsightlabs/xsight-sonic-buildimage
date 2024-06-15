@@ -3,9 +3,9 @@
 SYS_MODE="xbm"
 XPCI_NETDEV_ATTACH_IF="xcpu"
 # default netdev name for asic mode if config file doesn't exist or interface doesn't exist
-DEFAULT_ASIC_NETDEV_NAME="eth10g1"
+DEFAULT_ASIC_NETDEV_NAME="xpcxd0"
 SECOND_ASIC_NETDEV_NAME="eth10g0"
-PORT_NUM=256
+PORT_NUM=128
 DEBUG_LEVEL=3
 NETDEV_MODE=1
 HW_IRQ_MODE=1
