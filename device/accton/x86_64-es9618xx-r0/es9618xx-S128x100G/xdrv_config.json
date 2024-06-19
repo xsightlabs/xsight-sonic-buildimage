@@ -10,7 +10,7 @@
  "rbu_wa_protection_bypass": false, 
  "cdt_bypass": false, 
  "random_seed": 4250524994, 
- "reg_mem_access_file": true, 
+ "reg_mem_access_file": false,
  "mac_crc_bypass": false, 
  "hw_mode": "full", 
  "mbr_bypass": false, 
