@@ -1,18 +1,18 @@
 from setuptools import setup
 
-DEVICE_NAME = 'accton'
-HW_SKU = 'x86_64-es9632xx-r0'  
+DEVICE_NAME = 'xsight'
+HW_SKU = 'x86_64-x2evb-r0'
 
 setup(
     name='sonic-platform',
     version='1.0',
-    description='SONiC platform API implementation on Accton Platforms',
+    description='SONiC platform API implementation on Xsight Platforms',
     license='Apache 2.0',
-    author='SONiC Team',
-    author_email='linuxnetdev@microsoft.com',
+    author='XPLT Team',
+    author_email='michaelz@xsightlabs.com',
     url='https://github.com/Azure/sonic-buildimage',
-    maintainer='Brandon Chuang',
-    maintainer_email='brandon_chuang@edge-core.com',
+    maintainer='Michael Zaidman',
+    maintainer_email='michaelz@xsightlabs.com',
     packages=[
         'sonic_platform',
     ],

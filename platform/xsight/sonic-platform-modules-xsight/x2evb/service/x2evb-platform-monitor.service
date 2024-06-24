@@ -1,17 +1,16 @@
 [Unit]
-Description=Accton ES9632XQ Platform Monitoring service
+Description=Xsight X2EVB Platform Service
 Before=pmon.service
 After=sysinit.target
 DefaultDependencies=no
 
 [Service]
-ExecStartPre=/usr/local/bin/es9632xq_util.py install
-ExecStart=/usr/local/bin/es9632xq_monitor.py
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/x2evb_util.sh init
+ExecStop=/usr/local/bin/x2evb_util.sh deinit
 KillSignal=SIGKILL
 SuccessExitStatus=SIGKILL
-
-# Resource Limitations
-LimitCORE=infinity
 
 [Install]
 WantedBy=multi-user.target
