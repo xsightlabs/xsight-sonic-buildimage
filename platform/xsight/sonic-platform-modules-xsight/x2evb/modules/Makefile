@@ -1,8 +1,5 @@
 ifneq ($(KERNELRELEASE),)
-obj-m:= es9632-cpld.o es9632-sfp.o\
-    es9632-fan.o es9632-leds.o \
-    es9632-psu.o es9632-sys.o dps850.o
-
+obj-m:= hid-ft260.o optoe
 else
 ifeq (,$(KERNEL_SRC))
 $(error KERNEL_SRC is not defined)

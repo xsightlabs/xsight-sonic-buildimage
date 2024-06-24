@@ -6,11 +6,11 @@ from setuptools import setup
 os.listdir
 
 setup(
-   name='es9632xx',
+   name='x2evb',
    version='1.0',
-   description='Module to initialize Accton ES9632XX platforms',
+   description='Module to initialize Xsight X2EVB platforms',
 
-   packages=['es9632xx'],
-   package_dir={'es9632xx': 'es9632xx/classes'},
+   packages=['x2evb'],
+   package_dir={'x2evb': 'x2evb/classes'},
 )
 
