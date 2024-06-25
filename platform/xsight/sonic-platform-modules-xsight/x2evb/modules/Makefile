@@ -1,5 +1,5 @@
 ifneq ($(KERNELRELEASE),)
-obj-m:= hid-ft260.o optoe
+obj-m:= hid-ft260.o optoe.o
 else
 ifeq (,$(KERNEL_SRC))
 $(error KERNEL_SRC is not defined)
