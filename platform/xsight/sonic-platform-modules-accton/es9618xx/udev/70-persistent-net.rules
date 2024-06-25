@@ -1,0 +1,19 @@
+## CDC Ethernet device
+SUBSYSTEM=="net", DRIVERS=="?*", ATTR{address}=="02:00:00:00:00:02", ATTR{type}=="1", NAME="usb0", ACTION=="add"
+
+## Intel I210 Ethernet device
+#SUBSYSTEM=="net", DRIVERS=="?*", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x1533", ACTION=="add", NAME="eth1g0"
+SUBSYSTEM=="net", DRIVERS=="?*", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x1538", ACTION=="add", NAME="eth1g0"
+SUBSYSTEM=="net", DRIVERS=="?*", KERNELS=="0000:03:00.0", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x1533", ACTION=="add", NAME="eth1g0"
+SUBSYSTEM=="net", DRIVERS=="?*", KERNELS=="0000:04:00.0", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x1533", ACTION=="add", NAME="eth1g1"
+
+## Intel X552 Ethernet device of Intel BDX-DE SoC
+SUBSYSTEM=="net", DRIVERS=="?*", KERNELS=="0000:??:00.0", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x15ab", ACTION=="add", NAME="eth10g0"
+SUBSYSTEM=="net", DRIVERS=="?*", KERNELS=="0000:??:00.1", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x15ab", ACTION=="add", NAME="eth10g1"
+
+## Intel E823 Ethernet device of ICX-D SoC
+SUBSYSTEM=="net", DRIVERS=="?*", KERNELS=="0000:??:00.0", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x124c", ACTION=="add", NAME="eth10g0"
+SUBSYSTEM=="net", DRIVERS=="?*", KERNELS=="0000:??:00.1", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x124c", ACTION=="add", NAME="eth10g1"
+SUBSYSTEM=="net", DRIVERS=="?*", KERNELS=="0000:??:00.2", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x124c", ACTION=="add", NAME="eth10g2"
+SUBSYSTEM=="net", DRIVERS=="?*", KERNELS=="0000:??:00.3", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x124c", ACTION=="add", NAME="eth10g3"
+
