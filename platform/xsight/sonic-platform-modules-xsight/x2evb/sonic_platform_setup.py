@@ -1,7 +1,7 @@
 from setuptools import setup
 
 DEVICE_NAME = 'xsight'
-HW_SKU = 'x86_64-x2evb-r0'
+HW_SKU = 'x86_64-xsight_x2evb-r0'
 
 setup(
     name='sonic-platform',
