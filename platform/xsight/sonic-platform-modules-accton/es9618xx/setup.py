@@ -6,11 +6,11 @@ from setuptools import setup
 os.listdir
 
 setup(
-   name='es9632xx',
+   name='es9618xx',
    version='1.0',
-   description='Module to initialize Accton ES9632XX platforms',
+   description='Module to initialize Accton ES9618XX platforms',
 
-   packages=['es9632xx'],
-   package_dir={'es9632xx': 'es9632xx/classes'},
+   packages=['es9618xx'],
+   package_dir={'es9618xx': 'es9618xx/classes'},
 )
 
