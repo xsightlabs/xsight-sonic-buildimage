@@ -1,6 +1,6 @@
 ## Intel I210 Ethernet device
-SUBSYSTEM=="net", DRIVERS=="?*", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x1533", ACTION=="add", NAME="eth1g0"
-SUBSYSTEM=="net", DRIVERS=="?*", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x1538", ACTION=="add", NAME="eth1g0"
+SUBSYSTEM=="net", DRIVERS=="?*", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x1533", ACTION=="add", NAME="eth0"
+SUBSYSTEM=="net", DRIVERS=="?*", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x1538", ACTION=="add", NAME="eth0"
 
 ## Intel X552 Ethernet device
 SUBSYSTEM=="net", DRIVERS=="?*", KERNELS=="0000:??:00.0", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x15ab", ACTION=="add", NAME="eth10g0"
