@@ -33,14 +33,14 @@ try:
     import time  # this is only being used as part of the example
     import signal
     from systemd.journal import JournalHandler
-    from es9632xx.fanutil import FanUtil
-    from es9632xx.thermalutil import ThermalUtil
+    from es9618xx.fanutil import FanUtil
+    from es9618xx.thermalutil import ThermalUtil
 except ImportError as e:
     raise ImportError('%s - required module not found' % str(e))
 
 # Deafults
 VERSION = '1.0'
-FUNCTION_NAME = 'es9632xx_monitor'
+FUNCTION_NAME = 'es9618xx_monitor'
 DUTY_MAX = 100
 SHUTDOWN_FILE = '/usr/share/sonic/firmware/pmon_system_shutdown'
 SYSTEM_HALT_ON_OVERHEAT = 1
@@ -98,7 +98,7 @@ def main(argv):
 
     signal.signal(signal.SIGINT, handler)
     signal.signal(signal.SIGTERM, handler)
-    #monitor = es9632xx_monitor(log_file, log_level)
+    #monitor = es9618xx_monitor(log_file, log_level)
 
     # Loop forever, doing something useful hopefully:
     while True:
@@ -113,7 +113,7 @@ def main(argv):
                 if SYSTEM_HALT_ON_OVERHEAT == int(file_content[0]):
                     os.remove(SHUTDOWN_FILE)
                     logging.warning("System HALT due to high temperature of: {} !".format(ext_string))
-                    os.system("/opt/xplt/utils/es9632x_reset_x1.sh")
+                    os.system("/opt/xplt/utils/es9618x_reset_x2.sh")
                     os.system("/usr/sbin/shutdown -H now")
                 if SYSTEM_WARN_ON_OVERHEAT == int(file_content[0]):
                     logging.warning("System warning due to overheat of: {} !".format(ext_string))
