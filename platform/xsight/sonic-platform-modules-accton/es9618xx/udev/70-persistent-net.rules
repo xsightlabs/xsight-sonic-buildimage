@@ -3,9 +3,9 @@ SUBSYSTEM=="net", DRIVERS=="?*", ATTR{address}=="02:00:00:00:00:02", ATTR{type}=
 
 ## Intel I210 Ethernet device
 #SUBSYSTEM=="net", DRIVERS=="?*", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x1533", ACTION=="add", NAME="eth1g0"
-SUBSYSTEM=="net", DRIVERS=="?*", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x1538", ACTION=="add", NAME="eth1g0"
-SUBSYSTEM=="net", DRIVERS=="?*", KERNELS=="0000:03:00.0", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x1533", ACTION=="add", NAME="eth1g0"
-SUBSYSTEM=="net", DRIVERS=="?*", KERNELS=="0000:04:00.0", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x1533", ACTION=="add", NAME="eth1g1"
+SUBSYSTEM=="net", DRIVERS=="?*", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x1538", ACTION=="add", NAME="eth0"
+SUBSYSTEM=="net", DRIVERS=="?*", KERNELS=="0000:03:00.0", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x1533", ACTION=="add", NAME="eth0"
+SUBSYSTEM=="net", DRIVERS=="?*", KERNELS=="0000:04:00.0", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x1533", ACTION=="add", NAME="eth1"
 
 ## Intel X552 Ethernet device of Intel BDX-DE SoC
 SUBSYSTEM=="net", DRIVERS=="?*", KERNELS=="0000:??:00.0", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x15ab", ACTION=="add", NAME="eth10g0"
