@@ -8,6 +8,7 @@
 
 import os
 import time
+import sys
 
 try:
     from sonic_platform_base.chassis_base import ChassisBase
@@ -187,7 +188,9 @@ class Chassis(ChassisBase):
 
         try:
             # The index will start from 1
-            sfp = self._sfp_list[index-1]
+            #sfp = self._sfp_list[index-1]
+            # workaround for 128 ports breakout mode
+            sfp = self._sfp_list[int(index/8)-1]
         except IndexError:
             sys.stderr.write("SFP index {} out of range (1-{})\n".format(
                              index, len(self._sfp_list)))
