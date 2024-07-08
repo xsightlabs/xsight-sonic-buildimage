@@ -163,7 +163,7 @@ class Fan(FanBase):
         """
         speed = 0
         if self.is_psu_fan:
-            return 100.0
+            return 100
 
         elif self.get_presence():
             if 0 == self.fan_index:
@@ -186,7 +186,7 @@ class Fan(FanBase):
         """
         tolerance = TRAY_FANSPEED_TOLERANCE
         if self.is_psu_fan:
-            tolerance = 100.0
+            tolerance = 100
 
         return tolerance
 
