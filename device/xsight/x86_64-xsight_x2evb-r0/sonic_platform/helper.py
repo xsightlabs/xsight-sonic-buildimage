@@ -2,7 +2,6 @@ import os
 import struct
 import subprocess
 from mmap import *
-from sonic_py_common import device_info
 
 HOST_CHK_CMD = "docker > /dev/null 2>&1"
 EMPTY_STRING = ""
@@ -11,7 +10,7 @@ EMPTY_STRING = ""
 class APIHelper():
 
     def __init__(self):
-        (self.platform, self.hwsku) = device_info.get_platform_and_hwsku()
+        pass
 
     def is_host(self):
         return os.system(HOST_CHK_CMD) == 0

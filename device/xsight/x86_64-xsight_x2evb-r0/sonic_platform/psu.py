@@ -1,5 +1,4 @@
 #############################################################################
-# Edgecore
 #
 # Module contains an implementation of SONiC Platform Base API and
 # provides the PSUs status which are available in the platform
@@ -9,39 +8,13 @@
 import os.path
 
 try:
+    from bmc import bmc
     from sonic_platform_base.psu_base import PsuBase
     from .helper import APIHelper
 except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
-I2C_PATH ="/sys/bus/i2c/devices/{0}-00{1}/"
-
-PSULED_FNODES= ["/sys/class/leds/es9618xx_led::psu1/brightness",
-                "/sys/class/leds/es9618xx_led::psu2/brightness"]
-
-PSU_NAME_LIST = ["PSU-1", "PSU-2"]
-PSU_NUM_FAN = [1, 1]
-PSU_HWMON_I2C_MAPPING = {
-    0: {
-        "num": 3,
-        "addr": "59"
-    },
-    1: {
-        "num": 2,
-        "addr": "58"
-    },
-}
-
-PSU_CPLD_I2C_MAPPING = {
-    0: {
-        "num": 3,
-        "addr": "51"
-    },
-    1: {
-        "num": 2,
-        "addr": "50"
-    },
-}
+PSU_NAME_LIST = ["PSU-1"]
 
 class Psu(PsuBase):
     """Platform-specific Psu class"""
@@ -49,28 +22,7 @@ class Psu(PsuBase):
     def __init__(self, psu_index=0):
         PsuBase.__init__(self)
         self.index = psu_index
-        self._api_helper = APIHelper()
-        
-        self.i2c_num = PSU_HWMON_I2C_MAPPING[self.index]["num"]
-        self.i2c_addr = PSU_HWMON_I2C_MAPPING[self.index]["addr"]
-        self.hwmon_path = I2C_PATH.format(self.i2c_num, self.i2c_addr)
-        
-        self.i2c_num = PSU_CPLD_I2C_MAPPING[self.index]["num"]
-        self.i2c_addr = PSU_CPLD_I2C_MAPPING[self.index]["addr"]
-        self.cpld_path = I2C_PATH.format(self.i2c_num, self.i2c_addr)
-        self.__initialize_fan()
-        self.PSULED_MODES = {
-            "0" : self.STATUS_LED_COLOR_OFF,
-            "1" : self.STATUS_LED_COLOR_GREEN,
-            "3" : self.STATUS_LED_COLOR_AMBER
-        }
-
-    def __initialize_fan(self):
-        from sonic_platform.fan import Fan
-        for fan_index in range(0, PSU_NUM_FAN[self.index]):
-            fan = Fan(fan_index, 0, is_psu_fan=True, psu_index=self.index)
-            if fan.get_presence():
-                self._fan_list.append(fan)
+        self.bmccmd = bmc.Bmc()
 
     def get_voltage(self):
         """
@@ -79,9 +31,7 @@ class Psu(PsuBase):
             A float number, the output voltage in volts,
             e.g. 12.1
         """
-        vout_path = "{}{}".format(self.hwmon_path, 'psu_v_out')        
-        vout_val=self._api_helper.read_txt_file(vout_path)
-        return float(vout_val)/ 1000
+        return float(self.bmccmd.psup_voltage())
 
     def get_current(self):
         """
@@ -89,12 +39,7 @@ class Psu(PsuBase):
         Returns:
             A float number, the electric current in amperes, e.g 15.4
         """
-        iout_path = "{}{}".format(self.hwmon_path, 'psu_i_out')        
-        val=self._api_helper.read_txt_file(iout_path)
-        if val is not None:
-            return float(val)/1000
-        else:
-            return 0
+        return float(self.bmccmd.psup_current())
 
     def get_power(self):
         """
@@ -102,12 +47,7 @@ class Psu(PsuBase):
         Returns:
             A float number, the power in watts, e.g. 302.6
         """
-        pout_path = "{}{}".format(self.hwmon_path, 'psu_p_out')        
-        val=self._api_helper.read_txt_file(pout_path)
-        if val is not None:
-            return float(val)/1000
-        else:
-            return 0
+        return float(self.bmccmd.psup_power())
 
     def set_status_led(self, color):
         """
@@ -118,15 +58,7 @@ class Psu(PsuBase):
         Returns:
             bool: True if status LED state is set successfully, False if not
         """
-        mode = None
-        for key, val in self.PSULED_MODES.items():
-            if val == color:
-                mode = key
-                break
-        if mode is None:
-            return False
-        else:
-            return self._api_helper.write_txt_file(PSULED_FNODES[self.index], mode)
+        return False
 
     def get_status_led(self):
         """
@@ -134,8 +66,7 @@ class Psu(PsuBase):
         Returns:
             A string, one of the predefined STATUS_LED_COLOR_* strings above
         """
-        val = self._api_helper.read_txt_file(PSULED_FNODES[self.index])
-        return self.PSULED_MODES[val] if val in self.PSULED_MODES else "UNKNOWN"
+        return "N/A"
 
     def get_temperature(self):
         """
@@ -144,12 +75,7 @@ class Psu(PsuBase):
             A float number of current temperature in Celsius up to nearest thousandth
             of one degree Celsius, e.g. 30.125
         """
-        temp_path = "{}{}".format(self.hwmon_path, 'psu_temp1_input')
-        val=self._api_helper.read_txt_file(temp_path)
-        if val is not None:
-            return float(val)/1000
-        else:
-            return 0
+        return False #Not supported
 
     def get_temperature_high_threshold(self):
         """
@@ -191,13 +117,8 @@ class Psu(PsuBase):
         Retrieves the presence of the PSU
         Returns:
             bool: True if PSU is present, False if not
-        """        
-        presence_path="{}{}".format(self.cpld_path, 'psu_present')
-        val=self._api_helper.read_txt_file(presence_path)
-        if val is not None:
-            return int(val, 10) == 1
-        else:
-            return 0
+        """
+        return True
 
     def get_status(self):
         """
@@ -205,17 +126,7 @@ class Psu(PsuBase):
         Returns:
             A boolean value, True if device is operating properly, False if not
         """
-        power_path="{}{}".format(self.cpld_path, 'psu_power_good')
-        val=self._api_helper.read_txt_file(power_path)
-        if val is not None:
-            if int(val, 10) == 1:
-                self.set_status_led(self.STATUS_LED_COLOR_GREEN)
-                return True
-            else:
-                self.set_status_led(self.STATUS_LED_COLOR_AMBER)
-                return False
-        else:
-            return False
+        return True
 
     def get_model(self):
         """
@@ -223,15 +134,7 @@ class Psu(PsuBase):
         Returns:
             string: Model/part number of device
         """
-        model_path="{}{}".format(self.cpld_path, 'psu_model_name')
-        if not os.path.isfile(model_path):
-            return "Unknown"
-
-        val = open(model_path, encoding='utf-8', errors='ignore').read()
-        if val is not None:
-            return val
-        else:
-            return "Unknown"
+        return "DPS-3000AB"
 
     def get_serial(self):
         """
@@ -239,15 +142,7 @@ class Psu(PsuBase):
         Returns:
             string: Serial number of device
         """
-        serial_path="{}{}".format(self.cpld_path, 'psu_serial_number')
-        if not os.path.isfile(serial_path):
-            return "Unknown"
-
-        val = open(serial_path, encoding='utf-8', errors='ignore').read()
-        if val is not None:
-            return val
-        else:
-            return "Unknown"
+        return "N/A"
 
     def is_replaceable(self):
         """

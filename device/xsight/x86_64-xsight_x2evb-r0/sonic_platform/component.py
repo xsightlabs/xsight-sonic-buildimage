@@ -1,5 +1,4 @@
 #############################################################################
-# Accton
 #
 # Component contains an implementation of SONiC Platform Base API and
 # provides the components firmware management function
@@ -12,29 +11,19 @@ import sys
 import os
 
 try:
-    from sonic_py_common import logger
+    from bmc import bmc
     from sonic_platform_base.component_base import ComponentBase
     from .helper import APIHelper
 except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
-CPLD_ADDR_MAPPING = {
-    "CPLD1": "1-0068",
-    "CPLD2": "13-0061",
-}
-SYSFS_PATH = "/sys/bus/i2c/devices/"
 BIOS_VERSION_PATH = "/sys/class/dmi/id/bios_version"
 COMPONENT_LIST= [
    ("BIOS", "Basic Input/Output System"),
    ("ONIE", "Open Network Install Environment"),
-   ("CPLD1", "CPLD 1"),
-   ("CPLD2", "CPLD 2")
+   ("BMC", "Baseboard Management Controller"),
+   ("FPGA", "Field Programmable Gate Array")
 ]
-
-SYSLOG_IDENTIFIER = "component"
-logger = logger.Logger(SYSLOG_IDENTIFIER)
-logger.set_min_log_priority_debug()
-logger.log_debug("Load {} module".format(__name__))
 
 class Component(ComponentBase):
     """Platform-specific Component class"""
@@ -42,10 +31,10 @@ class Component(ComponentBase):
     DEVICE_TYPE = "component"
 
     def __init__(self, component_index=0):
-        self._api_helper=APIHelper()
         ComponentBase.__init__(self)
         self.index = component_index
         self.name = self.get_name()
+        self.bmccmd = bmc.Bmc()
 
     def __run_command(self, command):
         # Run bash command and print output to stdout
@@ -73,31 +62,22 @@ class Component(ComponentBase):
             return None
 
     def __get_onie_version(self):
-        onie_mnt = "/tmp/onie"
-        user = subprocess.check_output("whoami", shell=True).decode(sys.stdout.encoding).strip()
-        sudo = "" if user == "root" else "sudo "
-        if not os.path.isdir(onie_mnt):
-            subprocess.call(sudo + "mkdir " + onie_mnt, shell=True)
-        if not os.path.ismount(onie_mnt):
-            subprocess.call(sudo + "mount LABEL=ONIE-BOOT " + onie_mnt, shell=True)
-        onie_version = subprocess.check_output("grep onie_version= /tmp/onie/grub/grub.cfg", shell=True)
-        onie_version = onie_version.decode(sys.stdout.encoding).strip().split("onie_version=", 1)[-1]
-        subprocess.call(sudo + "umount " + onie_mnt + " && " + sudo + "rm -rf " + onie_mnt, shell=True)
-        return onie_version
-
-    def __get_cpld_version(self):
-        # Retrieves the CPLD firmware version
-        cpld_version = dict()
-        for cpld_name in CPLD_ADDR_MAPPING:
-            try:
-                cpld_path = "{}{}{}".format(SYSFS_PATH, CPLD_ADDR_MAPPING[cpld_name], '/version')
-                cpld_version_raw= self._api_helper.read_txt_file(cpld_path)
-                cpld_version[cpld_name] = "{}".format(int(cpld_version_raw,16))
-            except Exception as e:
-                print('Get exception when read cpld (%s)', cpld_path)
-                cpld_version[cpld_name] = 'None'
-
-        return cpld_version
+        try:
+            onie_mnt = "/tmp/onie"
+            user = subprocess.check_output("whoami", shell=True).decode(sys.stdout.encoding).strip()
+            sudo = "" if user == "root" else "sudo "
+            if not os.path.isdir(onie_mnt):
+                subprocess.call(sudo + "mkdir " + onie_mnt, shell=True)
+            if not os.path.ismount(onie_mnt):
+                subprocess.call(sudo + "mount LABEL=ONIE-BOOT " + onie_mnt,
+                                shell=True, stderr=subprocess.DEVNULL)
+            onie_version = subprocess.check_output("grep onie_version= /tmp/onie/grub/grub.cfg",
+                                                    shell=True, stderr=subprocess.DEVNULL)
+            onie_version = onie_version.decode(sys.stdout.encoding).strip().split("onie_version=", 1)[-1]
+            subprocess.call(sudo + "umount " + onie_mnt + " && " + sudo + "rm -rf " + onie_mnt, shell=True)
+            return onie_version
+        except:
+            return ""
 
     def get_name(self):
         """
@@ -126,9 +106,10 @@ class Component(ComponentBase):
             fw_version = self.__get_bios_version()
         elif "ONIE" in self.name:
             fw_version = self.__get_onie_version()
-        elif "CPLD" in self.name:
-            cpld_version = self.__get_cpld_version()
-            fw_version = cpld_version.get(self.name)
+        elif "BMC" in self.name:
+            fw_version = self.bmccmd.get_bmc_version()
+        elif "FPGA" in self.name:
+            fw_version = self.bmccmd.get_fpga_version()
 
         return fw_version
 

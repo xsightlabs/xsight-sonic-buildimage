@@ -1,5 +1,4 @@
 #############################################################################
-# Edgecore
 #
 # Module contains an implementation of SONiC Platform Base API and
 # provides the platform information
