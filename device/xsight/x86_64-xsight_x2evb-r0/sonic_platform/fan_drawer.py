@@ -96,3 +96,14 @@ class FanDrawer(FanDrawerBase):
         """
         return (self.fantrayindex + 1)
 
+    def set_status_led(self, color):
+        """
+        Sets the state of the fan drawer status LED
+        Args:
+            color: A string representing the color with which to set the
+                   fan drawer status LED
+        Returns:
+            bool: True if status LED state is set successfully, False if not
+        """
+        return False
+

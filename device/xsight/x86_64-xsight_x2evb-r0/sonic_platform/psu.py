@@ -8,7 +8,7 @@
 import os.path
 
 try:
-    from bmc import bmc
+    from sonic_platform import bmc
     from sonic_platform_base.psu_base import PsuBase
     from .helper import APIHelper
 except ImportError as e:
