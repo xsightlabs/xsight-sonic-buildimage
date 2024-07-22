@@ -11,7 +11,7 @@ import sys
 import os
 
 try:
-    from bmc import bmc
+    from sonic_platform import bmc
     from sonic_platform_base.component_base import ComponentBase
     from .helper import APIHelper
 except ImportError as e:

@@ -6,7 +6,7 @@
 #############################################################################
 
 try:
-    from bmc import bmc
+    from sonic_platform import bmc
     from sonic_platform_base.fan_base import FanBase
     from sonic_platform import platform
     from .helper import APIHelper
@@ -18,10 +18,12 @@ TRAY_FANSPEED_TOLERANCE = 25
 class Fan(FanBase):
     """Platform-specific Fan class"""
 
-    def __init__(self, fan_tray_index, fan_index=0):
+    def __init__(self, fan_tray_index, fan_index=0, is_psu_fan=False, psu_index=0):
         self.bmccmd = bmc.Bmc()
         self.fan_index = fan_index
         self.fan_tray_index = fan_tray_index
+        self.is_psu_fan = is_psu_fan
+        self.psu_index = psu_index
 
         FanBase.__init__(self)
 
@@ -31,7 +33,7 @@ class Fan(FanBase):
         Returns:
             A string with fan name either from fan tray or from psu
         """
-        return "Fan {}".format(self.fan_index)
+        return "FanTray {} fan {}".format(self.fan_tray_index, self.fan_index)
 
     def get_model(self):
         """
@@ -39,7 +41,7 @@ class Fan(FanBase):
         Returns:
             string: The model of the device
         """
-        return "AS-XST-1300"
+        return "R40W12BGNL9-07A063"
 
     def get_serial(self):
         """
@@ -73,7 +75,7 @@ class Fan(FanBase):
             An integer, the percentage of full fan speed, in the range 0 (off)
                  to 100 (full speed)
         """
-        return self.bmccmd.read_fan_speed()
+        return int(self.bmccmd.read_fan_speed())
 
     def get_target_speed(self):
         """
@@ -81,14 +83,8 @@ class Fan(FanBase):
         Returns:
             An integer, the percentage of full fan speed, in the range 0 (off)
                  to 100 (full speed)
-
-        Note:
-            speed_pc = pwm_target/255*100
-
-            0   : when PWM mode is use
-            pwm : when pwm mode is not use
         """
-        return "N/A"
+        return int(self.bmccmd.read_fan_speed())
 
     def get_speed_tolerance(self):
         """

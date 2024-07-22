@@ -17,22 +17,24 @@ except ImportError as e:
 NUM_FAN_TRAY = 5
 NUM_FAN = 2
 NUM_PSU = 1
-NUM_LED = 1
-NUM_RESET = 2
 PORT_END = 16
 NUM_COMPONENT = 4
 POSITION_INDEX = 1
+HOST_REBOOT_CAUSE_PATH = "/host/reboot-cause/"
+REBOOT_CAUSE_FILE = "reboot-cause.txt"
+PREV_REBOOT_CAUSE_FILE = "previous-reboot-cause.txt"
+HOST_CHK_CMD = "docker > /dev/null 2>&1"
 
 class Chassis(ChassisBase):
     """Platform-specific Chassis class"""
 
     def __init__(self):
         ChassisBase.__init__(self)
+        self._api_helper = APIHelper()
+        self.is_host = self._api_helper.is_host()
 
         self.__initialize_fan()
         self.__initialize_psu()
-        self.__initialize_led()
-        self.__initialize_reset()
         self.__initialize_thermals()
         self.__initialize_components()
 
@@ -49,18 +51,6 @@ class Chassis(ChassisBase):
             psu = Psu(index)
             self._psu_list.append(psu)
 
-    def __initialize_led(self):
-        from sonic_platform.led import Led
-        for index in range(0, NUM_LED):
-            led = Led(index)
-            self._led_list.append(led)
-
-    def __initialize_reset(self):
-        from sonic_platform.reset import Reset
-        for index in range(0, NUM_RESET):
-            reset = Reset(index)
-            self._reset_list.append(reset)
-
     def __initialize_thermals(self):
         from sonic_platform.thermal import Thermal
         for index in range(0, Thermal.NUMBER_OF_THERMALS):
@@ -74,7 +64,7 @@ class Chassis(ChassisBase):
             self._component_list.append(component)
 
     def __is_host(self):
-        return True
+        return os.system(HOST_CHK_CMD) == 0
 
     def get_name(self):
         """
@@ -82,7 +72,7 @@ class Chassis(ChassisBase):
             Returns:
             string: The name of the device
         """
-        return "N/A"
+        return self._api_helper.hwsku
 
     def get_presence(self):
         """
@@ -138,7 +128,11 @@ class Chassis(ChassisBase):
             is "REBOOT_CAUSE_HARDWARE_OTHER", the second string can be used
             to pass a description of the reboot cause.
         """
-        return "Unknown"
+        reboot_cause_path = (HOST_REBOOT_CAUSE_PATH + REBOOT_CAUSE_FILE)
+        sw_reboot_cause = self._api_helper.read_txt_file(
+            reboot_cause_path) or "Unknown"
+
+        return ('REBOOT_CAUSE_NON_HARDWARE', sw_reboot_cause)
 
     def get_sfp(self, index):
         """
@@ -165,7 +159,7 @@ class Chassis(ChassisBase):
         Returns:
             True|False
         """
-        return None
+        return False
 
     def get_change_event(self, timeout=0):
         """
@@ -188,7 +182,7 @@ class Chassis(ChassisBase):
         Returns:
             string: Model/part number of device
         """
-        return "N/A"
+        return ""
 
     def get_num_fans(self):
         """
@@ -220,7 +214,7 @@ class Chassis(ChassisBase):
         Returns:
             A string containing the hardware revision number for this chassis.
         """
-        return "N/A"
+        return ""
 
     def get_num_components(self):
         """

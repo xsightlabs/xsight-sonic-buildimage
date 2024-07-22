@@ -49,7 +49,7 @@ class Bmc:
             None.
         """
         port = 9087
-        filename = "/etc/hostname"
+        filename = "/etc/sonic/serial_number"
         if os.path.isfile(filename):
             file = open(filename, "r")
             hostname = file.readline().rstrip()

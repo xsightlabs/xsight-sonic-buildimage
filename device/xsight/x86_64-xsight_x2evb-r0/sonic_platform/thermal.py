@@ -10,7 +10,7 @@ import os.path
 import glob
 
 try:
-    from bmc import bmc
+    from sonic_platform import bmc
     from .chassis import *
     from sonic_platform_base.thermal_base import ThermalBase
 except ImportError as e:
