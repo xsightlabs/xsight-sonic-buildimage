@@ -2,6 +2,7 @@
 #
 # Copyright (c) 2024 Xsightlabs Ltd.
 
+import subprocess
 import socket
 import json
 import re
@@ -49,18 +50,13 @@ class Bmc:
             None.
         """
         port = 9087
-        filename = "/etc/sonic/serial_number"
-        if os.path.isfile(filename):
-            file = open(filename, "r")
-            hostname = file.readline().rstrip()
-            hostname = hostname.replace("evb", "bmc")
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            try:
-                self.sock.connect((hostname, port))
-            except:
-                print("Error: Failed to connect to socket")
-        else:
-            print("Error: File {} doesn't exist".format(filename))
+        process = subprocess.run('hostname', shell=True, stdout=subprocess.PIPE, encoding='utf-8')
+        hostname = process.stdout.replace("evb", "bmc").rstrip()
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            self.sock.connect((hostname, port))
+        except:
+            print("Error: Failed to connect to socket")
 
     def __del__(self):
         """Close socket connection.
