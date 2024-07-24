@@ -102,3 +102,7 @@ fi
 
 #echo ">>> Set XPCI debug level to INFO(3)"
 echo ${DEBUG_LEVEL} > /proc/sys/dev/xpci/debug_level
+
+echo "{\"DEVICE_METADATA\": {\"localhost\" : {\"hostname\" : \"EVB-HOSTNAME\" }}}" > /tmp/hostname.json
+sonic-cfggen --write-to-db -j /tmp/hostname.json
+systemctl restart hostname-config.service
