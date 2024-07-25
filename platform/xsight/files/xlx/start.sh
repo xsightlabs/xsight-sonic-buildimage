@@ -13,6 +13,7 @@ PCI_MODE=1
 TX_CHECKSUMMING_MODE=0
 DEFAULT_MTU=9200
 ONIE_MACHINE=`sed -n -e 's/^.*onie_machine=//p' /host/machine.conf`
+ONIE_PLATFORM=`sed -n -e 's/^.*onie_platform=//p' /host/machine.conf`
 CFG_FILE="/etc/sonic/xlink.cfg"
 LABEL_REVISION_FILE="/etc/sonic/hw_revision"
 XPLT_UTL="/opt/xplt/utils"
@@ -97,6 +98,7 @@ if [ ! -f /tmp/xbooted ]; then
             echo "ERROR: No $XPLT_UTL found!"
         fi
     fi
+    /usr/local/bin/pip3 install /usr/share/sonic/device/$ONIE_PLATFORM/sonic_platform-1.0-py3-none-any.whl
     touch /tmp/xbooted
 fi
 
