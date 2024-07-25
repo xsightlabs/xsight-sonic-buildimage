@@ -37,6 +37,7 @@ class Chassis(ChassisBase):
         self.__initialize_psu()
         self.__initialize_thermals()
         self.__initialize_components()
+        self.__initialize_eeprom()
 
     def __initialize_fan(self):
         from sonic_platform.fan_drawer import FanDrawer
@@ -56,6 +57,10 @@ class Chassis(ChassisBase):
         for index in range(0, Thermal.NUMBER_OF_THERMALS):
             thermal = Thermal(index)
             self._thermal_list.append(thermal)
+
+    def __initialize_eeprom(self):
+        from sonic_platform.eeprom import Tlv
+        self._eeprom = Tlv()
 
     def __initialize_components(self):
         from sonic_platform.component import Component
@@ -97,7 +102,7 @@ class Chassis(ChassisBase):
             A string containing the MAC address in the format
             'XX:XX:XX:XX:XX:XX'
         """
-        return ""
+        return self._eeprom.get_mac()
 
     def get_serial(self):
         """
@@ -105,7 +110,7 @@ class Chassis(ChassisBase):
         Returns:
             A string containing the hardware serial number for this chassis.
         """
-        return ""
+        return self._eeprom.get_serial()
 
     def get_system_eeprom_info(self):
         """
@@ -115,7 +120,7 @@ class Chassis(ChassisBase):
             OCP ONIE TlvInfo EEPROM format and values are their corresponding
             values.
         """
-        return None
+        return self._eeprom.get_eeprom()
 
     def get_reboot_cause(self):
         """
@@ -182,7 +187,7 @@ class Chassis(ChassisBase):
         Returns:
             string: Model/part number of device
         """
-        return ""
+        return self._eeprom.get_pn()
 
     def get_num_fans(self):
         """
@@ -214,7 +219,7 @@ class Chassis(ChassisBase):
         Returns:
             A string containing the hardware revision number for this chassis.
         """
-        return ""
+        self._eeprom.get_revision()
 
     def get_num_components(self):
         """
