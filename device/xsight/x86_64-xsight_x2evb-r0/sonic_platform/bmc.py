@@ -51,7 +51,14 @@ class Bmc:
         """
         port = 9087
         process = subprocess.run('hostname', shell=True, stdout=subprocess.PIPE, encoding='utf-8')
-        hostname = process.stdout.replace("evb", "bmc").rstrip()
+        hostname = process.stdout.rstrip()
+        if "host" in hostname:
+            hostname = hostname.replace("host", "bmc")
+        elif "evb" in hostname:
+            hostname = hostname.replace("evb", "bmc")
+        else:
+            hostname = ""
+
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             self.sock.connect((hostname, port))
