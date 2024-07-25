@@ -120,6 +120,7 @@ class Thermal(ThermalBase):
         else:
             return 0
 
+
     def __set_threshold(self, file_name, temperature):
         if self.index < Thermal.ASIC_TEMP_SENSORS_OFFSET:
             temp_file_path = os.path.join(self.hwmon_path, file_name)
@@ -132,6 +133,7 @@ class Thermal(ThermalBase):
                     print("IOError: {} in file: {}".format(e, self.hwmon_path))
         else:
             return False
+
 
     def get_temperature(self):
         """

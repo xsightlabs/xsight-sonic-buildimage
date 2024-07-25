@@ -32,6 +32,7 @@ PSU_I2C_MAPPING = {
     },
 }
 
+
 class Fan(FanBase):
     """Platform-specific Fan class"""
     
@@ -74,6 +75,7 @@ class Fan(FanBase):
         Retrieves the fan model
         Returns:
             string: The model of the device
+
         """
         return "R40W12BGNL9-07T17"
 
@@ -82,6 +84,7 @@ class Fan(FanBase):
         Retrieves the fan serial
         Returns:
             string: The serial of the device
+
         """
         return "N/A"
 
@@ -100,6 +103,8 @@ class Fan(FanBase):
             A string, either FAN_DIRECTION_INTAKE or FAN_DIRECTION_EXHAUST
             depending on fan direction
         """
+
+
         if not self.is_psu_fan:
             dir_str = "{}{}{}".format(CPLD_I2C_PATH, self.fan_tray_index+1, '_direction')
             val = self._api_helper.read_txt_file(dir_str)
@@ -122,6 +127,7 @@ class Fan(FanBase):
         Returns:
             An integer, the percentage of full fan speed, in the range 0 (off)
                  to 100 (full speed)
+
         """
         speed = 0
         if self.is_psu_fan:
@@ -157,7 +163,7 @@ class Fan(FanBase):
         """
         speed = 0
         if self.is_psu_fan:
-            return 100.0
+            return 100
 
         elif self.get_presence():
             if 0 == self.fan_index:
@@ -180,7 +186,7 @@ class Fan(FanBase):
         """
         tolerance = TRAY_FANSPEED_TOLERANCE
         if self.is_psu_fan:
-            tolerance = 100.0
+            tolerance = 100
 
         return tolerance
 
@@ -192,7 +198,9 @@ class Fan(FanBase):
                    in the range 0 (off) to 100 (full speed)
         Returns:
             A boolean, True if speed is set successfully, False if not
+
         """
+
         if not self.is_psu_fan and self.get_presence():
             speed_path = "{}{}".format(CPLD_I2C_PATH, '_duty_cycle_percentage')
             return self._api_helper.write_txt_file(speed_path, int(speed))

@@ -14,6 +14,7 @@ try:
 except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
+
 I2C_PATH ="/sys/bus/i2c/devices/{0}-00{1}/"
 
 PSULED_FNODES= ["/sys/class/leds/es9618xx_led::psu1/brightness",

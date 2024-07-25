@@ -21,6 +21,7 @@ class FanDrawer(FanDrawerBase):
     """Platform-specific Fan class"""
 
     def __init__(self, fantray_index):
+
         FanDrawerBase.__init__(self)
         # FanTray is 0-based in platforms
         self._api_helper=APIHelper()
@@ -61,6 +62,7 @@ class FanDrawer(FanDrawerBase):
         Retrieves the fan_draver model
         Returns:
             string: The model of the device
+
         """
         return "R40W12BGNL9-07T17"
 
@@ -69,6 +71,7 @@ class FanDrawer(FanDrawerBase):
         Retrieves the fan_draver serial
         Returns:
             string: The serial of the device
+
         """
         return "N/A"
 
@@ -85,6 +88,7 @@ class FanDrawer(FanDrawerBase):
         Returns the maximum power could be consumed by fans in drawer.
         Returns:
             flat: maximum power
+
         """
         return 46.4 * FANS_PER_FANTRAY
 
