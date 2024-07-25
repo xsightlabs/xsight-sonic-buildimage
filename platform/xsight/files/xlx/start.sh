@@ -18,6 +18,30 @@ CFG_FILE="/etc/sonic/xlink.cfg"
 LABEL_REVISION_FILE="/etc/sonic/hw_revision"
 XPLT_UTL="/opt/xplt/utils"
 
+if [[ ${ONIE_MACHINE,,} == *"x2evb"* ]]; then
+    if [[ "$(hostname)" == "sonic" ]]; then
+        blk_dev="/dev/nvme0n1"
+        part_name="Xsight-DIAG"
+
+        part_num=`/usr/sbin/sgdisk -p $blk_dev | grep $part_name | xargs | cut -d' ' -f1`
+        if [ -z "$part_num" ]; then
+            echo "Error: Not found partition number for $part_name."
+            exit 1
+        fi
+
+        mkdir -p /tmp/diag
+        mount -t ext4 ${blk_dev}p${part_num} /tmp/diag
+        evbhostname=$(cat /tmp/diag/etc/hostname)
+        umount /tmp/diag
+        rm -rf /tmp/diag
+
+        sed -i "s/sonic/${evbhostname}/" /etc/sonic/config_db.json
+        echo "{\"DEVICE_METADATA\": {\"localhost\" : {\"hostname\" : \"${evbhostname}\" }}}" > /tmp/hostname.json
+        sonic-cfggen --write-to-db -j /tmp/hostname.json
+        systemctl restart hostname-config.service
+    fi
+fi
+
 if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
     # Probing cpu ixgbe net interfaces
     if [[ ! -d /sys/module/ixgbe ]]; then
@@ -105,9 +129,3 @@ fi
 #echo ">>> Set XPCI debug level to INFO(3)"
 echo ${DEBUG_LEVEL} > /proc/sys/dev/xpci/debug_level
 
-if [[ ${ONIE_MACHINE,,} == *"x2evb"* ]]; then
-	EVBHOSTNAME=$(decode-syseeprom -s)
-	echo "{\"DEVICE_METADATA\": {\"localhost\" : {\"hostname\" : \"${EVBHOSTNAME}\" }}}" > /tmp/hostname.json
-	sonic-cfggen --write-to-db -j /tmp/hostname.json
-	systemctl restart hostname-config.service
-fi
