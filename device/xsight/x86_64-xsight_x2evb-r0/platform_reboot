@@ -1,0 +1,11 @@
+#!/bin/bash
+
+function cold_reset() {
+    HOSTNAME=host
+    hostname | grep evb; ! (($?)) && HOSTNAME=evb
+    TMPNAME=$(hostname)
+    BMCNAME=${TMPNAME/$HOSTNAME/"bmc"}
+    echo "{\"method\":\"cold_reset\", \"params\":[0]}" | nc $BMCNAME 9087 -N
+}
+
+cold_reset
