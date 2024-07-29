@@ -1,11 +1,18 @@
-#!/bin/bash
+#!/usr/bin/python3
 
-function cold_reset() {
-    HOSTNAME=host
-    hostname | grep evb; ! (($?)) && HOSTNAME=evb
-    TMPNAME=$(hostname)
-    BMCNAME=${TMPNAME/$HOSTNAME/"bmc"}
-    echo "{\"method\":\"cold_reset\", \"params\":[0]}" | nc $BMCNAME 9087 -N
-}
+try:
+    from sonic_py_common import logger
+    from sonic_platform import bmc
+except ImportError as e:
+    raise ImportError(str(e) + "- required module not found")
 
-cold_reset
+def cold_reset():
+    bmccmd = bmc.Bmc()
+    bmccmd.cold_reset()
+
+def main():
+    cold_reset()
+
+if __name__ == "__main__":
+    main()
+

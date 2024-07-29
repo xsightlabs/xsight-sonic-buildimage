@@ -569,7 +569,7 @@ class Bmc:
             print("Error: boot_dump {} is out of range [0 - 1]".format(boot_dump))
 
     def cold_reset(self):
-        """Reset X2 device and CPU during normal operation.
+        """Reset X2 device and wait for host to issue sudo reboot.
 
         Args:
             None.
@@ -577,4 +577,4 @@ class Bmc:
         Returns:
             None.
         """
-        self.__build_and_send_json_rpc("cold_reset", [])
+        self.__build_and_send_json_rpc("cold_reset", ["0"])
