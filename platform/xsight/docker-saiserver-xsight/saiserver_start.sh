@@ -7,7 +7,6 @@
 
 # Source the file that holds common code for systemd and supervisord
 . /usr/bin/syncd_init_common.sh
-. /etc/sonic/xlink.cfg
 
 get_saiserver_param()
 {
