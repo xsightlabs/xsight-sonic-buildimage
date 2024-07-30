@@ -16,6 +16,31 @@ ONIE_MACHINE=`sed -n -e 's/^.*onie_machine=//p' /host/machine.conf`
 ONIE_PLATFORM=`sed -n -e 's/^.*onie_platform=//p' /host/machine.conf`
 LABEL_REVISION_FILE="/etc/sonic/hw_revision"
 XPLT_UTL="/opt/xplt/utils"
+XSIGHT_PCI_SIG="1e6c"
+XSIGHT_PCI_ID=""
+XSIGHT_DEVICE=""
+
+
+if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
+    XSIGHT_PCI_ID=$(lspci | grep -E -o "${XSIGHT_PCI_SIG}:[0-9]{4}" | awk -F ":" '{print $2}')
+    if [[ "${XSIGHT_PCI_ID}" == "0001" ]]; then
+        XSIGHT_DEVICE="X1"
+    elif [[ "${XSIGHT_PCI_ID}" == "0002" ]]; then
+        XSIGHT_DEVICE="X2"
+    else
+        echo "Error: Unsuported Xsight device or no device found"
+        exit 1
+    fi
+
+    if [[ "${XSIGHT_DEVICE}" == "X1" ]]; then
+        PORT_NUM=256
+        DEFAULT_ASIC_NETDEV_NAME="eth10g1"
+    elif [[ "${XSIGHT_DEVICE}" == "X2" ]]; then
+        PORT_NUM=128
+        DEFAULT_ASIC_NETDEV_NAME="xpcxd0"
+    fi
+fi
+
 
 if [[ ${ONIE_MACHINE,,} == *"x2evb"* ]]; then
     if [[ "$(hostname)" == "sonic" ]]; then
@@ -76,18 +101,24 @@ if [[ ${SYS_MODE,,} == "xbm" ]]; then
 fi
 echo ">>> Re-load NetDev"
 
-# Reset X1 and PCI bus
-if [ -f /tmp/xbooted ]; then
-    if [ ${SYS_MODE,,} != "xbm" ]; then
-        if [ -d $XPLT_UTL ]; then
-            echo ">>> Resetting X1"
-            $XPLT_UTL/es9632x_reset_x1.sh
-            if [ $? -ne 0 ]; then
-                echo "ERROR: On running es9632x_reset_x1.sh"
+if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
+    if [[ "${XSIGHT_DEVICE}" == "X1" ]]; then
+        # Reset X1 and PCI bus
+        if [ -f /tmp/xbooted ]; then
+            if [ ${SYS_MODE,,} != "xbm" ]; then
+                if [ -d $XPLT_UTL ]; then
+                    echo ">>> Resetting X1"
+                    $XPLT_UTL/es9632x_reset_x1.sh
+                    if [ $? -ne 0 ]; then
+                        echo "ERROR: On running es9632x_reset_x1.sh"
+                    fi
+                else
+                    echo "ERROR: No $XPLT_UTL found!"
+                fi
             fi
-        else
-            echo "ERROR: No $XPLT_UTL found!"
         fi
+    elif [[ "${XSIGHT_DEVICE}" == "X2" ]]; then
+        echo "TODO: Reset X2"
     fi
 fi
 
