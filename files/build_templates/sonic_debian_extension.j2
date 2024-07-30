@@ -203,7 +203,6 @@ sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y in
 
 ## X1 scripts
 sudo cp -a platform/xsight/files/xlx $FILESYSTEM_ROOT/home/admin/
-sudo cp -a platform/xsight/files/xlink.cfg $FILESYSTEM_ROOT/etc/sonic/
 sudo chmod +x $FILESYSTEM_ROOT/home/admin/xlx/*.sh
 sudo LANG=C chroot $FILESYSTEM_ROOT chown -R $USERNAME /home/admin/xlx
 sudo cp -a ${files_path}/ixgbe.ko  $FILESYSTEM_ROOT/lib/modules/{{kversion}}/kernel/drivers/net/ethernet/intel/ixgbe/ixgbe.ko
