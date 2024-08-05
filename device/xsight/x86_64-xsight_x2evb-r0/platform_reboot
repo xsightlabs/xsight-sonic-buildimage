@@ -1,14 +1,32 @@
 #!/usr/bin/python3
 
+import subprocess
+import time
+
 try:
-    from sonic_py_common import logger
     from sonic_platform import bmc
 except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
 def cold_reset():
-    bmccmd = bmc.Bmc()
-    bmccmd.cold_reset()
+    try:
+        bmccmd = bmc.Bmc()
+
+        status = bmccmd.cold_reset(0)
+        if status != True:
+            print("ERROR: Failed to reset the chip via BMC command")
+            return
+
+        process = subprocess.run('/sbin/reboot', shell=True, capture_output=True)
+        if process.returncode != 0:
+            print("ERROR: Failed to run /sbin/reboot")
+            return
+
+        time.sleep(60)
+        print("ERROR: Unexpected return from sleep")
+
+    except Exception as e:
+        raise Exception(str(e) + "- Failed to reboot with platform specific tool ...")
 
 def main():
     cold_reset()
