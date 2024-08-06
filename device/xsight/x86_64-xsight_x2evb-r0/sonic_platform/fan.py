@@ -9,7 +9,6 @@ try:
     from sonic_platform import bmc
     from sonic_platform_base.fan_base import FanBase
     from sonic_platform import platform
-    from .helper import APIHelper
 except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
@@ -75,7 +74,7 @@ class Fan(FanBase):
             An integer, the percentage of full fan speed, in the range 0 (off)
                  to 100 (full speed)
         """
-        return int(self.bmccmd.read_fan_speed())
+        return int(self.bmccmd.read_fan_speed() or 0)
 
     def get_target_speed(self):
         """
@@ -84,7 +83,7 @@ class Fan(FanBase):
             An integer, the percentage of full fan speed, in the range 0 (off)
                  to 100 (full speed)
         """
-        return int(self.bmccmd.read_fan_speed())
+        return int(self.bmccmd.read_fan_speed() or 0)
 
     def get_speed_tolerance(self):
         """
@@ -113,7 +112,7 @@ class Fan(FanBase):
         Returns:
             bool: True if FAN is present, False if not
         """
-        return True
+        return self.bmccmd.get_fan_exist(self.fan_index + 1)
 
     def get_status(self):
         """
