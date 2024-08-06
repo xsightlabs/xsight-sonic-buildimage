@@ -6,30 +6,41 @@ import subprocess
 import socket
 import json
 import re
-import os
 
 # Notes
 # 1. The main board schematic version refered in this file is REV. 1
 # 2. The cpu board schematic version refered in this file is REV. 1
 
-MAIN_BOARD_THERMAL_SENSOR_NAMES = [
-    "Chip Diode",
-    "Input Air",
-    "OSFP",
-    "East Side",
-    "West Side",
-    "Output Air 1",
-    "Output Air 2"
+NUM_FAN_TRAY = 5
+NUM_PSU = 1
+NUM_COMPONENT = 4
+NUM_THERMAL_MAIN_BOARD = 7
+NUM_THERMAL_CPU_BOARD = 1
+NUM_THERMAL_CHIP = 3
+NUM_THERMAL = NUM_THERMAL_MAIN_BOARD + NUM_THERMAL_CPU_BOARD + NUM_THERMAL_CHIP
+
+PSU_LIST = ["PSU-1"]
+
+COMPONENT_LIST= [
+   ("BIOS", "Basic Input/Output System"),
+   ("ONIE", "Open Network Install Environment"),
+   ("BMC" , "Baseboard Management Controller"),
+   ("FPGA", "Field Programmable Gate Array")
 ]
 
-CPU_BOARD_THERMAL_SENSOR_NAMES = [
-    "CPU Board"
-]
-
-ASIC_THERMAL_SENSOR_NAMES = [
-    "GLC0",
-    "GLC1",
-    "GLC3"
+# Thermal name, Model, Sensor name
+THERMAL_LIST= [
+   ("Temp sensor 1", "MAX6581", "Chip Diode"),
+   ("Temp sensor 2", "MAX6581", "Input Air"),
+   ("Temp sensor 3", "MAX6581", "OSFP"),
+   ("Temp sensor 4", "MAX6581", "East Side"),
+   ("Temp sensor 5", "MAX6581", "West Side"),
+   ("Temp sensor 6", "MAX6581", "Output Air 1"),
+   ("Temp sensor 7", "MAX6581", "Output Air 2"),
+   ("Temp sensor 8", "TMP100" , "CPU Board"),
+   ("ASIC sensor 1", "GLC"    , "GLC0"),
+   ("ASIC sensor 2", "GLC"    , "GLC1"),
+   ("ASIC sensor 3", "GLC"    , "GLC3")
 ]
 
 class Bmc:
@@ -61,9 +72,11 @@ class Bmc:
 
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
+            self.sock.settimeout(10)
             self.sock.connect((hostname, port))
-        except:
+        except Exception as e:
             print("Error: Failed to connect to socket")
+            raise Exception(str(e))
 
     def __del__(self):
         """Close socket connection.
@@ -76,14 +89,13 @@ class Bmc:
         """
         self.sock.close()
 
-    def __extract_number_from_string(self, input_str, num_idx):
-        """Get a number (integer, float, hex) from a list of number string,
-        which is extracted from the input string.
+    def __extract_number_from_string(self, input_str, str_idx):
+        """Get a number (integer, float, hex) in string format from the input
+        string, using the information of str_idx.
 
         Args:
             input_str: input string.
-            num_idx: integer representing the index of number in the string
-                to return.
+            str_idx: integer representing the index of the number in the input string.
 
         Returns:
             String representing the number that has been extracted from
@@ -91,23 +103,35 @@ class Bmc:
         """
         ret_str = ""
         reg_pattern = r"0[xX][0-9a-fA-F]+|\d+.\d+.\d+|[-+]?\d*\.?\d+|[-+]?\d+"
-        num_list = re.findall(reg_pattern, input_str)
-        if len(num_list) >= num_idx:
-            ret_str = num_list[num_idx - 1]
+        jsonobj = json.loads(input_str)
+        str_list = re.findall(reg_pattern, str(jsonobj['result']))
+        if len(str_list) >= str_idx:
+            ret_str = str_list[str_idx - 1]
         else:
-            print("Error: Failure in expected list length ", len(num_list))
+            print("Error: Failure in expected list length ", len(str_list))
         return ret_str
 
-    def __extract_string_from_string(self, input_str, num_idx, delim):
+    def __extract_substring_from_string(self, input_str, str_idx, str_delim):
+        """Get a string from the input string, using the information of str_idx
+        and str_delim.
+
+        Args:
+            input_str: string of JSON RPC response.
+            str_idx: integer representing the splited string part to return.
+            str_delim: string representing a delimiter to split the input string.
+
+        Returns:
+            String that has been extracted from the input string, or empty string
+            in case of error.
+        """
         ret_str = ""
         jsonobj = json.loads(input_str)
-        str_list_= (jsonobj['result']).split(delim)
-        if len(str_list_) >= num_idx:
-            ret_str = str_list_[num_idx - 1]
+        str_list = jsonobj['result'].split(str_delim)
+        if len(str_list) >= str_idx:
+            ret_str = str_list[str_idx - 1]
         else:
-            print("Error: Failure in expected list length ", len(str_list_))
+            print("Error: Failure in expected list length ", len(str_list))
         return ret_str
-
 
     def __build_and_send_json_rpc(self, method, params):
         """Build and send JSON string to BMC JSON RPC server.
@@ -136,8 +160,9 @@ class Bmc:
                     # Indicates that the socket has disconnected.
                     if not rec_buf:
                         break
-        except:
+        except Exception as e:
             print("Error: Failed to send message over socket")
+            raise Exception(str(e))
         ret_str = buffer.decode()
         return ret_str
 
@@ -154,10 +179,9 @@ class Bmc:
             Boolean representing input current_type validity.
                 False - current_type is invalid.
                 True - current_type is valid.
-
         """
         ret_val = True
-        if (not(0 <= current_type <= 2)):
+        if current_type not in [0, 1, 2]:
             print("Error: current_type {} is out of range [0 - 2]".format(current_type))
             ret_val = False
         return ret_val
@@ -223,6 +247,19 @@ class Bmc:
             ret_val = False
         return ret_val
 
+    def is_minimal_bmc_fpga_vers(self, bmc_ver_min, fpga_ver_min):
+        ver = int(self.get_bmc_version().replace('.', '').ljust(3, '0'))
+        ver_min = int(bmc_ver_min.replace('.', '').ljust(3, '0'))
+        if not ver >= ver_min:
+            return False
+
+        ver = int(self.get_fpga_version(), 16)
+        ver_min = int(fpga_ver_min, 16)
+        if not ver >= ver_min:
+            return False
+
+        return True
+
     def sys_led_ctrl(self, red, green, blue):
         """Set system led RGB (Red, Green, Blue) colors.
 
@@ -231,19 +268,22 @@ class Bmc:
             green: integer of 0/1.
             blue: integer of 0/1.
 
-        Returns:
-            None.
+       Returns:
+            A boolean value, True if the operation succeeded, False if not.
 
         Notes:
             The system led color is selected in FPGA registers at:
             http://soc.xsight.ent/app/viewItem.cgi?itm=reg&p=1020&b=2&&r=27&
         """
+        ret_val = False
         if (0 <= red <= 1) and (0 <= green <= 1) and (0 <= blue <= 1):
             params = [red, green, blue]
-            self.__build_and_send_json_rpc("sys_led_ctrl", params)
+            resp_str = self.__build_and_send_json_rpc("sys_led_ctrl", params)
+            if ("red" in resp_str) and ("green" in resp_str) and ("blue" in resp_str):
+                ret_val = True
         else:
-            print("Error: RGB [{},{},{}] is out of range [0 - 1]".format(
-                red, green, blue))
+            print("Error: RGB [{},{},{}] is out of range [0 - 1]".format(red, green, blue))
+        return ret_val
 
     def set_sys_led_color(self, color):
         """Set system led color to predefined colors options.
@@ -271,9 +311,40 @@ class Bmc:
                 red, green, blue = 0, 0, 1
             if color == 3:
                 red, green, blue = 1, 1, 0
-            self.sys_led_ctrl(red, green, blue)
+            ret_val = self.sys_led_ctrl(red, green, blue)
         else:
             print("Error: color {} is out of range [0 - 3]".format(color))
+            ret_val = False
+        return ret_val
+
+    def sys_led_status(self):
+        """Read system LED color.
+
+        Args:
+            None.
+
+        Returns:
+            String of system LED color.
+        """
+        color = "UNKNOWN"
+        if not self.is_minimal_bmc_fpga_vers("2.6.9", "0x30E"):
+            return color
+
+        resp_str = self.__build_and_send_json_rpc("sys_led_status", [])
+        red = 1 if "ON" in self.__extract_substring_from_string(resp_str, 2, ": ") else 0
+        blue = 1 if "ON" in self.__extract_substring_from_string(resp_str, 3, ": ") else 0
+        green = 1 if "ON" in self.__extract_substring_from_string(resp_str, 4, ": ") else 0
+
+        if (red == 1) and (green == 0) and (blue == 0):
+            color = "red"
+        elif (red == 0) and (green == 1) and (blue == 0):
+            color = "green"
+        elif (red == 0) and (green == 0) and (blue == 1):
+            color = "blue"
+        elif (red == 1) and (green == 1) and (blue == 0):
+            color = "amber"
+
+        return color
 
     def psup_current(self):
         """Read PSUP current in Amper units.
@@ -332,7 +403,7 @@ class Bmc:
                 the range of [0 - 100].
 
         Returns:
-            None.
+            A boolean value, True if the operation succeeded, False if not.
 
         Notes:
             This function changed the fan speed both in run time and in BMC's
@@ -341,11 +412,19 @@ class Bmc:
             and `hot` modes, when we use this method the fan speed for `hot` mode
             is always to 100%.
         """
-        if 0 <= percent <= 100:
-            self.__build_and_send_json_rpc("set_default_fan_values", [percent, 100])
-            self.__build_and_send_json_rpc("init_config", ["fans", "fans_regular", str(percent)])
-        else:
+        if (percent < 0) or (percent > 100):
             print("Error: percent {} is out of range [0 - 100]".format(percent))
+            return False
+
+        resp_str = self.__build_and_send_json_rpc("set_default_fan_values", [percent, 100])
+        if "done" not in resp_str:
+            return False
+
+        resp_str = self.__build_and_send_json_rpc("init_config", ["fans", "fans_regular", str(percent)])
+        if "Loaded" not in resp_str:
+            return False
+
+        return True
 
     def read_fan_speed(self):
         """Read fan speed percantage.
@@ -359,6 +438,27 @@ class Bmc:
         """
         resp_str = self.__build_and_send_json_rpc("read_fan_speed", [])
         return self.__extract_number_from_string(resp_str, 1)
+
+    def get_fan_exist(self, id):
+        """Get fan existance status.
+
+        Args:
+            id: integer representing the fan id.
+
+        Returns:
+            A boolean value, True if fan exist, False if not.
+        """
+        if not self.is_minimal_bmc_fpga_vers("2.7.6", "0x30E"):
+            return True
+
+        if id in range(1, NUM_FAN_TRAY + 1):
+            resp_str = self.__build_and_send_json_rpc("get_fan_exist", [])
+            test_str = "FAN {} Exist".format(id)
+            val = True if test_str in resp_str else False
+        else:
+            print("Error: id {} is out of range [1 - {}]".format(id, NUM_FAN_TRAY))
+            val = False
+        return val
 
     def get_bmc_version(self):
         """Read BMC version.
@@ -387,7 +487,7 @@ class Bmc:
         return self.__extract_number_from_string(resp_str, 1)
 
     def check_thermal_sensor(self, id):
-        """Read temperature sensor sample in celsius units for input sensor ID.
+        """Read the temperature in celsius units of the main board temperature sensor ID.
 
         Args:
             id: integer representing the temperature sensor id.
@@ -411,16 +511,16 @@ class Bmc:
             6               Output_1_Air_Flow       6
             7               Output_2_Air_Flow       7
         """
-        if 1 <= id <= 7:
+        if id in range(1, NUM_THERMAL_MAIN_BOARD + 1):
             resp_str = self.__build_and_send_json_rpc("check_thermal_sensor", [id])
             val = self.__extract_number_from_string(resp_str, 1)
         else:
-            print("Error: id {} is out of range [1 - 7]".format(id))
+            print("Error: id {} is out of range [1 - {}]".format(id, NUM_THERMAL_MAIN_BOARD))
             val = ""
         return val
 
     def get_cpuboard_sensor(self):
-        """Read cpuboard temperature sensor sample in celsius units.
+        """Read the temperature in celsius units of the CPU board temperature sensor.
 
         Args:
             None.
@@ -433,25 +533,40 @@ class Bmc:
         return self.__extract_number_from_string(resp_str, 1)
 
     def read_x2_thermal(self, id):
-        """Read chip temperature sensor id sample in celsius units.
+        """Read the temperature in celsius units of the chip temperature sensor ID.
 
         Args:
-            None.
+            id: integer representing the temperature sensor id.
 
         Returns:
             String of integer representing the temperature sample in
             celsius units or empty string in case of error.
+
+        Notes:
+            The sensors names are missing GLC2.
+            The temperature sensors are detailed in the following list:
+            Sensor ID       Sensor name
+            ---------       -----------
+            1               GLC0
+            2               GLC1
+            3               GLC3
         """
-        resp_str = self.__build_and_send_json_rpc("read_x2_thermal", [])
-        if id == 1:
-            num_idx = 3
-        elif id == 2:
-            num_idx = 5
-        elif id == 3:
-            num_idx = 9
+        if not self.is_minimal_bmc_fpga_vers("2.6.9", "0x30E"):
+            return ""
+
+        if id in range(1, NUM_THERMAL_CHIP + 1):
+            resp_str = self.__build_and_send_json_rpc("read_x2_thermal", [])
+            if id == 1:
+                num_idx = 3
+            elif id == 2:
+                num_idx = 5
+            elif id == 3:
+                num_idx = 9
+            val = self.__extract_number_from_string(resp_str, num_idx)
         else:
-            num_idx = 3
-        return self.__extract_number_from_string(resp_str, num_idx)
+            print("Error: id {} is out of range [1 - {}]".format(id, NUM_THERMAL_CHIP))
+            val = ""
+        return val
 
     def psup_voltage(self):
         """Read PSUP voltage in Volt units.
@@ -511,11 +626,13 @@ class Bmc:
             None.
 
         Returns:
-            String of float number representing PSUP P/N model or empty
-            string in case of error.
+            String representing PSUP P/N model or empty string in case of error.
         """
+        if not self.is_minimal_bmc_fpga_vers("2.6.9", "0x30E"):
+            return "N/A"
+
         resp_str = self.__build_and_send_json_rpc("get_psup_model", [])
-        return self.__extract_string_from_string(resp_str, 2, '  ')
+        return self.__extract_substring_from_string(resp_str, 2, '  ')
 
     def get_psup_serial_num(self):
         """Read PSUP serial number.
@@ -524,11 +641,13 @@ class Bmc:
             None.
 
         Returns:
-            String of float number representing PSUP serial number or empty
-            string in case of error.
+            String representing PSUP serial number or empty string in case of error.
         """
+        if not self.is_minimal_bmc_fpga_vers("2.6.9", "0x30E"):
+            return "N/A"
+
         resp_str = self.__build_and_send_json_rpc("get_psup_serial_num", [])
-        return self.__extract_string_from_string(resp_str, 2, '  ')
+        return self.__extract_substring_from_string(resp_str, 2, '  ')
 
     def x2_reset(self, reset):
         """Reset X2 device while CPU is working.
@@ -539,12 +658,15 @@ class Bmc:
                 1 - deassert reset (no reset).
 
         Returns:
-            None.
+            A boolean value, True if the operation succeeded, False if not.
         """
-        if 0 <= reset <= 1:
-            self.__build_and_send_json_rpc("x2_reset", [reset])
-        else:
+        if reset not in [0, 1]:
             print("Error: reset {} is out of range [0 - 1]".format(reset))
+            return False
+
+        resp_str = self.__build_and_send_json_rpc("x2_reset", [reset])
+        val = self.__extract_number_from_string(resp_str, 1)
+        return True if str(reset) == val else False
 
     def debug_reset(self, boot_dump):
         """Reset X2 device gracfully while CPU is working.
@@ -558,23 +680,50 @@ class Bmc:
                 https://bbk.xsightlabs.com/projects/XB/repos/vbmc/browse/src/switch.c
 
         Returns:
-            None.
+            A boolean value, True if the operation succeeded, False if not.
 
         Notes:
             According to BMC's Confluence, this is useful for quick reset.
         """
-        if 0 <= boot_dump <= 1:
-            self.__build_and_send_json_rpc("debug_reset", [boot_dump])
-        else:
+        if boot_dump not in [0, 1]:
             print("Error: boot_dump {} is out of range [0 - 1]".format(boot_dump))
+            return False
 
-    def cold_reset(self):
-        """Reset X2 device and wait for host to issue sudo reboot.
+        resp_str = self.__build_and_send_json_rpc("debug_reset", [boot_dump])
+        return True if "DONE" in resp_str else False
+
+    def cold_reset(self, type = None):
+        """Reset X2 device with/without CPU, depands on input type, in case of
+        reset X2 device without CPU, wait for host to issue sudo reboot.
 
         Args:
-            None.
+            type = list or None representing reset type.
+                0    - Reset chip only as part of BMC's graceful cold reset.
+                1    - Full cold reset, reset chip and CPU during normal operation.
+                None - Reset chip and CPU during normal operation.
 
         Returns:
-            None.
+            A boolean value, True if the operation succeeded, False if not.
+
+        Notes:
+            Input type equal to None is relevant only to BMC version below 2.7.2,
+            the other input type options (0, 1) are relevant to BMC version equal
+            or above version 2.7.2.
         """
-        self.__build_and_send_json_rpc("cold_reset", ["0"])
+        if (type not in [0, 1]) and (type != None):
+            print("Error: Unknown cold reset type {}".format(type))
+            return False
+
+        if self.is_minimal_bmc_fpga_vers("2.7.2", "0x30E"):
+            if (type not in [0, 1]):
+                print("Error: Invalid type {} for versions above BMC:2.7.2 FPGA:0x30E".format(type))
+                return False
+            params = [type]
+        else:
+            if (type != None):
+                print("Error: Invalid type {} for versions below BMC:2.7.2 FPGA:0x30E".format(type))
+                return False
+            params = []
+
+        resp_str = self.__build_and_send_json_rpc("cold_reset", params)
+        return True if "DONE" in resp_str else False

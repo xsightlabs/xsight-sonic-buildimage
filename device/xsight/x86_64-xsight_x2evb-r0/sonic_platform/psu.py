@@ -5,16 +5,12 @@
 #
 #############################################################################
 
-import os.path
-
 try:
     from sonic_platform import bmc
     from sonic_platform_base.psu_base import PsuBase
     from .helper import APIHelper
 except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
-
-PSU_NAME_LIST = ["PSU-1"]
 
 class Psu(PsuBase):
     """Platform-specific Psu class"""
@@ -110,7 +106,7 @@ class Psu(PsuBase):
             Returns:
             string: The name of the device
         """
-        return PSU_NAME_LIST[self.index]
+        return bmc.PSU_LIST[self.index]
 
     def get_presence(self):
         """
@@ -134,7 +130,7 @@ class Psu(PsuBase):
         Returns:
             string: Model/part number of device
         """
-        return "DPS-3000AB"
+        return self.bmccmd.get_psup_model()
 
     def get_serial(self):
         """
@@ -142,7 +138,7 @@ class Psu(PsuBase):
         Returns:
             string: Serial number of device
         """
-        return "N/A"
+        return self.bmccmd.get_psup_serial_num()
 
     def is_replaceable(self):
         """
@@ -150,7 +146,7 @@ class Psu(PsuBase):
         returns:
             bool: True if it is replaceable
         """
-        return True
+        return False
 
     def get_powergood_status(self):
         """

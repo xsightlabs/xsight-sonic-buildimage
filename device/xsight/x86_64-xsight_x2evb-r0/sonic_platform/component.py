@@ -18,12 +18,6 @@ except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
 BIOS_VERSION_PATH = "/sys/class/dmi/id/bios_version"
-COMPONENT_LIST= [
-   ("BIOS", "Basic Input/Output System"),
-   ("ONIE", "Open Network Install Environment"),
-   ("BMC", "Baseboard Management Controller"),
-   ("FPGA", "Field Programmable Gate Array")
-]
 
 class Component(ComponentBase):
     """Platform-specific Component class"""
@@ -85,7 +79,7 @@ class Component(ComponentBase):
          Returns:
             A string containing the name of the component
         """
-        return COMPONENT_LIST[self.index][0]
+        return bmc.COMPONENT_LIST[self.index][0]
 
     def get_description(self):
         """
@@ -93,7 +87,7 @@ class Component(ComponentBase):
             Returns:
             A string containing the description of the component
         """
-        return COMPONENT_LIST[self.index][1]
+        return bmc.COMPONENT_LIST[self.index][1]
 
     def get_firmware_version(self):
         """

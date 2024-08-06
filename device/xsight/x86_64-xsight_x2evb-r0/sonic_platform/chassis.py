@@ -6,19 +6,14 @@
 #############################################################################
 
 import os
-import time
 
 try:
+    from sonic_platform import bmc
     from sonic_platform_base.chassis_base import ChassisBase
     from .helper import APIHelper
 except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
-NUM_FAN_TRAY = 5
-NUM_FAN = 2
-NUM_PSU = 1
-PORT_END = 16
-NUM_COMPONENT = 4
 POSITION_INDEX = 1
 HOST_REBOOT_CAUSE_PATH = "/host/reboot-cause/"
 REBOOT_CAUSE_FILE = "reboot-cause.txt"
@@ -41,20 +36,20 @@ class Chassis(ChassisBase):
 
     def __initialize_fan(self):
         from sonic_platform.fan_drawer import FanDrawer
-        for fant_index in range(NUM_FAN_TRAY):
+        for fant_index in range(bmc.NUM_FAN_TRAY):
             fandrawer = FanDrawer(fant_index)
             self._fan_drawer_list.append(fandrawer)
             self._fan_list.extend(fandrawer._fan_list)
 
     def __initialize_psu(self):
         from sonic_platform.psu import Psu
-        for index in range(0, NUM_PSU):
+        for index in range(0, bmc.NUM_PSU):
             psu = Psu(index)
             self._psu_list.append(psu)
 
     def __initialize_thermals(self):
         from sonic_platform.thermal import Thermal
-        for index in range(0, Thermal.NUMBER_OF_THERMALS):
+        for index in range(0, bmc.NUM_THERMAL):
             thermal = Thermal(index)
             self._thermal_list.append(thermal)
 
@@ -64,7 +59,7 @@ class Chassis(ChassisBase):
 
     def __initialize_components(self):
         from sonic_platform.component import Component
-        for index in range(0, NUM_COMPONENT):
+        for index in range(0, bmc.NUM_COMPONENT):
             component = Component(index)
             self._component_list.append(component)
 
@@ -189,30 +184,6 @@ class Chassis(ChassisBase):
         """
         return self._eeprom.get_pn()
 
-    def get_num_fans(self):
-        """
-        Retrieves number of chassis fans
-        Returns:
-            integer: Number of fans
-        """
-        return len(self._fan_list)
-
-    def get_all_fans(self):
-        """
-        Retrieves list of fans
-        Returns:
-            list: List of fans
-        """
-        return self._fan_list
-
-    def get_num_fan_drawers(self):
-        """
-        Retrieves number of fan drawers
-        Returns:
-            integer: Number of fan drawers
-        """
-        return len(self._fan_drawer_list)
-
     def get_revision(self):
         """
         Retrieves the hardware revision number for the chassis
@@ -220,14 +191,6 @@ class Chassis(ChassisBase):
             A string containing the hardware revision number for this chassis.
         """
         self._eeprom.get_revision()
-
-    def get_num_components(self):
-        """
-        Retrieves number of components
-        Returns:
-            integer: Number of components
-        """
-        return NUM_COMPONENT
 
     def get_status_led(self):
         return "UNKNOWN"

@@ -5,10 +5,6 @@
 #
 #############################################################################
 
-import os
-import os.path
-import glob
-
 try:
     from sonic_platform import bmc
     from .chassis import *
@@ -16,26 +12,14 @@ try:
 except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
+CHIP_THERMAL_OFFSET = bmc.NUM_THERMAL_MAIN_BOARD + bmc.NUM_THERMAL_CPU_BOARD
+
 class Thermal(ThermalBase):
     """Platform-specific Thermal class"""
-    NUMBER_OF_THERMALS = 8
-    MAIN_BOARD_TEMP_SENSORS_OFFSET = 0
-    CPU_BOARD_TEMP_SENSORS_OFFSET = 7
-    THERMAL_NAME_LIST = []
 
     def __init__(self, thermal_index=0):
         self.bmccmd = bmc.Bmc()
         self.index = thermal_index
-
-        # Add thermal name
-        self.THERMAL_NAME_LIST.append("Temp sensor 1")
-        self.THERMAL_NAME_LIST.append("Temp sensor 2")
-        self.THERMAL_NAME_LIST.append("Temp sensor 3")
-        self.THERMAL_NAME_LIST.append("Temp sensor 4")
-        self.THERMAL_NAME_LIST.append("Temp sensor 5")
-        self.THERMAL_NAME_LIST.append("Temp sensor 6")
-        self.THERMAL_NAME_LIST.append("Temp sensor 7")
-        self.THERMAL_NAME_LIST.append("Temp sensor 8")
 
     def get_temperature(self):
         """
@@ -45,11 +29,13 @@ class Thermal(ThermalBase):
             of one degree Celsius, e.g. 30.125
         """
         temp = None
-        if self.index < Thermal.CPU_BOARD_TEMP_SENSORS_OFFSET:
-            temp = float(self.bmccmd.check_thermal_sensor(self.index + 1))
-        elif self.index == Thermal.CPU_BOARD_TEMP_SENSORS_OFFSET:
-            temp = float(int(float(self.bmccmd.get_cpuboard_sensor())))
-        return temp
+        if bmc.THERMAL_LIST[self.index][1] == "MAX6581":
+            temp = self.bmccmd.check_thermal_sensor(self.index + 1)
+        elif bmc.THERMAL_LIST[self.index][1] == "TMP100":
+            temp = self.bmccmd.get_cpuboard_sensor()
+        elif bmc.THERMAL_LIST[self.index][1] == "GLC":
+            temp = self.bmccmd.read_x2_thermal(self.index + 1 - CHIP_THERMAL_OFFSET)
+        return None if temp == "" else float(int(float(temp)))
 
     def get_high_threshold(self):
         """
@@ -77,7 +63,7 @@ class Thermal(ThermalBase):
             Returns:
             string: The name of the thermal device
         """
-        return self.THERMAL_NAME_LIST[self.index]
+        return bmc.THERMAL_LIST[self.index][0]
 
     def get_sensor_name(self):
         """
@@ -85,12 +71,7 @@ class Thermal(ThermalBase):
             Returns:
             string: The name of the thermal device
         """
-        name = ""
-        if self.index < Thermal.CPU_BOARD_TEMP_SENSORS_OFFSET:
-            name = bmc.MAIN_BOARD_THERMAL_SENSOR_NAMES[self.index]
-        elif self.index == Thermal.CPU_BOARD_TEMP_SENSORS_OFFSET:
-            name = bmc.CPU_BOARD_THERMAL_SENSOR_NAMES[0]
-        return name
+        return bmc.THERMAL_LIST[self.index][2]
 
     def get_model(self):
         """
@@ -98,12 +79,7 @@ class Thermal(ThermalBase):
             Returns:
             string: The model of the thermal device
         """
-        model = ""
-        if self.index < Thermal.CPU_BOARD_TEMP_SENSORS_OFFSET:
-            model = "MAX6581"
-        elif self.index == Thermal.CPU_BOARD_TEMP_SENSORS_OFFSET:
-            model = "TMP100"
-        return model
+        return bmc.THERMAL_LIST[self.index][1]
 
     def get_serial(self):
         """
