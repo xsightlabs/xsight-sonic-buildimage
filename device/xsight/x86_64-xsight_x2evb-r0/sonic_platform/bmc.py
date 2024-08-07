@@ -13,6 +13,8 @@ import re
 
 NUM_FAN_TRAY = 5
 NUM_PSU = 1
+NUM_VOLTAGE_SENSOR = 17
+NUM_CURRENT_SENSOR = 17
 NUM_COMPONENT = 4
 NUM_THERMAL_MAIN_BOARD = 7
 NUM_THERMAL_CPU_BOARD = 1
@@ -41,6 +43,46 @@ THERMAL_LIST= [
    ("ASIC sensor 1", "GLC"    , "GLC0"),
    ("ASIC sensor 2", "GLC"    , "GLC1"),
    ("ASIC sensor 3", "GLC"    , "GLC3")
+]
+
+CURRENT_SENSOR_LIST = [
+    ("VDDCORE"    , 0x40, 3, 0),
+    ("VDDSD"      , 0x42, 3, 0),
+    ("VDDH_1_2_0" , 0x44, 3, 0),
+    ("VDDH_2_3_0" , 0x46, 3, 0),
+    ("VDDL_1_2_0" , 0x48, 3, 0),
+    ("VDDL_2_3_0" , 0x4A, 3, 0),
+    ("VDDH_1_2_1" , 0x44, 3, 1),
+    ("VDDH_2_3_1" , 0x46, 3, 1),
+    ("VDDL_1_2_1" , 0x48, 3, 1),
+    ("VDDL_2_3_1" , 0x4A, 3, 1),
+    ("OSFP_0TO3"  , 0x40, 6, 0),
+    ("OSFP_4TO7"  , 0x41, 6, 0),
+    ("OSFP_8TO11" , 0x42, 6, 0),
+    ("OSFP_12TO15", 0x43, 6, 0),
+    ("GPWR_3V3"   , 0x44, 6, 0),
+    ("GPWR_1V8"   , 0x45, 6, 0),
+    ("AUX_PWR_3V3", 0x46, 6, 0)
+]
+
+VOLTAGE_SENSOR_LIST = [
+    ("VDDCORE"    , 0x40, 3, 0),
+    ("VDDSD"      , 0x42, 3, 0),
+    ("VDDH_1_2_0" , 0x44, 3, 0),
+    ("VDDH_2_3_0" , 0x46, 3, 0),
+    ("VDDL_1_2_0" , 0x48, 3, 0),
+    ("VDDL_2_3_0" , 0x4A, 3, 0),
+    ("VDDH_1_2_1" , 0x44, 3, 1),
+    ("VDDH_2_3_1" , 0x46, 3, 1),
+    ("VDDL_1_2_1" , 0x48, 3, 1),
+    ("VDDL_2_3_1" , 0x4A, 3, 1),
+    ("OSFP_0TO3"  , 0x40, 6, 0),
+    ("OSFP_4TO7"  , 0x41, 6, 0),
+    ("OSFP_8TO11" , 0x42, 6, 0),
+    ("OSFP_12TO15", 0x43, 6, 0),
+    ("GPWR_3V3"   , 0x44, 6, 0),
+    ("GPWR_1V8"   , 0x45, 6, 0),
+    ("AUX_PWR_3V3", 0x46, 6, 0)
 ]
 
 class Bmc:
