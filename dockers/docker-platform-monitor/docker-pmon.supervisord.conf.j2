@@ -207,7 +207,7 @@ dependent_startup_wait_for=rsyslogd:running {% if delay_non_critical_daemon %}de
 {% if include_sensormond %}
 [program:sensormond]
 command=/usr/local/bin/sensormond
-priority=10
+priority=12
 autostart=false
 autorestart=unexpected
 stdout_logfile=syslog

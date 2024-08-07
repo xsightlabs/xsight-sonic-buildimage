@@ -33,6 +33,8 @@ class Chassis(ChassisBase):
         self.__initialize_thermals()
         self.__initialize_components()
         self.__initialize_eeprom()
+        self.__initialize_voltage_sensors()
+        self.__initialize_current_sensors()
 
     def __initialize_fan(self):
         from sonic_platform.fan_drawer import FanDrawer
@@ -62,6 +64,18 @@ class Chassis(ChassisBase):
         for index in range(0, bmc.NUM_COMPONENT):
             component = Component(index)
             self._component_list.append(component)
+
+    def __initialize_voltage_sensors(self):
+        from sonic_platform.voltage_sensor import VoltageSensor
+        for index in range(0, bmc.NUM_VOLTAGE_SENSOR):
+            voltage_sensor = VoltageSensor(index)
+            self._voltage_sensor_list.append(voltage_sensor)
+
+    def __initialize_current_sensors(self):
+        from sonic_platform.current_sensor import CurrentSensor
+        for index in range(0, bmc.NUM_CURRENT_SENSOR):
+            current_sensor = CurrentSensor(index)
+            self._current_sensor_list.append(current_sensor)
 
     def __is_host(self):
         return os.system(HOST_CHK_CMD) == 0
