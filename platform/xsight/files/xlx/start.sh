@@ -61,9 +61,7 @@ if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
         PORT_NUM=128
         DEFAULT_ASIC_NETDEV_NAME="xpcxd0"
     fi
-fi
 
-if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
     # Probing cpu ixgbe net interfaces
     if [[ ! -d /sys/module/ixgbe ]]; then
         modprobe ixgbe
@@ -76,10 +74,8 @@ if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
         echo ">>> WARN! No such interface: ${XPCI_NETDEV_ATTACH_IF}, set to ${DEFAULT_ASIC_NETDEV_NAME}"
         XPCI_NETDEV_ATTACH_IF=${DEFAULT_ASIC_NETDEV_NAME}
     fi
-fi
 
-# Checking the label revision
-if [ ${SYS_MODE,,} != "xbm" ]; then
+    # Checking the label revision
     decode-syseeprom -d | grep "Label Revision" | awk '{print $5}' > ${LABEL_REVISION_FILE}
 fi
 
@@ -100,22 +96,24 @@ echo ">>> Re-load NetDev"
 
 if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
     if [[ "${XSIGHT_DEVICE}" == "X1" ]]; then
-        # Reset X1 and PCI bus
-        if [ -f /tmp/xbooted ]; then
-            if [ ${SYS_MODE,,} != "xbm" ]; then
-                if [ -d $XPLT_UTL ]; then
-                    echo ">>> Resetting X1"
-                    $XPLT_UTL/es9632x_reset_x1.sh
-                    if [ $? -ne 0 ]; then
-                        echo "ERROR: On running es9632x_reset_x1.sh"
-                    fi
-                else
-                    echo "ERROR: No $XPLT_UTL found!"
+        XPLT_SWITCH_CHIP_RESET=$XPLT_UTL/es9632x_reset_x1.sh
+    elif [[ "${XSIGHT_DEVICE}" == "X2" ]]; then
+        XPLT_SWITCH_CHIP_RESET=$XPLT_UTL/es9618x_reset_x2.sh
+    fi
+
+    # Reset switch chip and PCI bus
+    if [ -f /tmp/xbooted ]; then
+        if [ ${SYS_MODE,,} != "xbm" ]; then
+            if [ -d $XPLT_UTL ]; then
+                echo ">>> Resetting ${XSIGHT_DEVICE} chip"
+                $XPLT_SWITCH_CHIP_RESET
+                if [ $? -ne 0 ]; then
+                    echo "ERROR: Cannot reset ${XSIGHT_DEVICE} chip"
                 fi
+            else
+                echo "ERROR: No $XPLT_UTL found!"
             fi
         fi
-    elif [[ "${XSIGHT_DEVICE}" == "X2" ]]; then
-        echo "TODO: Reset X2"
     fi
 fi
 
