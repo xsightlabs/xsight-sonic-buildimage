@@ -19,28 +19,6 @@ XSIGHT_PCI_SIG="1e6c"
 XSIGHT_PCI_ID=""
 XSIGHT_DEVICE=""
 
-
-if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
-    XSIGHT_PCI_ID=$(lspci | grep -E -o "${XSIGHT_PCI_SIG}:[0-9]{4}" | awk -F ":" '{print $2}')
-    if [[ "${XSIGHT_PCI_ID}" == "0001" ]]; then
-        XSIGHT_DEVICE="X1"
-    elif [[ "${XSIGHT_PCI_ID}" == "0002" ]]; then
-        XSIGHT_DEVICE="X2"
-    else
-        echo "Error: Unsuported Xsight device or no device found"
-        exit 1
-    fi
-
-    if [[ "${XSIGHT_DEVICE}" == "X1" ]]; then
-        PORT_NUM=256
-        DEFAULT_ASIC_NETDEV_NAME="eth10g1"
-    elif [[ "${XSIGHT_DEVICE}" == "X2" ]]; then
-        PORT_NUM=128
-        DEFAULT_ASIC_NETDEV_NAME="xpcxd0"
-    fi
-fi
-
-
 if [[ ${ONIE_MACHINE,,} == *"x2evb"* ]]; then
     if [[ "$(hostname)" == "sonic" ]]; then
         blk_dev="/dev/nvme0n1"
@@ -62,6 +40,26 @@ if [[ ${ONIE_MACHINE,,} == *"x2evb"* ]]; then
         echo "{\"DEVICE_METADATA\": {\"localhost\" : {\"hostname\" : \"${evbhostname}\" }}}" > /tmp/hostname.json
         sonic-cfggen --write-to-db -j /tmp/hostname.json
         systemctl restart hostname-config.service
+    fi
+fi
+
+if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
+    XSIGHT_PCI_ID=$(lspci | grep -E -o "${XSIGHT_PCI_SIG}:[0-9]{4}" | awk -F ":" '{print $2}')
+    if [[ "${XSIGHT_PCI_ID}" == "0001" ]]; then
+        XSIGHT_DEVICE="X1"
+    elif [[ "${XSIGHT_PCI_ID}" == "0002" ]]; then
+        XSIGHT_DEVICE="X2"
+    else
+        echo "Error: Unsuported Xsight device or no device found"
+        exit 1
+    fi
+
+    if [[ "${XSIGHT_DEVICE}" == "X1" ]]; then
+        PORT_NUM=256
+        DEFAULT_ASIC_NETDEV_NAME="eth10g1"
+    elif [[ "${XSIGHT_DEVICE}" == "X2" ]]; then
+        PORT_NUM=128
+        DEFAULT_ASIC_NETDEV_NAME="xpcxd0"
     fi
 fi
 
