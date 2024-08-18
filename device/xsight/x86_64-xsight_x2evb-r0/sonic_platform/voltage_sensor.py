@@ -1,7 +1,7 @@
 #############################################################################
 #
 # Module contains an implementation of SONiC Platform Base API and
-# provides the voltage sensors information which are available in the platform
+# provides the information for the voltage sensors available in the platform
 #
 #############################################################################
 

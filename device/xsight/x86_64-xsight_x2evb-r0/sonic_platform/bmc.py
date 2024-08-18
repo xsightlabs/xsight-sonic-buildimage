@@ -23,6 +23,7 @@ NUM_THERMAL = NUM_THERMAL_MAIN_BOARD + NUM_THERMAL_CPU_BOARD + NUM_THERMAL_CHIP
 
 PSU_LIST = ["PSU-1"]
 
+# Component name, Component description
 COMPONENT_LIST= [
    ("BIOS", "Basic Input/Output System"),
    ("ONIE", "Open Network Install Environment"),
@@ -45,6 +46,7 @@ THERMAL_LIST= [
    ("ASIC sensor 3", "GLC"    , "GLC3")
 ]
 
+# Sensor name, Device id, FPGA client, Page number
 CURRENT_SENSOR_LIST = [
     ("VDDCORE"    , 0x40, 3, 0),
     ("VDDSD"      , 0x42, 3, 0),
@@ -65,6 +67,7 @@ CURRENT_SENSOR_LIST = [
     ("AUX_PWR_3V3", 0x46, 6, 0)
 ]
 
+# Sensor name, Device id, FPGA client, Page number
 VOLTAGE_SENSOR_LIST = [
     ("VDDCORE"    , 0x40, 3, 0),
     ("VDDSD"      , 0x42, 3, 0),
@@ -289,15 +292,15 @@ class Bmc:
             ret_val = False
         return ret_val
 
-    def is_minimal_bmc_fpga_vers(self, bmc_ver_min, fpga_ver_min):
+    def is_bmc_fpga_vers_higher_than(self, bmc_ver_min, fpga_ver_min):
         ver = int(self.get_bmc_version().replace('.', '').ljust(3, '0'))
         ver_min = int(bmc_ver_min.replace('.', '').ljust(3, '0'))
-        if not ver >= ver_min:
+        if ver < ver_min:
             return False
 
         ver = int(self.get_fpga_version(), 16)
         ver_min = int(fpga_ver_min, 16)
-        if not ver >= ver_min:
+        if ver < ver_min:
             return False
 
         return True
@@ -318,7 +321,7 @@ class Bmc:
             http://soc.xsight.ent/app/viewItem.cgi?itm=reg&p=1020&b=2&&r=27&
         """
         ret_val = False
-        if (0 <= red <= 1) and (0 <= green <= 1) and (0 <= blue <= 1):
+        if (red in [0, 1]) and (green in [0, 1]) and (blue in [0, 1]):
             params = [red, green, blue]
             resp_str = self.__build_and_send_json_rpc("sys_led_ctrl", params)
             if ("red" in resp_str) and ("green" in resp_str) and ("blue" in resp_str):
@@ -369,7 +372,7 @@ class Bmc:
             String of system LED color.
         """
         color = "UNKNOWN"
-        if not self.is_minimal_bmc_fpga_vers("2.6.9", "0x30E"):
+        if not self.is_bmc_fpga_vers_higher_than("2.6.9", "0x30E"):
             return color
 
         resp_str = self.__build_and_send_json_rpc("sys_led_status", [])
@@ -490,7 +493,7 @@ class Bmc:
         Returns:
             A boolean value, True if fan exist, False if not.
         """
-        if not self.is_minimal_bmc_fpga_vers("2.7.6", "0x30E"):
+        if not self.is_bmc_fpga_vers_higher_than("2.7.6", "0x30E"):
             return True
 
         if id in range(1, NUM_FAN_TRAY + 1):
@@ -593,18 +596,13 @@ class Bmc:
             2               GLC1
             3               GLC3
         """
-        if not self.is_minimal_bmc_fpga_vers("2.6.9", "0x30E"):
+        if not self.is_bmc_fpga_vers_higher_than("2.6.9", "0x30E"):
             return ""
 
         if id in range(1, NUM_THERMAL_CHIP + 1):
+            num_idx = [3, 5, 9]
             resp_str = self.__build_and_send_json_rpc("read_x2_thermal", [])
-            if id == 1:
-                num_idx = 3
-            elif id == 2:
-                num_idx = 5
-            elif id == 3:
-                num_idx = 9
-            val = self.__extract_number_from_string(resp_str, num_idx)
+            val = self.__extract_number_from_string(resp_str, num_idx[id-1])
         else:
             print("Error: id {} is out of range [1 - {}]".format(id, NUM_THERMAL_CHIP))
             val = ""
@@ -670,7 +668,7 @@ class Bmc:
         Returns:
             String representing PSUP P/N model or empty string in case of error.
         """
-        if not self.is_minimal_bmc_fpga_vers("2.6.9", "0x30E"):
+        if not self.is_bmc_fpga_vers_higher_than("2.6.9", "0x30E"):
             return "N/A"
 
         resp_str = self.__build_and_send_json_rpc("get_psup_model", [])
@@ -685,7 +683,7 @@ class Bmc:
         Returns:
             String representing PSUP serial number or empty string in case of error.
         """
-        if not self.is_minimal_bmc_fpga_vers("2.6.9", "0x30E"):
+        if not self.is_bmc_fpga_vers_higher_than("2.6.9", "0x30E"):
             return "N/A"
 
         resp_str = self.__build_and_send_json_rpc("get_psup_serial_num", [])
@@ -735,28 +733,19 @@ class Bmc:
         return True if "DONE" in resp_str else False
 
     def cold_reset(self, type = None):
-        """Reset X2 device with/without CPU, depands on input type, in case of
-        reset X2 device without CPU, wait for host to issue sudo reboot.
+        """Reset the X2 device with/without the CPU, depending on the input type, in case
+        of reset X2 device without CPU, wait for host to issue sudo reboot.
 
         Args:
             type = list or None representing reset type.
-                0    - Reset chip only as part of BMC's graceful cold reset.
-                1    - Full cold reset, reset chip and CPU during normal operation.
-                None - Reset chip and CPU during normal operation.
+                0    - Reset chip.
+                1    - Reset chip and CPU.
+                None - Reset chip and CPU (For BMC below 2.7.2 ver)
 
         Returns:
             A boolean value, True if the operation succeeded, False if not.
-
-        Notes:
-            Input type equal to None is relevant only to BMC version below 2.7.2,
-            the other input type options (0, 1) are relevant to BMC version equal
-            or above version 2.7.2.
         """
-        if (type not in [0, 1]) and (type != None):
-            print("Error: Unknown cold reset type {}".format(type))
-            return False
-
-        if self.is_minimal_bmc_fpga_vers("2.7.2", "0x30E"):
+        if self.is_bmc_fpga_vers_higher_than("2.7.2", "0x30E"):
             if (type not in [0, 1]):
                 print("Error: Invalid type {} for versions above BMC:2.7.2 FPGA:0x30E".format(type))
                 return False
