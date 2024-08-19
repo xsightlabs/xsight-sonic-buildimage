@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+
+# remove sonic_platform package installed with sonic-platform-xsight-x2evb.postinst
+python3 -m pip uninstall -y sonic_platform
+
