@@ -113,6 +113,7 @@ if [[ "$1" == "init" ]]; then
     lsmod | grep -q ft260 && rmmod hid_ft260
     lsmod | grep -q optoe && rmmod optoe
     depmod -a
+    modprobe i2c-dev
     modprobe hid-ft260
     modprobe optoe
     init_devnum
@@ -124,4 +125,5 @@ elif [[ "$1" == "deinit" ]]; then
     stage_1 "delete_device"
     modprobe -rq hid-ft260
     modprobe -rq optoe
+    modprobe -rq i2c-dev
 fi
