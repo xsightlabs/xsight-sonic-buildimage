@@ -2,7 +2,6 @@
     "skip_pcied": true,
     "skip_fancontrol": true,
     "skip_ledd": true,
-    "skip_xcvrd": true,
     "skip_xcvrd_cmis_mgr": true,
     "include_sensormond": true
 }

@@ -32,9 +32,17 @@ class Chassis(ChassisBase):
         self.__initialize_psu()
         self.__initialize_thermals()
         self.__initialize_components()
+        self.__initialize_sfp()
         self.__initialize_eeprom()
         self.__initialize_voltage_sensors()
         self.__initialize_current_sensors()
+
+    def __initialize_sfp(self):
+        from sonic_platform.sfp import Sfp
+        for index in range(0, PORT_END):
+            sfp = Sfp(index)
+            self._sfp_list.append(sfp)
+        self.sfp_module_initialized = True
 
     def __initialize_fan(self):
         from sonic_platform.fan_drawer import FanDrawer
@@ -159,7 +167,17 @@ class Chassis(ChassisBase):
         Returns:
             An object dervied from SfpBase representing the specified sfp
         """
-        return None
+        sfp = None
+        if not self.sfp_module_initialized:
+            self.__initialize_sfp()
+
+        try:
+            # The index will start from 1
+            sfp = self._sfp_list[index-1]
+        except IndexError:
+            sys.stderr.write("SFP index {} out of range (1-{})\n".format(
+                             index, len(self._sfp_list)))
+        return sfp
 
     def get_thermal_manager(self):
         """
@@ -180,7 +198,24 @@ class Chassis(ChassisBase):
         Returns:
             Change events
         """
-        return False, {'sfp': {}}
+        # SFP events
+        sfp_dict = {}
+        if not self.sfp_module_initialized:
+            self.__initialize_sfp()
+
+        for index in range(0, PORT_END):
+            sfp_event = self._sfp_list[index].get_transceiver_change_event(2000)
+            if sfp_event is not None:
+                sfp_dict[index+1] = sfp_event
+
+        if timeout == 0:
+            sleep_sec = 0.5
+        else:
+            sleep_sec = timeout / float(1000)
+
+        time.sleep(sleep_sec)
+
+        return True, {'sfp': sfp_dict}
 
     def is_replaceable(self):
         """
@@ -205,6 +240,14 @@ class Chassis(ChassisBase):
             A string containing the hardware revision number for this chassis.
         """
         self._eeprom.get_revision()
+
+    def get_num_components(self):
+        """
+        Retrieves number of components
+        Returns:
+            integer: Number of components
+        """
+        return bmc.NUM_COMPONENT
 
     def get_status_led(self):
         return "UNKNOWN"
