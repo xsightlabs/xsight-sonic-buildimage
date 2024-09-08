@@ -1,4 +1,4 @@
-#############################################################################
+############################################################################
 # Accton
 #
 # Sfp contains an implementation of SONiC Platform Base API and
@@ -17,6 +17,7 @@ try:
     from sonic_platform_base.sonic_xcvr.sfp_optoe_base import SfpOptoeBase
     from sonic_platform_base.sonic_sfp.sfputilhelper import SfpUtilHelper
     from .helper import APIHelper
+    import xcvr_pins
 except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
@@ -34,7 +35,6 @@ class Sfp(SfpOptoeBase):
     HOST_CHK_CMD = "docker > /dev/null 2>&1"
 
     EEPROM_PATH = '/sys/bus/i2c/devices/{0}-0050/eeprom'
-    CPLD_I2C_PATH = "/sys/bus/i2c/devices/"
     PLATFORM_ROOT_PATH = "/usr/share/sonic/device"
     PMON_JSON_PATH = "/usr/share/sonic/platform"
     PMON_HWSKU_PATH = '/usr/share/sonic/hwsku'
@@ -48,22 +48,22 @@ class Sfp(SfpOptoeBase):
     }
 
     _port_to_i2c_mapping = {
-        1:  18,
-        2:  19,
-        3:  20,
-        4:  21,
-        5:  22,
-        6:  23,
-        7:  24,
-        8:  25,
-        9:  26,
-        10: 27,
-        11: 28,
-        12: 29,
-        13: 30,
-        14: 31,
-        15: 32,
-        16: 33,
+        1:  2,
+        2:  3,
+        3:  4,
+        4:  5,
+        5:  6,
+        6:  7,
+        7:  8,
+        8:  9,
+        9:  10,
+        10: 11,
+        11: 12,
+        12: 13,
+        13: 14,
+        14: 15,
+        15: 16,
+        16: 17,
     }
 
     _sfp_port = range(PORT_START, PORT_END + 1)
@@ -73,13 +73,13 @@ class Sfp(SfpOptoeBase):
         SfpOptoeBase.__init__(self)
         self._index = sfp_index
         self._port_num = self._index + 1
+        self._port_bit = 1 << self._index
         self._api_helper = APIHelper()
         self.data = {'present': False}
 
         self.eeprom_path = self.EEPROM_PATH.format(self._port_to_i2c_mapping[self._port_num])
-        self.reset_path = "{}{}{}{}".format(self.CPLD_I2C_PATH, self._cpld_mapping[0], '/module_reset_', self._port_num)
-        self.present_path = "{}{}{}{}".format(self.CPLD_I2C_PATH, self._cpld_mapping[0], '/module_present_', self._port_num)
-        self.lpmode_path = "{}{}{}{}".format(self.CPLD_I2C_PATH, self._cpld_mapping[0], '/module_lpmode_', self._port_num)
+        self.xcvrpins = xcvr_pins.XcvrPins(self._port_bit)
+        last_presence = presence = xcvrpins.get_xcvr_present_pins()
 
     def __write_txt_file(self, file_path, value):
         try:
@@ -122,10 +122,10 @@ class Sfp(SfpOptoeBase):
         Returns:
             bool: True if device is present, False if not
         """
-        val = self._api_helper.read_txt_file(self.present_path)
+        val = self.xcvrpins.get_xcvr_present_pins()
 
         if val is not None:
-            return int(val, 10)==1
+            return int(val, 16)==self._port_bit
         else:
             return False
 
@@ -155,11 +155,11 @@ class Sfp(SfpOptoeBase):
         Returns:
             A Boolean, True if reset enabled, False if disabled
         """
-        val=self._api_helper.read_txt_file(self.reset_path)
+        val = self.xcvrpins.get_xcvr_reset_pins()
         if val is None:
             return 0
 
-        return int(val, 10)==1
+        return int(val, 16)==self._port_bit
 
     def get_lpmode(self):
         """
@@ -167,9 +167,9 @@ class Sfp(SfpOptoeBase):
         Returns:
             A Boolean, True if lpmode is enabled, False if disabled
         """
-        val = self._api_helper.read_txt_file(self.lpmode_path)
+        val = self.xcvrpins.get_xcvr_lowpower_pins()
         if val is not None:
-            return int(val, 10)==1
+            return int(val, 16)==self._port_bit
         else:
             return False
 
@@ -185,15 +185,12 @@ class Sfp(SfpOptoeBase):
         elif not self.get_presence():
             return False
 
-        ret = self.__write_txt_file(self.reset_path, 1)  #sysfs 1: enable reset
-        if ret is not True:
-            return ret
-
+        self.xcvrpins.set_xcvr_reset_pins(self._port_bit, 1) #enable reset
         time.sleep(0.2)
-        ret = self.__write_txt_file(self.reset_path, 0) #sysfs 0: disable reset
+        self.xcvrpins.set_xcvr_reset_pins(self._port_bit, 0) #disable reset
         time.sleep(0.2)
 
-        return ret
+        return True
 
     def set_lpmode(self, lpmode):
         """
@@ -213,8 +210,8 @@ class Sfp(SfpOptoeBase):
             if lpmode is True:
                 val = 1
 
-            ret = self.__write_txt_file(self.lpmode_path, val)  #sysfs 1: enable lpmode
-            return ret
+            self.xcvrpins.set_xcvr_lowpower_pin(self._port_bit, val)
+            return True
 
     def get_transceiver_info(self):
         transceiver_info_dict = SfpOptoeBase.get_transceiver_info(self)
