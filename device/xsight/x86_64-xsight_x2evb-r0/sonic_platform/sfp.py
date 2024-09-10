@@ -17,7 +17,7 @@ try:
     from sonic_platform_base.sonic_xcvr.sfp_optoe_base import SfpOptoeBase
     from sonic_platform_base.sonic_sfp.sfputilhelper import SfpUtilHelper
     from .helper import APIHelper
-    import xcvr_pins
+    from sonic_platform import xcvr_pins
 except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
@@ -78,8 +78,7 @@ class Sfp(SfpOptoeBase):
         self.data = {'present': False}
 
         self.eeprom_path = self.EEPROM_PATH.format(self._port_to_i2c_mapping[self._port_num])
-        self.xcvrpins = xcvr_pins.XcvrPins(self._port_bit)
-        last_presence = presence = xcvrpins.get_xcvr_present_pins()
+        self.xcvrpins = xcvr_pins.XcvrPins(self.PORT_END)
 
     def __write_txt_file(self, file_path, value):
         try:
@@ -125,7 +124,7 @@ class Sfp(SfpOptoeBase):
         val = self.xcvrpins.get_xcvr_present_pins()
 
         if val is not None:
-            return int(val, 16)==self._port_bit
+            return (val & self._port_bit) == self._port_bit
         else:
             return False
 
@@ -159,7 +158,7 @@ class Sfp(SfpOptoeBase):
         if val is None:
             return 0
 
-        return int(val, 16)==self._port_bit
+        return (val & self._port_bit) == self._port_bit
 
     def get_lpmode(self):
         """
@@ -169,7 +168,7 @@ class Sfp(SfpOptoeBase):
         """
         val = self.xcvrpins.get_xcvr_lowpower_pins()
         if val is not None:
-            return int(val, 16)==self._port_bit
+            return (val & self._port_bit) == self._port_bit
         else:
             return False
 
@@ -210,7 +209,7 @@ class Sfp(SfpOptoeBase):
             if lpmode is True:
                 val = 1
 
-            self.xcvrpins.set_xcvr_lowpower_pin(self._port_bit, val)
+            self.xcvrpins.set_xcvr_lowpower_pins(self._port_bit, val)
             return True
 
     def get_transceiver_info(self):
