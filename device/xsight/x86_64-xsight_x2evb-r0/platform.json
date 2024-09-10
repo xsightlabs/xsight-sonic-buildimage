@@ -1,6 +1,6 @@
 {
     "chassis": {
-      "name": "es9632xx-O32x400G",
+      "name": "x2evb-O16x400G",
       "components": [
           {
               "name": "BIOS"
@@ -52,43 +52,76 @@
       ],
       "fans": [
           {
-              "name": "FanTray0 fan 0"
+              "name": "FanTray 0 fan 0",
+              "status_led": {
+                  "controllable": false
+              }
           },
           {
-              "name": "FanTray0 fan 1"
+              "name": "FanTray 0 fan 1",
+              "status_led": {
+                  "controllable": false
+              }
           },
           {
-              "name": "FanTray1 fan 0"
+              "name": "FanTray 1 fan 0",
+              "status_led": {
+                  "controllable": false
+              }
           },
           {
-              "name": "FanTray1 fan 1"
+              "name": "FanTray 1 fan 1",
+              "status_led": {
+                  "controllable": false
+              }
           },
           {
-              "name": "FanTray2 fan 0"
+              "name": "FanTray 2 fan 0",
+              "status_led": {
+                  "controllable": false
+              }
           },
           {
-              "name": "FanTray2 fan 1"
+              "name": "FanTray 2 fan 1",
+              "status_led": {
+                  "controllable": false
+              }
           },
           {
-              "name": "FanTray3 fan 0"
+              "name": "FanTray 3 fan 0",
+              "status_led": {
+                  "controllable": false
+              }
           },
           {
-              "name": "FanTray3 fan 1"
+              "name": "FanTray 3 fan 1",
+              "status_led": {
+                  "controllable": false
+              }
           },
           {
-              "name": "FanTray4 fan 0"
+              "name": "FanTray 4 fan 0",
+              "status_led": {
+                  "controllable": false
+              }
           },
           {
-              "name": "FanTray4 fan 1"
-          },
-          {
-              "name": "FanTray5 fan 0"
-          },
-          {
-              "name": "FanTray5 fan 1"
+              "name": "FanTray 4 fan 1",
+              "status_led": {
+                  "controllable": false
+              }
           }
       ],
       "thermals": [
+        {
+          "name": "ASIC sensor 1"
+        },
+        {
+          "name": "ASIC sensor 2"
+        },
+        {
+          "name": "ASIC sensor 3"
+        },
         {
           "name": "Temp sensor 1"
         },
@@ -116,10 +149,16 @@
           "name": "FanTray 0",
             "fans": [
               {
-                "name": "FanTray0 fan 0"
+                "name": "FanTray 0 fan 0",
+                "status_led": {
+                    "controllable": false
+                }
               },
               {
-                "name": "FanTray0 fan 1"
+                "name": "FanTray 0 fan 1",
+                "status_led": {
+                    "controllable": false
+                }
               }
             ]
         },
@@ -127,10 +166,16 @@
           "name": "FanTray 1",
           "fans": [
             {
-              "name": "FanTray1 fan 0"
+              "name": "FanTray 1 fan 0",
+              "status_led": {
+                  "controllable": false
+              }
             },
             {
-              "name": "FanTray1 fan 1"
+              "name": "FanTray 1 fan 1",
+              "status_led": {
+                  "controllable": false
+              }
             }
           ]
         },
@@ -138,10 +183,16 @@
           "name": "FanTray 2",
           "fans": [
             {
-              "name": "FanTray2 fan 0"
+              "name": "FanTray 2 fan 0",
+              "status_led": {
+                  "controllable": false
+              }
             },
             {
-              "name": "FanTray2 fan 1"
+              "name": "FanTray 2 fan 1",
+              "status_led": {
+                  "controllable": false
+              }
             }
           ]
         },
@@ -149,10 +200,16 @@
           "name": "FanTray 3",
           "fans": [
             {
-              "name": "FanTray3 fan 0"
+              "name": "FanTray 3 fan 0",
+              "status_led": {
+                  "controllable": false
+              }
             },
             {
-              "name": "FanTray3 fan 1"
+              "name": "FanTray 3 fan 1",
+              "status_led": {
+                  "controllable": false
+              }
             }
           ]
         },
@@ -160,10 +217,16 @@
           "name": "FanTray 4",
           "fans": [
             {
-              "name": "FanTray4 fan 0"
+              "name": "FanTray 4 fan 0",
+              "status_led": {
+                  "controllable": false
+              }
             },
             {
-              "name": "FanTray4 fan 1"
+              "name": "FanTray 4 fan 1",
+              "status_led": {
+                  "controllable": false
+              }
             }
           ]
         },
