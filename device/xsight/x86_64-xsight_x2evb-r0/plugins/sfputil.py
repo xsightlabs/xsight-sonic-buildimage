@@ -74,6 +74,7 @@ class SfpUtil(SfpUtilBase):
             self.port_to_eeprom_mapping[x] = eeprom_path.format(
                 self._port_to_i2c_mapping[x])
 
+        self.xcvrpins = xcvr_pins.XcvrPins(self.PORT_END)
         SfpUtilBase.__init__(self)
 
     def get_presence(self, port_num):
@@ -81,10 +82,9 @@ class SfpUtil(SfpUtilBase):
             return False
 
         port_bit = 1 << (port_num - 1)
-        self.xcvrpins = xcvr_pins.XcvrPins(port_bit)
         val = self.xcvrpins.get_xcvr_present_pins()
         if val is not None:
-            return int(val, 16)==port_bit
+            return (val & port_bit) == port_bit
         else:
              return False
 
@@ -93,10 +93,9 @@ class SfpUtil(SfpUtilBase):
             return False
 
         port_bit = 1 << (port_num - 1)
-        self.xcvrpins = xcvr_pins.XcvrPins(port_bit)
         val = self.xcvrpins.get_xcvr_lowpower_pins()
         if val is not None:
-            return int(val, 16)==port_bit
+            return (val & port_bit) == port_bit
         else:
             return False
 
@@ -106,7 +105,7 @@ class SfpUtil(SfpUtilBase):
 
         val = '1' if lpmode is True else '0'
         port_bit = 1 << (port_num - 1)
-        self.xcvrpins.set_xcvr_lowpower_pin(port_bit, val)
+        self.xcvrpins.set_xcvr_lowpower_pins(port_bit, val)
         return True
 
     def reset(self, port_num):

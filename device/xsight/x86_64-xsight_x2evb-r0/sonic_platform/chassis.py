@@ -6,6 +6,7 @@
 #############################################################################
 
 import os
+import time
 
 try:
     from sonic_platform import bmc
@@ -39,9 +40,10 @@ class Chassis(ChassisBase):
 
     def __initialize_sfp(self):
         from sonic_platform.sfp import Sfp
-        for index in range(0, PORT_END):
+        for index in range(0, Sfp.PORT_END):
             sfp = Sfp(index)
             self._sfp_list.append(sfp)
+            self.PORT_END = Sfp.PORT_END
         self.sfp_module_initialized = True
 
     def __initialize_fan(self):
@@ -203,7 +205,7 @@ class Chassis(ChassisBase):
         if not self.sfp_module_initialized:
             self.__initialize_sfp()
 
-        for index in range(0, PORT_END):
+        for index in range(0, self.PORT_END):
             sfp_event = self._sfp_list[index].get_transceiver_change_event(2000)
             if sfp_event is not None:
                 sfp_dict[index+1] = sfp_event
