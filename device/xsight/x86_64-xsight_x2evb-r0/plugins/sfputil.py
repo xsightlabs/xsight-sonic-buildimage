@@ -8,6 +8,7 @@ try:
     import string
     from ctypes import create_string_buffer
     from sonic_sfp.sfputilbase import SfpUtilBase
+    from sonic_platform import xcvr_pins
 except ImportError as e:
     raise ImportError("%s - required module not found" % str(e))
 
@@ -17,49 +18,30 @@ SFP_STATUS_REMOVED = '0'
 class SfpUtil(SfpUtilBase):
     """Platform-specific SfpUtil class"""
 
-    PORT_START = 0
-    PORT_END = 31
+    PORT_START = 1
+    PORT_END = 16
 
     BASE_VAL_PATH = "/sys/class/i2c-adapter/i2c-{0}/{1}-0050/"
 
     _port_to_eeprom_mapping = {}
-    _cpld_mapping = {
-        0:  "20-0061",
-        1:  "21-0062",
-    }
+
     _port_to_i2c_mapping = {
-        0:  25,
-        1:  26,
-        2:  27,
-        3:  28,
-        4:  29,
-        5:  30,
-        6:  31,
-        7:  32,
-        8:  33,
-        9: 34,
-        10: 35,
-        11: 36,
-        12: 37,
-        13: 38,
-        14: 39,
-        15: 40,
-        16: 41,
-        17: 42,
-        18: 43,
-        19: 44,
-        20: 45,
-        21: 46,
-        22: 47,
-        23: 48,
-        24: 49,
-        25: 50,
-        26: 51,
-        27: 52,
-        28: 53,
-        29: 54,
-        30: 55,
-        31: 56
+        1:  2,
+        2:  3,
+        3:  4,
+        4:  5,
+        5:  6,
+        6:  7,
+        7:  8,
+        8:  9,
+        9:  10,
+        10: 11,
+        11: 12,
+        12: 13,
+        13: 14,
+        14: 15,
+        15: 16,
+        16: 17,
     }
 
     @property
@@ -95,95 +77,46 @@ class SfpUtil(SfpUtilBase):
         SfpUtilBase.__init__(self)
 
     def get_presence(self, port_num):
-        # Check for invalid port_num
         if port_num < self.port_start or port_num > self.port_end:
             return False
 
-        cpld_ps = self._cpld_mapping[0]
-        path = "/sys/bus/i2c/devices/{0}/module_present_{1}"
-        port_ps = path.format(cpld_ps, port_num+1)
-
-        content = "0"
-        try:
-            val_file = open(port_ps)
-            content = val_file.readline().rstrip()
-            val_file.close()
-        except IOError as e:
-            print("Error: unable to access file: %s" % str(e))
-            return False
-
-        if content == "1":
-            return True
-
-        return False
+        port_bit = 1 << (port_num - 1)
+        self.xcvrpins = xcvr_pins.XcvrPins(port_bit)
+        val = self.xcvrpins.get_xcvr_present_pins()
+        if val is not None:
+            return int(val, 16)==port_bit
+        else:
+             return False
 
     def get_low_power_mode(self, port_num):
-        # Check for invalid port_num
         if port_num < self.port_start or port_num > self.port_end:
             return False
 
-        cpld_ps = self._cpld_mapping[1]
-        path = "/sys/bus/i2c/devices/{0}/module_lpmode_{1}"
-        port_ps = path.format(cpld_ps, port_num+1)
-
-        content = "0"
-        try:
-            val_file = open(port_ps)
-            content = val_file.readline().rstrip()
-            val_file.close()
-        except IOError as e:
-            print("Error: unable to access file: %s" % str(e))
+        port_bit = 1 << (port_num - 1)
+        self.xcvrpins = xcvr_pins.XcvrPins(port_bit)
+        val = self.xcvrpins.get_xcvr_lowpower_pins()
+        if val is not None:
+            return int(val, 16)==port_bit
+        else:
             return False
 
-        if content == "1":
-            return True
-
-        return False
-
     def set_low_power_mode(self, port_num, lpmode):
-        # Check for invalid port_num
         if port_num < self.PORT_START or port_num > self.PORT_END:
             return False
 
-        cpld_ps = self._cpld_mapping[1]
-        path = "/sys/bus/i2c/devices/{0}/module_lpmode_{1}"
-        port_ps = path.format(cpld_ps, port_num+1)
-        try:
-            reg_file = open(port_ps, "w")
-        except IOError as e:
-            print("Error: unable to open file: %s" % str(e))
-            return False
-
-        reg_file.seek(0)
-        reg_value = '1' if lpmode is True else '0'
-        reg_file.write(reg_value)
-        reg_file.close()
-
+        val = '1' if lpmode is True else '0'
+        port_bit = 1 << (port_num - 1)
+        self.xcvrpins.set_xcvr_lowpower_pin(port_bit, val)
         return True
 
     def reset(self, port_num):
         if port_num < self.PORT_START or port_num > self.PORT_END:
             return False
 
-        cpld_ps = self._cpld_mapping[1]
-        path = "/sys/bus/i2c/devices/{0}/module_reset_{1}"
-        port_ps = path.format(cpld_ps, port_num+1)
-        try:
-            reg_file = open(port_ps, "w")
-        except IOError as e:
-            print("Error: unable to open file: %s" % str(e))
-            return False
-
-        reg_file.seek(0)
-        reg_value = '1'
-        reg_file.write(reg_value)
-        time.sleep(0.1)
-        reg_file.seek(0)
-        reg_value = '0'
-        reg_file.write(reg_value)
-
-        reg_file.close()
-
+        port_bit = 1 << (port_num - 1)
+        self.xcvrpins.set_xcvr_reset_pins(port_bit, 1)
+        time.sleep(0.2)
+        self.xcvrpins.set_xcvr_reset_pins(port_bit, 0)
         return True
 
     def get_transceiver_change_event(self):
