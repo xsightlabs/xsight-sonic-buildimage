@@ -18,13 +18,13 @@ class Fan(FanBase):
     """Platform-specific Fan class"""
 
     def __init__(self, fan_tray_index, fan_index=0, is_psu_fan=False, psu_index=0):
+        FanBase.__init__(self)
         self.bmccmd = bmc.Bmc()
         self.fan_index = fan_index
         self.fan_tray_index = fan_tray_index
         self.is_psu_fan = is_psu_fan
         self.psu_index = psu_index
-
-        FanBase.__init__(self)
+        self.target_speed = self.get_speed() # This variable simulates target speed
 
     def get_name(self):
         """
@@ -83,7 +83,7 @@ class Fan(FanBase):
             An integer, the percentage of full fan speed, in the range 0 (off)
                  to 100 (full speed)
         """
-        return int(self.bmccmd.read_fan_speed() or 0)
+        return self.target_speed
 
     def get_speed_tolerance(self):
         """
@@ -104,7 +104,8 @@ class Fan(FanBase):
             A boolean, True if speed is set successfully, False if not
 
         """
-        self.bmccmd.set_fan_mode(int(speed))
+        self.target_speed = int(speed)
+        return self.bmccmd.set_fan_mode(self.target_speed)
 
     def get_presence(self):
         """

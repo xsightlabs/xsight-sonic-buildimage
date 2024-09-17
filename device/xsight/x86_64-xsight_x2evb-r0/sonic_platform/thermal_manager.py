@@ -1,13 +1,12 @@
 import os
+from sonic_platform import bmc
 from sonic_platform_base.sonic_thermal_control.thermal_manager_base import ThermalManagerBase
 from sonic_platform_base.sonic_thermal_control.thermal_policy import ThermalPolicy
-from .thermal_actions import *
-from .thermal_conditions import *
-from .thermal_infos import *
 from .helper import APIHelper
 
-
 class ThermalManager(ThermalManagerBase):
+    bmccmd = bmc.Bmc()
+
     @classmethod
     def initialize(cls):
         """
@@ -15,7 +14,7 @@ class ThermalManager(ThermalManagerBase):
         and any other vendor specific initialization.
         :return:
         """
-        cls._add_private_thermal_policy()
+        cls.bmccmd.set_monitor(1)
 
     @classmethod
     def deinitialize(cls):
@@ -24,7 +23,15 @@ class ThermalManager(ThermalManagerBase):
         is a no-op.
         :return:
         """
-        cls.start_thermal_control_algorithm()
+        cls.bmccmd.set_monitor(0)
+
+    @classmethod
+    def stop(cls):
+        """
+        Stop thermal manager.
+        :return:
+        """
+        pass
 
     @classmethod
     def start_thermal_control_algorithm(cls):
@@ -34,8 +41,7 @@ class ThermalManager(ThermalManagerBase):
         Returns:
             bool: True if start succeeded. False - if failed. 
         """
-        from .thermal import Thermal
-        return Thermal.set_thermal_algorithm_status(True)
+        return False
 
     @classmethod
     def stop_thermal_control_algorithm(cls):
@@ -45,8 +51,34 @@ class ThermalManager(ThermalManagerBase):
         Returns:
             bool: True if start succeeded. False - if failed.
         """
-        from .thermal import Thermal
-        return Thermal.set_thermal_algorithm_status(False)
+        return False
+
+    @classmethod
+    def load(cls, policy_file_name):
+        """
+        Load all thermal policies from JSON policy file.
+        :param policy_file_name: Path of JSON policy file.
+        :return:
+        """
+        pass
+
+    @classmethod
+    def run_policy(cls, chassis):
+        """
+        Collect thermal information, run each policy, if one policy matches, execute the policy's action.
+        :param chassis: The chassis object.
+        :return:
+        """
+        pass
+
+    @classmethod
+    def init_thermal_algorithm(cls, chassis):
+        """
+        Initialize thermal algorithm according to policy file.
+        :param chassis: The chassis object.
+        :return:
+        """
+        pass
 
     @classmethod
     def pause_thermal_algorithm(cls, timeout_minutes=1):
@@ -56,24 +88,8 @@ class ThermalManager(ThermalManagerBase):
         Returns:
             bool: True, if succeeded to place pause request. False - if failed.
         """
-        _api_helper = APIHelper()
-        command = "echo {} > /tmp/thermal_manager_pause_policy".format(timeout_minutes)
-        status, result = _api_helper.run_command(command)
-        return status
+        return False
 
     @classmethod
     def _add_private_thermal_policy(cls):
-        dynamic_min_speed_policy = ThermalPolicy()
-        dynamic_min_speed_policy.conditions[MinCoolingLevelChangeCondition] = MinCoolingLevelChangeCondition()
-        dynamic_min_speed_policy.actions[ChangeMinCoolingLevelAction] = ChangeMinCoolingLevelAction()
-        cls._policy_dict['DynamicMinCoolingLevelPolicy'] = dynamic_min_speed_policy
-
-        update_psu_fan_speed_policy = ThermalPolicy()
-        update_psu_fan_speed_policy.conditions[CoolingLevelChangeCondition] = CoolingLevelChangeCondition()
-        update_psu_fan_speed_policy.actions[UpdatePsuFanSpeedAction] = UpdatePsuFanSpeedAction()
-        cls._policy_dict['UpdatePsuFanSpeedPolicy'] = update_psu_fan_speed_policy
-
-        update_cooling_level_policy = ThermalPolicy()
-        update_cooling_level_policy.conditions[UpdateCoolingLevelToMinCondition] = UpdateCoolingLevelToMinCondition()
-        update_cooling_level_policy.actions[UpdateCoolingLevelToMinAction] = UpdateCoolingLevelToMinAction()
-        cls._policy_dict['UpdateCoolingLevelPolicy'] = update_cooling_level_policy
+        pass

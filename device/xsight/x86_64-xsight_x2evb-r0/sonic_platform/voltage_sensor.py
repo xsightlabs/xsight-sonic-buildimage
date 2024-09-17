@@ -17,6 +17,8 @@ class VoltageSensor(VoltageSensorBase):
     def __init__(self, sensor_index=0):
         self.bmccmd = bmc.Bmc()
         self.index = sensor_index
+        self._minimum = None
+        self._maximum = None
 
     def get_value(self):
         """
@@ -26,7 +28,15 @@ class VoltageSensor(VoltageSensorBase):
             Sensor measurement
         """
         params = bmc.VOLTAGE_SENSOR_LIST[self.index]
-        return int(1000 * float(self.bmccmd.power_ctrl_voltage(params[1], params[2], params[3])))
+        val = float(self.bmccmd.power_ctrl_voltage(params[1], params[2], params[3]) or 0)
+        val = int(1000 * float(val))
+
+        if self._minimum is None or self._minimum > val:
+            self._minimum = val
+        if self._maximum is None or self._maximum < val:
+            self._maximum = val
+
+        return val
 
     def get_high_threshold(self):
         """
@@ -119,15 +129,9 @@ class VoltageSensor(VoltageSensorBase):
         Returns:
             The minimum recorded value of sensor
         """
-        return "N/A"
-
-    def get_name(self):
-        """
-        Retrieves the name of the device
-            Returns:
-            string: The name of the device
-        """
-        return bmc.VOLTAGE_SENSOR_LIST[self.index][0]
+        if self._minimum is None:
+            self.get_value()
+        return self._minimum
 
     def get_maximum_recorded(self):
         """
@@ -136,7 +140,17 @@ class VoltageSensor(VoltageSensorBase):
         Returns:
             The maximum recorded value of sensor
         """
-        return "N/A"
+        if self._maximum is None:
+            self.get_value()
+        return self._maximum
+
+    def get_name(self):
+        """
+        Retrieves the name of the voltage sensor device
+            Returns:
+            string: The name of the voltage sensor device
+        """
+        return bmc.VOLTAGE_SENSOR_LIST[self.index][0]
 
     def is_replaceable(self):
         """

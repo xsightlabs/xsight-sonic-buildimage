@@ -19,6 +19,7 @@ class Psu(PsuBase):
         PsuBase.__init__(self)
         self.index = psu_index
         self.bmccmd = bmc.Bmc()
+        self._maximum = None
 
     def get_voltage(self):
         """
@@ -27,7 +28,7 @@ class Psu(PsuBase):
             A float number, the output voltage in volts,
             e.g. 12.1
         """
-        return float(self.bmccmd.psup_voltage())
+        return float(self.bmccmd.psup_voltage() or 0)
 
     def get_current(self):
         """
@@ -35,7 +36,7 @@ class Psu(PsuBase):
         Returns:
             A float number, the electric current in amperes, e.g 15.4
         """
-        return float(self.bmccmd.psup_current())
+        return float(self.bmccmd.psup_current() or 0)
 
     def get_power(self):
         """
@@ -43,7 +44,12 @@ class Psu(PsuBase):
         Returns:
             A float number, the power in watts, e.g. 302.6
         """
-        return float(self.bmccmd.psup_power())
+        val = float(self.bmccmd.psup_power() or 0)
+
+        if self._maximum is None or self._maximum < val:
+            self._maximum = val
+
+        return val
 
     def set_status_led(self, color):
         """
@@ -89,7 +95,7 @@ class Psu(PsuBase):
             A float number, the high threshold output voltage in volts,
             e.g. 12.1
         """
-        return False #Not supported
+        return 13.0
 
     def get_voltage_low_threshold(self):
         """
@@ -98,7 +104,7 @@ class Psu(PsuBase):
             A float number, the low threshold output voltage in volts,
             e.g. 12.1
         """
-        return False #Not supported
+        return 11.5
 
     def get_name(self):
         """
@@ -163,7 +169,9 @@ class Psu(PsuBase):
         Returns:
             float: Power in watts
         """
-        return self.get_power()
+        if self._maximum is None:
+            self.get_power()
+        return self._maximum
 
     def get_revision(self):
         """
