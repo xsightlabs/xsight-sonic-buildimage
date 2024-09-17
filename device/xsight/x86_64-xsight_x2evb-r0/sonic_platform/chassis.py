@@ -6,6 +6,7 @@
 #############################################################################
 
 import os
+import sys
 import time
 
 try:
@@ -193,7 +194,8 @@ class Chassis(ChassisBase):
         Returns:
             ThermalManager
         """
-        return None
+        from .thermal_manager import ThermalManager
+        return ThermalManager
 
     def set_thermal_policy_pause(self, timeout_minutes):
         """
@@ -248,7 +250,7 @@ class Chassis(ChassisBase):
         Returns:
             A string containing the hardware revision number for this chassis.
         """
-        self._eeprom.get_revision()
+        return self._eeprom.get_revision()
 
     def get_num_components(self):
         """

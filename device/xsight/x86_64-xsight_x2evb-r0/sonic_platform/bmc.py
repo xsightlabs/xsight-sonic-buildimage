@@ -452,6 +452,26 @@ class Bmc:
             A boolean value, True if the operation succeeded, False if not.
 
         Notes:
+            This function changes the fan speed only when thermal policy is disabled.
+        """
+        if (percent < 0) or (percent > 100):
+            print("Error: percent {} is out of range [0 - 100]".format(percent))
+            return False
+
+        resp_str = self.__build_and_send_json_rpc("set_fan_mode", [percent])
+        return True if "set_fan_mode {}".format(percent) in resp_str else False
+
+    def set_thermal_policy_fan_speed(self, percent):
+        """Set all box FANs mode to RPM of 0%-100% permanently.
+
+        Args:
+            percent: integer representing the FAN mode percentage in
+                the range of [0 - 100].
+
+        Returns:
+            A boolean value, True if the operation succeeded, False if not.
+
+        Notes:
             This function changed the fan speed both in run time and in BMC's
             configuration file to keep the changes after BMC reboot.
             The BMC has a method to set the fan speed in runtime to both `regular`
@@ -505,6 +525,20 @@ class Bmc:
             print("Error: id {} is out of range [1 - {}]".format(id, NUM_FAN_TRAY))
             val = False
         return val
+
+    def set_monitor(self, enable):
+        """Start/Stop thermal manager.
+
+        Args:
+            enable: integer representing enable or disable thermal manager.
+                0 - disable thermal manager.
+                1 - enable thermal manager.
+
+        Returns:
+            A boolean value, True if the operation succeeded, False if not.
+        """
+        resp_str = self.__build_and_send_json_rpc("set_monitor", [enable])
+        return True if "set_monitor {}".format(enable) in resp_str else False
 
     def get_bmc_version(self):
         """Read BMC version.

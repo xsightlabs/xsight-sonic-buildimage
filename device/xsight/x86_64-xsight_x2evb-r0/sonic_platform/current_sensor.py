@@ -17,6 +17,8 @@ class CurrentSensor(CurrentSensorBase):
     def __init__(self, sensor_index=0):
         self.bmccmd = bmc.Bmc()
         self.index = sensor_index
+        self._minimum = None
+        self._maximum = None
 
     def get_value(self):
         """
@@ -26,7 +28,15 @@ class CurrentSensor(CurrentSensorBase):
             Sensor measurement
         """
         params = bmc.CURRENT_SENSOR_LIST[self.index]
-        return int(1000 * float(self.bmccmd.power_ctrl_current(params[1], params[2], params[3], 0, 1)))
+        val = float(self.bmccmd.power_ctrl_current(params[1], params[2], params[3], 0, 1) or 0)
+        val = int(1000 * float(val))
+
+        if self._minimum is None or self._minimum > val:
+            self._minimum = val
+        if self._maximum is None or self._maximum < val:
+            self._maximum = val
+
+        return val
 
     def get_high_threshold(self):
         """
@@ -119,15 +129,9 @@ class CurrentSensor(CurrentSensorBase):
         Returns:
             The minimum recorded value of sensor
         """
-        return "N/A"
-
-    def get_name(self):
-        """
-        Retrieves the name of the device
-            Returns:
-            string: The name of the device
-        """
-        return bmc.CURRENT_SENSOR_LIST[self.index][0]
+        if self._minimum is None:
+            self.get_value()
+        return self._minimum
 
     def get_maximum_recorded(self):
         """
@@ -136,7 +140,17 @@ class CurrentSensor(CurrentSensorBase):
         Returns:
             The maximum recorded value of sensor
         """
-        return "N/A"
+        if self._maximum is None:
+            self.get_value()
+        return self._maximum
+
+    def get_name(self):
+        """
+        Retrieves the name of the current sensor device
+            Returns:
+            string: The name of the current sensor device
+        """
+        return bmc.CURRENT_SENSOR_LIST[self.index][0]
 
     def is_replaceable(self):
         """

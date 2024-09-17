@@ -20,6 +20,8 @@ class Thermal(ThermalBase):
     def __init__(self, thermal_index=0):
         self.bmccmd = bmc.Bmc()
         self.index = thermal_index
+        self._minimum = None
+        self._maximum = None
 
     def get_temperature(self):
         """
@@ -28,34 +30,138 @@ class Thermal(ThermalBase):
             A float number of current temperature in Celsius up to nearest thousandth
             of one degree Celsius, e.g. 30.125
         """
-        temp = None
+        val = ""
+
         if bmc.THERMAL_LIST[self.index][1] == "MAX6581":
-            temp = self.bmccmd.check_thermal_sensor(self.index + 1)
+            val = self.bmccmd.check_thermal_sensor(self.index + 1)
         elif bmc.THERMAL_LIST[self.index][1] == "TMP100":
-            temp = self.bmccmd.get_cpuboard_sensor()
+            val = self.bmccmd.get_cpuboard_sensor()
         elif bmc.THERMAL_LIST[self.index][1] == "GLC":
-            temp = self.bmccmd.read_x2_thermal(self.index + 1 - CHIP_THERMAL_OFFSET)
-        return None if temp == "" else float(int(float(temp)))
+            val = self.bmccmd.read_x2_thermal(self.index + 1 - CHIP_THERMAL_OFFSET)
+        val = round(float(val or 0), 0)
+
+        if self._minimum is None or self._minimum > val:
+            self._minimum = val
+        if self._maximum is None or self._maximum < val:
+            self._maximum = val
+
+        return val
 
     def get_high_threshold(self):
         """
         Retrieves the high threshold temperature of thermal
+
         Returns:
             A float number, the high threshold temperature of thermal in Celsius
             up to nearest thousandth of one degree Celsius, e.g. 30.125
         """
-        return "N/A"
+        raise NotImplementedError
+
+    def get_low_threshold(self):
+        """
+        Retrieves the low threshold temperature of thermal
+
+        Returns:
+            A float number, the low threshold temperature of thermal in Celsius
+            up to nearest thousandth of one degree Celsius, e.g. 30.125
+        """
+        raise NotImplementedError
 
     def set_high_threshold(self, temperature):
         """
         Sets the high threshold temperature of thermal
+
         Args :
             temperature: A float number up to nearest thousandth of one degree Celsius,
             e.g. 30.125
+
         Returns:
             A boolean, True if threshold is set successfully, False if not
         """
-        return False
+        raise NotImplementedError
+
+    def set_low_threshold(self, temperature):
+        """
+        Sets the low threshold temperature of thermal
+
+        Args :
+            temperature: A float number up to nearest thousandth of one degree Celsius,
+            e.g. 30.125
+
+        Returns:
+            A boolean, True if threshold is set successfully, False if not
+        """
+        raise NotImplementedError
+
+    def get_high_critical_threshold(self):
+        """
+        Retrieves the high critical threshold temperature of thermal
+
+        Returns:
+            A float number, the high critical threshold temperature of thermal in Celsius
+            up to nearest thousandth of one degree Celsius, e.g. 30.125
+        """
+        raise NotImplementedError
+
+    def get_low_critical_threshold(self):
+        """
+        Retrieves the low critical threshold temperature of thermal
+
+        Returns:
+            A float number, the low critical threshold temperature of thermal in Celsius
+            up to nearest thousandth of one degree Celsius, e.g. 30.125
+        """
+        raise NotImplementedError
+
+    def set_high_critical_threshold(self, temperature):
+        """
+        Sets the critical high threshold temperature of thermal
+
+        Args :
+            temperature: A float number up to nearest thousandth of one degree Celsius,
+            e.g. 30.125
+
+        Returns:
+            A boolean, True if threshold is set successfully, False if not
+        """
+        raise NotImplementedError
+
+    def set_low_critical_threshold(self, temperature):
+        """
+        Sets the critical low threshold temperature of thermal
+
+        Args :
+            temperature: A float number up to nearest thousandth of one degree Celsius,
+            e.g. 30.125
+
+        Returns:
+            A boolean, True if threshold is set successfully, False if not
+        """
+        raise NotImplementedError
+
+    def get_minimum_recorded(self):
+        """
+        Retrieves the minimum recorded temperature of thermal
+
+        Returns:
+            A float number, the minimum recorded temperature of thermal in Celsius
+            up to nearest thousandth of one degree Celsius, e.g. 30.125
+        """
+        if self._minimum is None:
+            self.get_temperature()
+        return self._minimum
+
+    def get_maximum_recorded(self):
+        """
+        Retrieves the maximum recorded temperature of thermal
+
+        Returns:
+            A float number, the maximum recorded temperature of thermal in Celsius
+            up to nearest thousandth of one degree Celsius, e.g. 30.125
+        """
+        if self._maximum is None:
+            self.get_temperature()
+        return self._maximum
 
     def get_name(self):
         """
