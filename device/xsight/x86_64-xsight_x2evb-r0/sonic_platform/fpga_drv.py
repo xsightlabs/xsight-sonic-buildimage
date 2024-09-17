@@ -19,7 +19,7 @@ reg_osfp_present_sts = 0x338
 reg_osfp_low_power = 0x340
 reg_osfp_reset = 0x348
 
-lib = CDLL('/debug/fpga/fpga_drv/libfpga_drv.so')
+lib = CDLL('/opt/xplt/utils/fpga/fpga_drv/libfpga_drv.so')
 
 class i2c_parameters(Structure):
 	_fields_ = [("bus_id", c_int)]
