@@ -1,2 +1,2 @@
-program:dsserve_ignored
-program:syncd_ignored
+program:dsserve
+program:syncd
