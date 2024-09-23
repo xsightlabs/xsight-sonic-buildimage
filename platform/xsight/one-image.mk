@@ -9,7 +9,8 @@ $(SONIC_ONE_IMAGE)_LAZY_INSTALLS += $(ACCTON_ES9632XX_PLATFORM_MODULE) \
                                     $(ACCTON_ES9632XQ_PLATFORM_MODULE) \
                                     $(ACCTON_ES9632XQ_XPLT_PLATFORM_MODULE) \
                                     $(ACCTON_ES9618XX_XPLT_PLATFORM_MODULE) \
-                                    $(XSIGHT_X2EVB_PLATFORM_MODULE)
+                                    $(XSIGHT_X2EVB_PLATFORM_MODULE) \
+                                    $(XSIGHT_X2EVB_XPLT_PLATFORM_MODULE)
 
 ifeq ($(INSTALL_DEBUG_TOOLS),y)
 $(SONIC_ONE_IMAGE)_DOCKERS += $(SONIC_INSTALL_DOCKER_DBG_IMAGES)
