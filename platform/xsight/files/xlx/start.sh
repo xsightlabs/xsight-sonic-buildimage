@@ -98,7 +98,11 @@ if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
     if [[ "${XSIGHT_DEVICE}" == "X1" ]]; then
         XPLT_SWITCH_CHIP_RESET=$XPLT_UTL/es9632x_reset_x1.sh
     elif [[ "${XSIGHT_DEVICE}" == "X2" ]]; then
-        XPLT_SWITCH_CHIP_RESET=$XPLT_UTL/es9618x_reset_x2.sh
+        if [[ ${ONIE_MACHINE,,} == *"x2evb"* ]]; then
+            XPLT_SWITCH_CHIP_RESET=$XPLT_UTL/x2_reset.sh
+        else
+            XPLT_SWITCH_CHIP_RESET=$XPLT_UTL/es9618x_reset_x2.sh
+        fi
     fi
 
     # Reset switch chip and PCI bus
