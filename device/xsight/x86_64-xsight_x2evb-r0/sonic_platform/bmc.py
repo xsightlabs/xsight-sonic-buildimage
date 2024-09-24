@@ -88,6 +88,13 @@ VOLTAGE_SENSOR_LIST = [
     ("AUX_PWR_3V3", 0x46, 6, 0)
 ]
 
+LED_MODES = {
+    "red"   : [1, 0, 0],
+    "green" : [0, 1, 0],
+    "blue"  : [0, 0, 1],
+    "amber" : [1, 1, 0]
+}
+
 class Bmc:
     """
     A class used to send JSON RPC commands to BMC.
@@ -334,33 +341,27 @@ class Bmc:
         """Set system led color to predefined colors options.
 
         Args:
-            color: integer of the following options:
-                0 - Red.
-                1 - Green.
-                2 - Blue.
-                3 - Amber.
+            color: string of LED color, options:
+                red   - Red color.
+                green - Green color.
+                blue  - Blue color.
+                amber - Amber color.
 
         Returns:
-            None.
+            A boolean value, True if the operation succeeded, False if not.
 
         Notes:
             The system led color is selected in FPGA registers at:
             http://soc.xsight.ent/app/viewItem.cgi?itm=reg&p=1020&b=2&&r=27&
         """
-        if 0 <= color <= 3:
-            if color == 0:
-                red, green, blue = 1, 0, 0
-            if color == 1:
-                red, green, blue = 0, 1, 0
-            if color == 2:
-                red, green, blue = 0, 0, 1
-            if color == 3:
-                red, green, blue = 1, 1, 0
-            ret_val = self.sys_led_ctrl(red, green, blue)
+        if color in LED_MODES:
+            colors = LED_MODES[color]
         else:
-            print("Error: color {} is out of range [0 - 3]".format(color))
-            ret_val = False
-        return ret_val
+            print("Error: unknown color {}".format(color))
+            return False
+
+        red, green, blue = colors
+        return self.sys_led_ctrl(red, green, blue)
 
     def sys_led_status(self):
         """Read system LED color.

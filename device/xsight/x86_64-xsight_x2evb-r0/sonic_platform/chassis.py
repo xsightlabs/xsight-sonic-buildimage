@@ -20,6 +20,12 @@ HOST_REBOOT_CAUSE_PATH = "/host/reboot-cause/"
 REBOOT_CAUSE_FILE = "reboot-cause.txt"
 PREV_REBOOT_CAUSE_FILE = "previous-reboot-cause.txt"
 HOST_CHK_CMD = "docker > /dev/null 2>&1"
+SYSLED_MODES = {
+    "red"   : "STATUS_LED_COLOR_RED",
+    "green" : "STATUS_LED_COLOR_GREEN",
+    "blue"  : "STATUS_LED_COLOR_BLUE",
+    "amber" : "STATUS_LED_COLOR_AMBER"
+    }
 
 class Chassis(ChassisBase):
     """Platform-specific Chassis class"""
@@ -28,6 +34,7 @@ class Chassis(ChassisBase):
         ChassisBase.__init__(self)
         self._api_helper = APIHelper()
         self.is_host = self._api_helper.is_host()
+        self.bmccmd = bmc.Bmc()
 
         self.__initialize_fan()
         self.__initialize_psu()
@@ -252,10 +259,11 @@ class Chassis(ChassisBase):
         return bmc.NUM_COMPONENT
 
     def get_status_led(self):
-        return "UNKNOWN"
+        color = self.bmccmd.sys_led_status()
+        return SYSLED_MODES[color] if color in SYSLED_MODES else "UNKNOWN"
 
     def set_status_led(self, color):
-        return False
+        return self.bmccmd.set_sys_led_color(color)
 
     def initizalize_system_led(self):
         return True
