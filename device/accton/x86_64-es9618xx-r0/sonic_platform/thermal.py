@@ -166,7 +166,7 @@ class Thermal(ThermalBase):
         if self.index < Thermal.ASIC_TEMP_SENSORS_OFFSET:
             temp_file = "temp{}_max".format(self.ss_index)
             return self.__get_temp(temp_file)
-        elif self.index >= Thermal.ASIC_TEMP_SENSORS_OFFSET and self.index < Thermal.ASIC_CALCULATED_TEMP_OFFSET:
+        elif self.index >= Thermal.ASIC_TEMP_SENSORS_OFFSET and self.index < Thermal.NUMBER_OF_THERMALS:
             return float(self.tbl.get("temperature_{}".format(self.index - Thermal.ASIC_TEMP_SENSORS_OFFSET), None))
         elif self.index >= Thermal.XCVR_TEMP_SENSORS_OFFSET:
             return Thermal.TRANSCEIVER_TEMP_LIST[self.index - Thermal.XCVR_TEMP_SENSORS_OFFSET][2]
