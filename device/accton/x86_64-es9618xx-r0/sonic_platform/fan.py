@@ -141,10 +141,15 @@ class Fan(FanBase):
                 return 0
 
         elif self.get_presence():
-            speed_path = "{}{}".format(CPLD_I2C_PATH, '_duty_cycle_percentage')
-            speed=self._api_helper.read_txt_file(speed_path)
+            if 0 == self.fan_index:
+                speed_rpm = "_front_speed_rpm"
+            else:
+                speed_rpm = "_rear_speed_rpm"
+            speed = self._api_helper.read_txt_file(
+                "{}{}{}".format(CPLD_I2C_PATH, self.fan_tray_index + 1, speed_rpm))
             if speed is None:
                 return 0
+            speed = (int(speed, 10)) * 100 / TRAY_FAN_MAX_RPM
 
         return int(speed)
 
@@ -164,18 +169,10 @@ class Fan(FanBase):
         speed = 0
         if self.is_psu_fan:
             return 100
-
         elif self.get_presence():
-            if 0 == self.fan_index:
-                speed_path = "{}{}{}".format(CPLD_I2C_PATH, self.fan_tray_index+1, '_front_speed_rpm')
-            else:
-                speed_path = "{}{}{}".format(CPLD_I2C_PATH, self.fan_tray_index+1, '_rear_speed_rpm')
-            speed=self._api_helper.read_txt_file(speed_path)
-            if speed is None:
-                return 0
-            speed_percentage = (int(speed, 10)) * 100 / TRAY_FAN_MAX_RPM
-
-        return int(speed_percentage)
+            return self.fan_target_speed
+        else:
+            return None
 
     def get_speed_tolerance(self):
         """
@@ -202,8 +199,9 @@ class Fan(FanBase):
         """
 
         if not self.is_psu_fan and self.get_presence():
+            self.fan_target_speed = int(speed)
             speed_path = "{}{}".format(CPLD_I2C_PATH, '_duty_cycle_percentage')
-            return self._api_helper.write_txt_file(speed_path, int(speed))
+            return self._api_helper.write_txt_file(speed_path, self.fan_target_speed)
 
         return False
 
@@ -332,4 +330,3 @@ class Fan(FanBase):
             return (self.psu_index + 1)
         else:
             return (self.fan_index + 1)
-
