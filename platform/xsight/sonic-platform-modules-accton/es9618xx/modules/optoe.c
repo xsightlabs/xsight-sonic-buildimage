@@ -620,7 +620,7 @@ static int optoe_nvmem_write(void *priv, unsigned int off,
 	return optoe_read_write(optoe, buf, off, count, OPTOE_WRITE_OP);
 }
 
-static int optoe_remove(struct i2c_client *client)
+static void optoe_remove(struct i2c_client *client)
 {
 	struct optoe_data *optoe;
 
@@ -636,7 +636,6 @@ static int optoe_remove(struct i2c_client *client)
 		i2c_unregister_device(optoe->optoe_dummy.client);
 #endif
 	kfree(optoe);
-	return 0;
 }
 
 #ifndef LATEST_KERNEL
@@ -703,8 +702,6 @@ static int optoe_make_nvmem(struct optoe_data *optoe)
 	nvmem_config.word_size = 1;
 	nvmem_config.size = optoe->byte_len;
 #ifdef LATEST_KERNEL
-	if (optoe->nvmem)
-		devm_nvmem_unregister(dev, optoe->nvmem);
 	optoe->nvmem = devm_nvmem_register(dev, &nvmem_config);
 #else
 	if (optoe->nvmem)

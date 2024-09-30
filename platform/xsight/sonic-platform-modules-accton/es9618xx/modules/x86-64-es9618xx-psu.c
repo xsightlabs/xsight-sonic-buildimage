@@ -206,15 +206,13 @@ exit:
 	return status;
 }
 
-static int es9618xx_psu_remove(struct i2c_client *client)
+static void es9618xx_psu_remove(struct i2c_client *client)
 {
 	struct es9618xx_psu_data *data = i2c_get_clientdata(client);
 
 	hwmon_device_unregister(data->hwmon_dev);
 	sysfs_remove_group(&client->dev.kobj, &es9618xx_psu_group);
 	kfree(data);
-
-	return 0;
 }
 
 enum psu_index
