@@ -1,4 +1,4 @@
-############################################################################
+#############################################################################
 # Accton
 #
 # Sfp contains an implementation of SONiC Platform Base API and
@@ -25,6 +25,9 @@ SYSLOG_IDENTIFIER = "sfp"
 logger = logger.Logger(SYSLOG_IDENTIFIER)
 logger.set_min_log_priority_debug()
 logger.log_debug("Load {} module".format(__name__))
+
+CMIS_REG_MODULE_GLOBAL_CONTROL = 26
+CMIS_REG_MODULE_STATE = 3
 
 SFP_STATUS_INSERTED = '1'
 SFP_STATUS_REMOVED = '0'
@@ -79,6 +82,12 @@ class Sfp(SfpOptoeBase):
 
         self.eeprom_path = self.EEPROM_PATH.format(self._port_to_i2c_mapping[self._port_num])
         self.xcvrpins = xcvr_pins.XcvrPins(self.PORT_END)
+
+        # set xcvr's lpmode discrete signal to high-power in order to indicate
+        # the present discrete signal correctly.
+        # In addition, set xcvr to low power by override power mechanism.
+        self.xcvrpins.set_xcvr_lowpower_pins(self._port_bit, 0)
+        self.set_lpmode(True)
 
     def __write_txt_file(self, file_path, value):
         try:
@@ -139,6 +148,7 @@ class Sfp(SfpOptoeBase):
             if present == True:
                 sfp_event = SFP_STATUS_INSERTED
                 logger.log_debug("get_transceiver_change_event: port {}: SFP_STATUS_INSERTED".format(self._port_num))
+                self.set_lpmode(True) # Set the xcvr to low power by overriding the power mechanism.
             else:
                 sfp_event = SFP_STATUS_REMOVED
                 logger.log_debug("get_transceiver_change_event: port {}: SFP_STATUS_REMOVED".format(self._port_num))
@@ -165,11 +175,33 @@ class Sfp(SfpOptoeBase):
         Retrieves the lpmode (low power mode) status of this SFP
         Returns:
             A Boolean, True if lpmode is enabled, False if disabled
+        Notes:
+            - The following notes refer to CMIS Rev 4.0, optional reference:
+                - https://www.oiforum.com/wp-content/uploads/CMIS4p0_Third_Party_Spec.pdf
+            - For more information regarding the low power status, please read
+              the following section:
+                - 8.2.1 ID and Status
+            - For register description, please refer to following table:
+                - Table 8-2 Identifier and Status Summary, Byte 3, Bits 1-3
+                - Table 8-3 Module State Encodings
         """
-        val = self.xcvrpins.get_xcvr_lowpower_pins()
-        if val is not None:
-            return (val & self._port_bit) == self._port_bit
-        else:
+        if self._port_num > self.PORT_END:
+            return False
+        if not self.get_presence():
+            return False
+        try:
+            with open(self.eeprom_path, "rb") as fd:
+                fd.seek(CMIS_REG_MODULE_STATE)
+                lpmode = ord(fd.read(1))
+                # As described in "Table 8-3 Module State Encodings", this function returns
+                # "Low Power Mode" if "Module state" (bits 1-3) equal to "ModuleLowPwr" (001b),
+                # "High Power Mode" otherwise.
+                if ((lpmode & 0xE) == 0x2):
+                    return True
+                else:
+                    return False
+        except Exception as e:
+            logger.log_error("get_lpmode: failed with: {}".format(str(e)))
             return False
 
     def reset(self):
@@ -196,6 +228,7 @@ class Sfp(SfpOptoeBase):
         Sets the lpmode (low power mode) of SFP
         Args:
             lpmode: A Boolean, True to enable lpmode, False to disable it
+            Note  : lpmode can be overridden by set_power_override
         Returns:
             A boolean, True if lpmode is set successfully, False if not
         """
@@ -204,13 +237,59 @@ class Sfp(SfpOptoeBase):
         else:
             if not self.get_presence():
                 return False
+            return self.set_power_override(True, lpmode)
 
-            val = 0
-            if lpmode is True:
-                val = 1
-
-            self.xcvrpins.set_xcvr_lowpower_pins(self._port_bit, val)
-            return True
+    def set_power_override(self, power_override, power_set):
+        """
+        Sets SFP power level using power_override and power_set
+        Args:
+            power_override :
+                    A Boolean, True to override set_lpmode and use power_set
+                    to control SFP power, False to disable SFP power control
+                    through power_override/power_set and use set_lpmode
+                    to control SFP power.
+            power_set :
+                    Only valid when power_override is True.
+                    A Boolean, True to set SFP to low power mode, False to set
+                    SFP to high power mode.
+        Returns:
+            A boolean, True if power_override and power_set are set successfully,
+            False if not
+        Notes:
+            - The following notes refer to CMIS Rev 4.0, optional reference:
+                - https://www.oiforum.com/wp-content/uploads/CMIS4p0_Third_Party_Spec.pdf
+            - For more information regarding the low power override logic, please
+              read the following sections in the next order:
+                - 6.3.1.3 Module Power Mode control
+                - 6.3.1.8 ModulePwrUp state
+                - 6.3.1.10 ModulePwrDn State
+            - For the CMIS_REG_MODULE_GLOBAL_CONTROL register description, see the
+              "Table 8-7 Module Global and Squelch Mode Controls", Byte 26, Bits 4 + 6.
+            - For the low power override logic, see the "Table 6-9 LowPwrS transition signal truth table"
+              and the logic equation below the table.
+            - In the CMIS Rev 5.0 the Low Power Mode request terminology is changed
+              in the following way:
+                - ForceLowPwr -> LowPwrRequestSW
+                - LPMode      -> LowPwrRequestHW
+                - LowPwr      -> LowPwrAllowRequestHW
+        """
+        if self._port_num > self.PORT_END:
+            return False
+        if not self.get_presence():
+            return False
+        if not power_override:
+            return False
+        try:
+            buffer = create_string_buffer(1)
+            buffer[0] = (1 << 4) if power_set else 0
+            with open(self.eeprom_path, "r+b") as fd:
+                fd.seek(CMIS_REG_MODULE_GLOBAL_CONTROL)
+                fd.write(buffer[0])
+                time.sleep(0.01)
+        except Exception as e:
+            logger.log_error("set_power_override: failed with: {}".format(str(e)))
+            return False
+        return True
 
     def get_transceiver_info(self):
         transceiver_info_dict = SfpOptoeBase.get_transceiver_info(self)
