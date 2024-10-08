@@ -1,6 +1,6 @@
 # initramfs-tools package
 
-IXGBE_DRIVER_VERSION = 5.20.3
+IXGBE_DRIVER_VERSION = 5.2.4
 export IXGBE_DRIVER_VERSION
 
 IXGBE_DRIVER = ixgbe.ko
