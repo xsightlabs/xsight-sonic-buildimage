@@ -5,7 +5,6 @@ include $(PLATFORM_PATH)/../template/docker-syncd-bookworm.mk
 
 $(DOCKER_SYNCD_BASE)_DEPENDS += $(SYNCD)
 
-$(DOCKER_SYNCD_BASE)_RUN_OPT += --env ASAN_SAI_PLUGIN=${ASAN_SAI_PLUGIN} # used in address-sanitizer sai-plugin check
 
 $(DOCKER_SYNCD_BASE)_DBG_DEPENDS += $(SYNCD_DBG) \
                                 $(LIBSWSSCOMMON_DBG) \
