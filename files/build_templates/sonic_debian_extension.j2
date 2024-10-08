@@ -217,10 +217,6 @@ sudo cp -a platform/xsight/files/xlx $FILESYSTEM_ROOT/opt
 sudo chmod +x $FILESYSTEM_ROOT/opt/xlx/*.sh
 sudo LANG=C chroot $FILESYSTEM_ROOT chown -R $USERNAME /opt/xlx
 
-## Default ixgbe module loading is happening to early for udev interface renaming
-## Thus blacklisting ixgbe. It will be loaded in xlx/start.sh.
-echo 'blacklist ixgbe' | sudo tee -a  $FILESYSTEM_ROOT/etc/modprobe.d/xpci.conf
-
 {% endif %}
 
 # Install system-health Python 3 package
