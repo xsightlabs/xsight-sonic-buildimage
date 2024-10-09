@@ -175,6 +175,7 @@ def driver_check():
 
 
 kos = [
+    'modprobe i2c-dev',
     'modprobe i2c_mux_pca954x',
     'modprobe dps850',
     'modprobe optoe',
