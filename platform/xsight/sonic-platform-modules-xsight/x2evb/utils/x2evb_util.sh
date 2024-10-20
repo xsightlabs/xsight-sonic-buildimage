@@ -56,12 +56,15 @@ stage_1() {
         "new_device")
                        i2c_config "echo pca9548 0x72 > $sysfs/i2c-$devnum/$1"
                        i2c_config "echo pca9548 0x73 > $sysfs/i2c-$devnum/$1"
+                       i2c_config "echo pca9548 0x74 > $sysfs/i2c-$devnum/$1"
                        i2c_config "echo 24c02 0x57 > $sysfs/i2c-$devnum/$1"
                        sleep 1
                        echo -2 > $sysfs/i2c-$devnum/$devnum-0072/idle_state
                        echo -2 > $sysfs/i2c-$devnum/$devnum-0073/idle_state
+                       echo -2 > $sysfs/i2c-$devnum/$devnum-0074/idle_state
                        ;;
         "delete_device")
+                       i2c_config "echo 0x74 > $sysfs/i2c-$devnum/$1"
                        i2c_config "echo 0x73 > $sysfs/i2c-$devnum/$1"
                        i2c_config "echo 0x72 > $sysfs/i2c-$devnum/$1"
                        i2c_config "echo 0x57 > $sysfs/i2c-$devnum/$1"

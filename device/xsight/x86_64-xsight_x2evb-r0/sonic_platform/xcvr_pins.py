@@ -16,10 +16,12 @@ class XcvrPins:
 	"""
 
 	def __init__(self, ports_num):
+		self.fpgadrv = FpgaDrv()
 		self.ports_num = ports_num
 		self.ports_mask = 0
 		for port in range(0, ports_num):
 			self.ports_mask |= (1 << port)
+
 	def __get_xcvr_pin_state(self, reg):
 		"""Get xcvr pin state for input `reg` for all ports.
 
@@ -35,7 +37,7 @@ class XcvrPins:
 			The pins description can be found at:
 			http://soc.xsight.ent/app/index.cgi?
 		"""
-		return read_fpga_reg(reg)
+		return self.fpgadrv.read_fpga_reg(reg)
 
 	def __set_xcvr_pin_state(self, reg, port_bitmap, state):
 		"""Set xcvr pin state for input `reg` for all ports.
@@ -56,7 +58,7 @@ class XcvrPins:
 		val = 0
 		if state == 1:
 			val = port_bitmap
-		read_modify_write_fpga_reg(reg, port_bitmap, val)
+		self.fpgadrv.read_modify_write_fpga_reg(reg, port_bitmap, val)
 
 	def get_xcvr_interrupt_pins(self):
 		"""Get xcvr interrupt pin state for all ports.
