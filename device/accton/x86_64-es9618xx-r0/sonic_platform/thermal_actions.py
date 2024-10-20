@@ -154,9 +154,9 @@ class ChangeMinCoolingLevelAction(ThermalPolicyActionBase):
     thermal_policy_pause_countdown = 0
     MINIMAL_TEMPERATURE = -127
     MINIMAL_COOLING_LEVEL = 5
-    THERMAL_U31 = 0
-    THERMAL_U61 = 1
-    THERMAL_U86 = 2
+    THERMAL_X48 = 0
+    THERMAL_X49 = 1
+    THERMAL_X4A = 2
     THERMAL_ASIC = Thermal.ASIC_CALCULATED_TEMP_OFFSET
     SHUTDOWN_FILE = '/usr/share/sonic/firmware/pmon_system_shutdown'
     WARNING_COOLING_STAGE = 1
@@ -197,9 +197,9 @@ class ChangeMinCoolingLevelAction(ThermalPolicyActionBase):
 
         self.indx_warn_sensors = []
         api_helper = APIHelper()
-        thermal_U31_x48 = DEVICE_DATA[api_helper.platform]['thermal']['threshold_table']['thermal_U31_x48']
-        thermal_U61_x49 = DEVICE_DATA[api_helper.platform]['thermal']['threshold_table']['thermal_U61_x49']
-        thermal_U86_x4A = DEVICE_DATA[api_helper.platform]['thermal']['threshold_table']['thermal_U86_x4A']
+        thermal_x48 = DEVICE_DATA[api_helper.platform]['thermal']['threshold_table']['thermal_x48']
+        thermal_x49 = DEVICE_DATA[api_helper.platform]['thermal']['threshold_table']['thermal_x49']
+        thermal_x4A = DEVICE_DATA[api_helper.platform]['thermal']['threshold_table']['thermal_x4A']
         thermal_asic = DEVICE_DATA[api_helper.platform]['thermal']['threshold_table']['asic_average']
         # Add all transceivers thermal sensors and limits
         thermal_xcvr_list = []
@@ -214,9 +214,9 @@ class ChangeMinCoolingLevelAction(ThermalPolicyActionBase):
         self.cooling_stage = 0
         min_cooling_level = 5
 
-        self.process_sensor_data(thermal_U31_x48, ChangeMinCoolingLevelAction.THERMAL_U31)
-        self.process_sensor_data(thermal_U61_x49, ChangeMinCoolingLevelAction.THERMAL_U61)
-        self.process_sensor_data(thermal_U86_x4A, ChangeMinCoolingLevelAction.THERMAL_U86)
+        self.process_sensor_data(thermal_x48, ChangeMinCoolingLevelAction.THERMAL_X48)
+        self.process_sensor_data(thermal_x49, ChangeMinCoolingLevelAction.THERMAL_X49)
+        self.process_sensor_data(thermal_x4A, ChangeMinCoolingLevelAction.THERMAL_X4A)
         self.process_sensor_data(thermal_asic, ChangeMinCoolingLevelAction.THERMAL_ASIC)
         # Process all transceivers sensor
         for i in range(0, len(thermal_xcvr_list)):
