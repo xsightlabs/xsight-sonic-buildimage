@@ -30,7 +30,6 @@
 #include <linux/module.h>
 #include <linux/jiffies.h>
 #include <linux/i2c.h>
-#include <linux/hwmon.h>
 #include <linux/hwmon-sysfs.h>
 #include <linux/err.h>
 #include <linux/mutex.h>
@@ -63,7 +62,6 @@ static const unsigned short normal_i2c[] = { I2C_CLIENT_END };
 /* Each client has this additional data
  */
 struct es9618xx_psu_data {
-	struct device	  *hwmon_dev;
 	struct mutex		update_lock;
 	char				valid;		   /* !=0 if registers are valid */
 	unsigned long	   last_updated;	/* In jiffies */
@@ -185,20 +183,8 @@ static int es9618xx_psu_probe(struct i2c_client *client,
 		goto exit_free;
 	}
 
-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "es9618xx_psu",
-                                                      NULL, NULL, NULL);
-	if (IS_ERR(data->hwmon_dev)) {
-		status = PTR_ERR(data->hwmon_dev);
-		goto exit_remove;
-	}
-
-	dev_info(&client->dev, "%s: psu '%s'\n",
-		 dev_name(data->hwmon_dev), client->name);
-
 	return 0;
 
-exit_remove:
-	sysfs_remove_group(&client->dev.kobj, &es9618xx_psu_group);
 exit_free:
 	kfree(data);
 exit:
@@ -210,7 +196,6 @@ static void es9618xx_psu_remove(struct i2c_client *client)
 {
 	struct es9618xx_psu_data *data = i2c_get_clientdata(client);
 
-	hwmon_device_unregister(data->hwmon_dev);
 	sysfs_remove_group(&client->dev.kobj, &es9618xx_psu_group);
 	kfree(data);
 }

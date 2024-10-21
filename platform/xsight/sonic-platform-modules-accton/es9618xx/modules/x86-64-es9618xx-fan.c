@@ -26,7 +26,6 @@
 #include <linux/module.h>
 #include <linux/jiffies.h>
 #include <linux/i2c.h>
-#include <linux/hwmon.h>
 #include <linux/hwmon-sysfs.h>
 #include <linux/err.h>
 #include <linux/mutex.h>
@@ -71,7 +70,6 @@ static const u8 fan_reg[] = {
 /* fan data */
 struct es9618xx_fan_data {
     struct platform_device *pdev;
-    struct device   *hwmon_dev;
     struct mutex     update_lock;
     char             valid;           /* != 0 if registers are valid */
     unsigned long    last_updated;    /* In jiffies */
@@ -482,19 +480,8 @@ static int es9618xx_fan_probe(struct i2c_client *client,
         goto exit_free;
     }
 
-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "es9618xx_fan",
-                                                      NULL, NULL, NULL);
-    if (IS_ERR(data->hwmon_dev)) {
-        status = PTR_ERR(data->hwmon_dev);
-        goto exit_remove;
-    }
-
-    dev_info(&client->dev, "%s: fan '%s'\n",
-         dev_name(data->hwmon_dev), client->name);
     return 0;
 
-exit_remove:
-    sysfs_remove_group(&client->dev.kobj, &es9618xx_fan_group);
 exit_free:
     kfree(data);
 exit:
@@ -505,8 +492,9 @@ exit:
 static void es9618xx_fan_remove(struct i2c_client *client)
 {
     struct es9618xx_fan_data *data = i2c_get_clientdata(client);
-    hwmon_device_unregister(data->hwmon_dev);
+
     sysfs_remove_group(&client->dev.kobj, &es9618xx_fan_group);
+    kfree(data);
 }
 
 /* Addresses to scan */
