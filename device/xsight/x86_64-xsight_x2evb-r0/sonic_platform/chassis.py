@@ -209,22 +209,16 @@ class Chassis(ChassisBase):
         Returns:
             Change events
         """
-        # SFP events
-        sfp_dict = {}
+        from sonic_platform.sfp import Sfp
+
         if not self.sfp_module_initialized:
             self.__initialize_sfp()
 
-        for index in range(0, self.PORT_END):
-            sfp_event = self._sfp_list[index].get_transceiver_change_event(2000)
-            if sfp_event is not None:
-                sfp_dict[index+1] = sfp_event
-
-        if timeout == 0:
-            sleep_sec = 0.5
-        else:
-            sleep_sec = timeout / float(1000)
-
-        time.sleep(sleep_sec)
+        sfp_dict = Sfp.get_transceivers_change_events()
+        for key, value in sfp_dict.items():
+            if value == '1':
+                # Set the xcvr to low power by overriding the power mechanism.
+                self.get_sfp(key).set_lpmode(True)
 
         return True, {'sfp': sfp_dict}
 

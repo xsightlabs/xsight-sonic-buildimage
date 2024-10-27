@@ -71,6 +71,10 @@ class Sfp(SfpOptoeBase):
 
     _sfp_port = range(PORT_START, PORT_END + 1)
 
+    sfp_xcvrpins = xcvr_pins.XcvrPins(PORT_END)
+    sfp_presents = {'presents': 0}
+    sfp_dict = {}
+
     def __init__(self, sfp_index=0):
 
         SfpOptoeBase.__init__(self)
@@ -136,6 +140,32 @@ class Sfp(SfpOptoeBase):
             return (val & self._port_bit) == self._port_bit
         else:
             return False
+
+    @classmethod
+    def get_transceivers_change_events(cls):
+        """
+        A class method that checks if all transceivers has been inserted/removed
+        in a single read from hardware.
+        Returns:
+            A dictionary of <port number>:<present status> pairs.
+            The port number is an integer representing the transceiver port number
+            starting from 1, the present status is an integer represented by '1' for
+            "present" and '0' for "not present. The dictionary contains port number keys
+            only for ports that have experienced a change event.
+        """
+        sfp_dict = {}
+        presents = cls.sfp_xcvrpins.get_xcvr_present_pins()
+        for index in range(0, cls.PORT_END):
+            present = presents & (1 << index)
+            if present != cls.sfp_presents['presents'] & (1 << index):
+                if present:
+                    sfp_dict[index+1] = SFP_STATUS_INSERTED
+                    logger.log_debug("get_transceivers_change_events: port {}: SFP_STATUS_INSERTED".format(index+1))
+                else:
+                    sfp_dict[index+1] = SFP_STATUS_REMOVED
+                    logger.log_debug("get_transceivers_change_events: port {}: SFP_STATUS_REMOVED".format(index+1))
+        cls.sfp_presents['presents'] = presents
+        return sfp_dict
 
     def get_transceiver_change_event(self, timeout=2000):
         """
