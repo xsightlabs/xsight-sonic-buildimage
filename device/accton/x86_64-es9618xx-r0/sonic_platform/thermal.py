@@ -24,9 +24,9 @@ logger = Logger()
 
 class Thermal(ThermalBase):
     """Platform-specific Thermal class"""
-    NUMBER_OF_THERMALS = 13
-    ASIC_TEMP_SENSORS_OFFSET = 8
-    ASIC_CALCULATED_TEMP_OFFSET = 11
+    NUMBER_OF_THERMALS = 14
+    ASIC_TEMP_SENSORS_OFFSET = 9
+    ASIC_CALCULATED_TEMP_OFFSET = 12
     XCVR_TEMP_SENSORS_OFFSET = NUMBER_OF_THERMALS
     THERMAL_NAME_LIST = []
     TRANSCEIVER_LIST = []
@@ -69,6 +69,7 @@ class Thermal(ThermalBase):
         self.THERMAL_NAME_LIST.append("Temp sensor 6")
         self.THERMAL_NAME_LIST.append("Temp sensor 7")
         self.THERMAL_NAME_LIST.append("Temp sensor 8")
+        self.THERMAL_NAME_LIST.append("ASIC  Core X2")
         self.THERMAL_NAME_LIST.append("ASIC sensor 1")
         self.THERMAL_NAME_LIST.append("ASIC sensor 2")
         self.THERMAL_NAME_LIST.append("ASIC sensor 3")
@@ -89,6 +90,7 @@ class Thermal(ThermalBase):
                 5: "11-004d/hwmon/hwmon*/",
                 6: "11-004e/hwmon/hwmon*/",
                 7: "11-004f/hwmon/hwmon*/",
+                8: "8-004c/hwmon/hwmon*/",
             }.get(self.index, None)
 
             self.hwmon_path = "{}/{}".format(self.SYSFS_PATH, i2c_path)
