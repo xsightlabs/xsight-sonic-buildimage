@@ -184,6 +184,7 @@ kos = [
     'modprobe x86-64-es9618xx-leds',
     'modprobe x86-64-es9618xx-psu',
     'modprobe at24',
+    'modprobe tmp401',
     'modprobe lm75'
     ]
 
@@ -257,6 +258,7 @@ mknod = [
     'echo lm75 0x4d > /sys/bus/i2c/devices/i2c-11/new_device',
     'echo lm75 0x4e > /sys/bus/i2c/devices/i2c-11/new_device',
     'echo lm75 0x4f > /sys/bus/i2c/devices/i2c-11/new_device',
+    'echo tmp431 0x4C > /sys/bus/i2c/devices/i2c-8/new_device',
     'echo 24c32 0x50 > /sys/bus/i2c/devices/i2c-0/new_device']
 
 def device_install():
