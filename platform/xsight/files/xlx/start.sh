@@ -18,6 +18,7 @@ XPLT_UTL="/opt/xplt/utils"
 XSIGHT_PCI_SIG="1e6c"
 XSIGHT_PCI_ID=""
 XSIGHT_DEVICE=""
+FIRSTBOOT="/tmp/notify_firstboot_to_platform"
 
 if [[ ${ONIE_MACHINE,,} == *"x2evb"* ]]; then
     if [[ "$(hostname)" == "sonic" ]]; then
@@ -149,6 +150,16 @@ if [ ! -f /tmp/xbooted ]; then
         fi
     fi
     touch /tmp/xbooted
+fi
+
+if [ -f $FIRSTBOOT ]; then
+    PLATFORM=$(sed -n 's/onie_platform=\(.*\)/\1/p' /host/machine.conf)
+
+    # update default config from custom.json
+    if [ -f /usr/share/sonic/device/$PLATFORM/custom.json ]; then
+        sonic-cfggen --from-db -j /usr/share/sonic/device/$PLATFORM/custom.json --print-data > /etc/sonic/config_db.json
+        sonic-cfggen -j /usr/share/sonic/device/$PLATFORM/custom.json --write-to-db
+    fi
 fi
 
 #echo ">>> Set XPCI debug level to INFO(3)"
