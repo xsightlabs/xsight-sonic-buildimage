@@ -89,17 +89,14 @@ class Component(ComponentBase):
 
     def __get_cpld_version(self):
         # Retrieves the CPLD firmware version
-        cpld_version = dict()
-        for cpld_name in CPLD_ADDR_MAPPING:
-            try:
-                cpld_path = "{}{}{}".format(SYSFS_PATH, CPLD_ADDR_MAPPING[cpld_name], '/version')
-                cpld_version_raw= self._api_helper.read_txt_file(cpld_path)
-                cpld_version[cpld_name] = "{}".format(int(cpld_version_raw,16))
-            except Exception as e:
-                print('Get exception when read cpld (%s)', cpld_path)
-                cpld_version[cpld_name] = 'None'
+        cpld_name = COMPONENT_LIST[self.index][0]
+        try:
+            cpld_path = "{}{}{}".format(SYSFS_PATH, CPLD_ADDR_MAPPING[cpld_name], '/version')
+            cpld_version_raw= self._api_helper.read_txt_file(cpld_path)
+        except Exception as e:
+            print('Get exception when read cpld (%s)', cpld_path)
 
-        return cpld_version
+        return cpld_version_raw
 
     def get_name(self):
         """
@@ -129,8 +126,7 @@ class Component(ComponentBase):
         elif "ONIE" in self.name:
             fw_version = self.__get_onie_version()
         elif "CPLD" in self.name:
-            cpld_version = self.__get_cpld_version()
-            fw_version = cpld_version.get(self.name)
+            fw_version = self.__get_cpld_version()
 
         return fw_version
 
