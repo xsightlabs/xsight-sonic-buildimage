@@ -92,12 +92,16 @@ if [[ ${SYS_MODE,,} == "xbm" ]]; then
     HW_IRQ_MODE=0
     PCI_MODE=0
 fi
+
+rmmod xpci
+
 echo ">>> Re-load NetDev"
 
 if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
     if [[ "${XSIGHT_DEVICE}" == "X1" ]]; then
         XPLT_SWITCH_CHIP_RESET=$XPLT_UTL/es9632x_reset_x1.sh
     elif [[ "${XSIGHT_DEVICE}" == "X2" ]]; then
+	sleep 12
         if [[ ${ONIE_MACHINE,,} == *"x2evb"* ]]; then
             XPLT_SWITCH_CHIP_RESET=$XPLT_UTL/x2_reset.sh
         else
@@ -121,7 +125,6 @@ if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
     fi
 fi
 
-rmmod xpci
 #read -p "--- Press enter to continue ---"
 # TODO: change insmod to modprobe after moving xdrivers build into sonic-buildimage
 # debug_level = 1 - Error
