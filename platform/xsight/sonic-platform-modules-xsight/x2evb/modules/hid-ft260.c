@@ -384,7 +384,6 @@ static int ft260_i2c_write(struct ft260_device *dev, u8 addr, u8 *data,
 			   int data_len, u8 flag)
 {
 	int len, ret, idx = 0;
-	struct hid_device *hdev = dev->hdev;
 	struct ft260_i2c_write_request_report *rep =
 		(struct ft260_i2c_write_request_report *)dev->write_buf;
 
@@ -407,7 +406,11 @@ static int ft260_i2c_write(struct ft260_device *dev, u8 addr, u8 *data,
 		ret = ft260_hid_output_report_check_status(dev, (u8 *)rep,
 							   len + 4);
 		if (ret < 0) {
-			hid_err(hdev, "%s: failed to start transfer, ret %d\n",
+			/*
+			 * We use ft260_dbg to prevent error messages in scenarios where
+			 * the I2C device is missing.
+			 */
+			ft260_dbg("%s: failed to start transfer, ret %d\n",
 				__func__, ret);
 			return ret;
 		}
