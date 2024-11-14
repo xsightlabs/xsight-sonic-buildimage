@@ -87,6 +87,7 @@ stage_2() {
                           #echo "Attaching optoe3 $mux_idx to i2c-$i"
                           i2c_config "echo optoe3 0x50 > $sysfs/i2c-$i/$1"
                           echo "port$mux_idx" > "$sysfs/$i-0050/port_name"
+                          echo 500 > "$sysfs/$i-0050/write_timeout"
                       done
                       ;;
         "delete_device")
