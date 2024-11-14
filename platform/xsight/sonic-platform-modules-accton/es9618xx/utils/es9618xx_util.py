@@ -303,6 +303,14 @@ def device_install():
             print(output)
             if FORCE == 0:
                 return status
+
+        (status, output) = \
+            log_os_system('echo 500' + ' > /sys/bus/i2c/devices/'
+                            + str(sfp_map[i]) + '-0050/write_timeout', 1)
+        if status:
+            print(output)
+            if FORCE == 0:
+                return status
     return
 
 def device_uninstall():
