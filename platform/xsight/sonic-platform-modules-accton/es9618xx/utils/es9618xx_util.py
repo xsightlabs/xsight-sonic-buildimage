@@ -305,7 +305,7 @@ def device_install():
                 return status
 
         (status, output) = \
-            log_os_system('echo 500' + ' > /sys/bus/i2c/devices/'
+            log_os_system('echo 150' + ' > /sys/bus/i2c/devices/'
                             + str(sfp_map[i]) + '-0050/write_timeout', 1)
         if status:
             print(output)
