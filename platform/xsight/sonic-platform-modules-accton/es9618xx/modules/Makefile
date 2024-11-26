@@ -1,5 +1,4 @@
 ifneq ($(KERNELRELEASE),)
-obj-m += optoe.o
 obj-m += x86-64-es9618xx-cpld.o \
 	x86-64-es9618xx-fan.o x86-64-es9618xx-leds.o \
 	x86-64-es9618xx-psu.o dps850.o
