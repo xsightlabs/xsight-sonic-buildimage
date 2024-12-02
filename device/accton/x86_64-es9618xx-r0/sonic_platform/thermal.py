@@ -27,6 +27,7 @@ class Thermal(ThermalBase):
     NUMBER_OF_THERMALS = 14
     ASIC_TEMP_SENSORS_OFFSET = 9
     ASIC_CALCULATED_TEMP_OFFSET = 12
+    ASIC_TEMP_HIGH_THRESHOLD = 115
     XCVR_TEMP_SENSORS_OFFSET = NUMBER_OF_THERMALS
     THERMAL_NAME_LIST = []
     TRANSCEIVER_LIST = []
@@ -169,7 +170,7 @@ class Thermal(ThermalBase):
             temp_file = "temp{}_max".format(self.ss_index)
             return self.__get_temp(temp_file)
         elif self.index >= Thermal.ASIC_TEMP_SENSORS_OFFSET and self.index < Thermal.NUMBER_OF_THERMALS:
-            return float(self.tbl.get("temperature_{}".format(self.index - Thermal.ASIC_TEMP_SENSORS_OFFSET), None))
+            return float(self.ASIC_TEMP_HIGH_THRESHOLD)
         elif self.index >= Thermal.XCVR_TEMP_SENSORS_OFFSET:
             return Thermal.TRANSCEIVER_TEMP_LIST[self.index - Thermal.XCVR_TEMP_SENSORS_OFFSET][2]
         else:
