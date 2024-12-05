@@ -20,6 +20,23 @@ XSIGHT_PCI_ID=""
 XSIGHT_DEVICE=""
 FIRSTBOOT="/tmp/notify_firstboot_to_platform"
 
+# Adding the custom.json content at run time is a quick workaround, which we do in our code.
+# It would be more appropriate to do it at build time, but it requires modifying the system-wide build script.
+# Please note that the following solution may not work if the system boot timing is changed in the future and
+# the /tmp/notify_firstboot_to_platform file is removed before the start.sh is invoked.
+# The current solution is used temporarily and the issue could also be resolved in the following ways:
+# 1. By adding the custom settings in build time through JSON template file (require change of system-wide files)
+# 2. Fixing incorrect removing of FIRSTBOOT indicator file (require a change of system-wide files)
+if [ -f $FIRSTBOOT ]; then
+    PLATFORM=$(sed -n 's/onie_platform=\(.*\)/\1/p' /host/machine.conf)
+
+    # update default config from custom.json
+    if [ -f /usr/share/sonic/device/$PLATFORM/custom.json ]; then
+        sonic-cfggen --from-db -j /usr/share/sonic/device/$PLATFORM/custom.json --print-data > /etc/sonic/config_db.json
+        sonic-cfggen -j /usr/share/sonic/device/$PLATFORM/custom.json --write-to-db
+    fi
+fi
+
 if [[ ${ONIE_MACHINE,,} == *"x2evb"* ]]; then
     if [[ "$(hostname)" == "sonic" ]]; then
         blk_dev="/dev/nvme0n1"
@@ -150,16 +167,6 @@ if [ ! -f /tmp/xbooted ]; then
         fi
     fi
     touch /tmp/xbooted
-fi
-
-if [ -f $FIRSTBOOT ]; then
-    PLATFORM=$(sed -n 's/onie_platform=\(.*\)/\1/p' /host/machine.conf)
-
-    # update default config from custom.json
-    if [ -f /usr/share/sonic/device/$PLATFORM/custom.json ]; then
-        sonic-cfggen --from-db -j /usr/share/sonic/device/$PLATFORM/custom.json --print-data > /etc/sonic/config_db.json
-        sonic-cfggen -j /usr/share/sonic/device/$PLATFORM/custom.json --write-to-db
-    fi
 fi
 
 #echo ">>> Set XPCI debug level to INFO(3)"
