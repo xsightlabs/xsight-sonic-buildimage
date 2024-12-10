@@ -643,6 +643,34 @@ class Bmc:
             val = ""
         return val
 
+    def get_thermal_thresholds(self, id, type):
+        """Read the threshold temperature for sensor ID based on the input type.
+
+        Args:
+            id: integer, temperature sensor ID.
+            type: integer representing the temperature threshold type, options:
+                1 - High threshold.
+                2 - Low threshold.
+                3 - Critical high threshold.
+                4 - Critical low threshold.
+
+        Returns:
+            String of integer representing the temperature threshold in Celsius
+            units or empty string in case of error.
+        """
+        if not self.is_bmc_fpga_vers_higher_than("2.9.0", "0x30F"):
+            return ""
+
+        if id in range(0, NUM_THERMAL):
+            if THERMAL_LIST[id][1] == 'GLC' or "Output Air" in THERMAL_LIST[id][2]:
+                type = type + 1
+            resp_str = self.__build_and_send_json_rpc("get_thermal_thresholds", [id])
+            val = self.__extract_number_from_string(resp_str, type)
+        else:
+            print("Error: sensor id {} is out of range [0 - {}]".format(id, NUM_THERMAL - 1))
+            val = ""
+        return val
+
     def psup_voltage(self):
         """Read PSUP voltage in Volt units.
 

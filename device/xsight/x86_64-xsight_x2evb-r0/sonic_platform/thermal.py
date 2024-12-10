@@ -55,7 +55,8 @@ class Thermal(ThermalBase):
             A float number, the high threshold temperature of thermal in Celsius
             up to nearest thousandth of one degree Celsius, e.g. 30.125
         """
-        raise NotImplementedError
+        val = self.bmccmd.get_thermal_thresholds(self.index, 1)
+        return round(float(val or 0), 0)
 
     def get_low_threshold(self):
         """
@@ -65,7 +66,8 @@ class Thermal(ThermalBase):
             A float number, the low threshold temperature of thermal in Celsius
             up to nearest thousandth of one degree Celsius, e.g. 30.125
         """
-        raise NotImplementedError
+        val = self.bmccmd.get_thermal_thresholds(self.index, 2)
+        return round(float(val or 0), 0)
 
     def set_high_threshold(self, temperature):
         """
@@ -101,7 +103,8 @@ class Thermal(ThermalBase):
             A float number, the high critical threshold temperature of thermal in Celsius
             up to nearest thousandth of one degree Celsius, e.g. 30.125
         """
-        raise NotImplementedError
+        val = self.bmccmd.get_thermal_thresholds(self.index, 3)
+        return round(float(val or 0), 0)
 
     def get_low_critical_threshold(self):
         """
@@ -111,7 +114,8 @@ class Thermal(ThermalBase):
             A float number, the low critical threshold temperature of thermal in Celsius
             up to nearest thousandth of one degree Celsius, e.g. 30.125
         """
-        raise NotImplementedError
+        val = self.bmccmd.get_thermal_thresholds(self.index, 4)
+        return round(float(val or 0), 0)
 
     def set_high_critical_threshold(self, temperature):
         """
