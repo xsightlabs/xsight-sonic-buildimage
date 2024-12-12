@@ -1,6 +1,5 @@
 MPATH       := $($(ACCTON_ES9632XX_PLATFORM_MODULE)_SRC_PATH)
-MPATH       += $($(ACCTON_ES9618XX_PLATFORM_MODULE)_SRC_PATH)
-DEP_FILES   := $(SONIC_COMMON_FILES_LIST) platform/broadcom/platform-modules-accton.mk platform/broadcom/platform-modules-accton.dep   
+DEP_FILES   := $(SONIC_COMMON_FILES_LIST) platform/xsight/platform-modules-accton.mk platform/xsight/platform-modules-accton.dep
 DEP_FILES   += $(SONIC_COMMON_BASE_FILES_LIST)
 DEP_FILES   += $(shell git ls-files $(MPATH))
 
