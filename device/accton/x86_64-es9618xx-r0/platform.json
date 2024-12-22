@@ -124,6 +124,9 @@
           "name": "Temp sensor 8"
         },
         {
+          "name": "ASIC  Core X2"
+        },
+        {
           "name": "ASIC sensor 1",
           "high-threshold" : false
         },
