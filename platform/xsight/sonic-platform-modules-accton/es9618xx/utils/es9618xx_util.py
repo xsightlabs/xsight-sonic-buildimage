@@ -413,9 +413,36 @@ def do_sonic_platform_clean():
 
     return
 
+def set_i2c_bus_indexing_order():
+    fname = os.path.basename(__file__)
+    try:
+        cmd = "cat /sys/bus/i2c/devices/i2c-{}/name | grep I801 1> /dev/null; echo $?"
+        (res0, i2c_0) = log_os_system(cmd.format(0), 0)
+        (res1, i2c_1) = log_os_system(cmd.format(1), 0)
+        if res0 or res1:
+            raise SystemExit(f'{fname}: Failed to retrieve i2c master device info!')
+        if int(i2c_0) + int(i2c_1) > 1:
+            raise SystemExit(f'{fname}: Cannot find i2c master device!')
+        if int(i2c_0) == 0:
+            (ret0, log) = log_os_system("echo {}: Swapp i2c buses > /dev/kmsg".format(fname), 0)
+            (ret1, log) = log_os_system("rmmod i2c_ismt", 0)
+            (ret2, log) = log_os_system("rmmod i2c_i801", 0)
+            (ret3, log) = log_os_system("modprobe i2c_ismt", 0)
+            (ret4, log) = log_os_system("modprobe i2c_i801", 0)
+            if ret1 or ret2 or ret3 or ret4:
+                return False
+        return True
+
+    except Exception as err:
+        print(f'{fname}: {err=}, {type(err)=}')
+        raise
 
 def do_install():
     print('Checking system....')
+
+    if not set_i2c_bus_indexing_order():
+        sys.exit(1)
+
     if driver_check() is False:
         print('No driver, installing....')
         status = driver_install()
@@ -543,8 +570,7 @@ def show_eeprom(index):
         return 1
 
     print(node + ':')
-    (ret, log) = log_os_system('cat ' + node + '| ' + hex_cmd + ' -C',
-                               1)
+    (ret, log) = log_os_system('cat ' + node + '| ' + hex_cmd + ' -C', 1)
     if ret == 0:
         print(log)
     else:
