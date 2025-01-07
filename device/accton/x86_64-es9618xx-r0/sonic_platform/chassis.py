@@ -42,6 +42,7 @@ class Chassis(ChassisBase):
         ChassisBase.__init__(self)
         self._api_helper = APIHelper()
         self.is_host = self._api_helper.is_host()
+        self._watchdog = None
 
         self.config_data = {}
 
@@ -87,11 +88,6 @@ class Chassis(ChassisBase):
         for index in range(0, NUM_COMPONENT):
             component = Component(index)
             self._component_list.append(component)
-
-    def __initialize_watchdog(self):
-        from sonic_platform.watchdog import Watchdog
-        self._watchdog = Watchdog()
-
 
     def __is_host(self):
         return os.system(HOST_CHK_CMD) == 0
@@ -319,3 +315,22 @@ class Chassis(ChassisBase):
 
     def get_position_in_parent(self):
         return POSITION_INDEX
+
+    def get_watchdog(self):
+        """
+        Retrieves hardware watchdog device on this chassis
+
+        Returns:
+            An object derived from WatchdogBase representing the hardware
+            watchdog device
+        """
+        try:
+            if self._watchdog is None:
+                from sonic_platform.watchdog import WatchdogImplBase
+                watchdog_device_path = "/dev/watchdog0"
+                self._watchdog = WatchdogImplBase(watchdog_device_path)
+        except Exception as e:
+            sonic_logger.log_warning(" Fail to load watchdog {}".format(repr(e)))
+
+        return self._watchdog
+
