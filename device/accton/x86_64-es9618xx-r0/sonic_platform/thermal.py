@@ -33,8 +33,11 @@ class Thermal(ThermalBase):
     TRANSCEIVER_LIST = []
     TRANSCEIVER_TEMP_LIST = []
     SYSFS_PATH = "/sys/bus/i2c/devices"
-    Thermals_db = SonicV2Connector()
-    Thermals_db.connect(Thermals_db.STATE_DB)
+    try:
+        Thermals_db = SonicV2Connector()
+        Thermals_db.connect(Thermals_db.STATE_DB)
+    except:
+        Thermals_db = None
 
     # Find all transceivers in DB
     for i in range(0, PORT_END):
@@ -42,7 +45,10 @@ class Thermal(ThermalBase):
         db_field_warn = None
         db_field_alarm = None
         try:
-            db_key = Thermals_db.get_all(Thermals_db.STATE_DB, 'TRANSCEIVER_DOM_SENSOR|Ethernet{}'.format(i * 8))
+            if Thermals_db is not None:
+                db_key = Thermals_db.get_all(Thermals_db.STATE_DB, 'TRANSCEIVER_DOM_SENSOR|Ethernet{}'.format(i * 8))
+            else:
+                db_key = {}
             db_field = db_key.get("temperature", None)
             db_field_temp = float(db_field)
             db_field = db_key.get("temphighwarning", None)
@@ -99,7 +105,10 @@ class Thermal(ThermalBase):
         self.ss_key = self.THERMAL_NAME_LIST[self.index]
         self.ss_index = 1
 
-        self.tbl = Thermal.Thermals_db.get_all(Thermal.Thermals_db.STATE_DB, 'ASIC_TEMPERATURE_INFO')
+        if Thermal.Thermals_db is not None:
+            self.tbl = Thermal.Thermals_db.get_all(Thermal.Thermals_db.STATE_DB, 'ASIC_TEMPERATURE_INFO')
+        else:
+            self.tbl = {}
 
     def __read_txt_file(self, file_path):
         for filename in glob.glob(file_path):
@@ -343,7 +352,10 @@ class Thermal(ThermalBase):
             db_field_warn = None
             db_field_alarm = None
             try:
-                db_key = Thermal.Thermals_db.get_all(Thermal.Thermals_db.STATE_DB, 'TRANSCEIVER_DOM_SENSOR|Ethernet{}'.format(i * 8))
+                if Thermal.Thermals_db is not None:
+                    db_key = Thermal.Thermals_db.get_all(Thermal.Thermals_db.STATE_DB, 'TRANSCEIVER_DOM_SENSOR|Ethernet{}'.format(i * 8))
+                else:
+                    db_key = {}
                 db_field = db_key.get("temperature", None)
                 db_field_temp = float(db_field)
                 db_field = db_key.get("temphighwarning", None)
