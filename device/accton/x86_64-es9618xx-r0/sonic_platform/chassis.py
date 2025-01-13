@@ -172,7 +172,7 @@ class Chassis(ChassisBase):
         sw_reboot_cause = self._api_helper.read_txt_file(
             reboot_cause_path) or "Unknown"
 
-        return ('REBOOT_CAUSE_NON_HARDWARE', sw_reboot_cause)
+        return (self.REBOOT_CAUSE_NON_HARDWARE, sw_reboot_cause)
 
     def get_sfp(self, index):
         """
