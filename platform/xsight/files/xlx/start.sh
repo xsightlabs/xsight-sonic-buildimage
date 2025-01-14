@@ -37,6 +37,32 @@ if [ -f $FIRSTBOOT ]; then
     fi
 fi
 
+fname=$(basename $0)
+
+# The eth0 interface intermittently disappears on reboot.
+# When this happens, eth0 is assigned by ice driver to different (0000:f4:00.0) interface,
+# which concurrently comes up first. The udev tries to fix it later but fails to rename
+# the interface since it already exists. The eth0 is released later, but no one tries to reuse it again.
+#   sonic systemd-udevd[380]: eth1: Failed to rename network interface 3 from 'eth1' to 'eth0': File exists
+#   sonic kernel: ice 0000:f4:00.0 eth10g0: renamed from eth0
+# As a workaround, we reload the igb driver when the eth0 was busy during the igb probe.
+if [[ ${ONIE_MACHINE,,} == *"es9618"* ]]; then
+    out=$(ip a l eth0 | grep "UP")
+    res=$?
+    echo "$fname: eth0 link UP check result=$res, output=$out" | tee /dev/kmsg
+    if [[ "$res" -ne 0 ]]; then
+        echo "$fname: recover eth0" | tee /dev/kmsg
+        modprobe -r igb && sleep 2 && modprobe igb && \
+        sleep 5 && ifup eth0 && sleep 5
+        out=$(ip a l eth0 | grep "UP")
+        res=$?
+        if [ $? -ne 0 ]; then
+            echo "$fname: failed to recover eth0" | tee /dev/kmsg
+            ifup eth0
+        fi
+    fi
+fi
+
 if [[ ${ONIE_MACHINE,,} == *"x2evb"* ]]; then
     if [[ "$(hostname)" == "sonic" ]]; then
         blk_dev="/dev/nvme0n1"
