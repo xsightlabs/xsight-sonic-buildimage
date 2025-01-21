@@ -167,12 +167,18 @@ class Chassis(ChassisBase):
             is "REBOOT_CAUSE_HARDWARE_OTHER", the second string can be used
             to pass a description of the reboot cause.
         """
-
-        reboot_cause_path = (HOST_REBOOT_CAUSE_PATH + REBOOT_CAUSE_FILE)
-        sw_reboot_cause = self._api_helper.read_txt_file(
-            reboot_cause_path) or "Unknown"
-
-        return (self.REBOOT_CAUSE_NON_HARDWARE, sw_reboot_cause)
+        retval = (self.REBOOT_CAUSE_NON_HARDWARE, None)
+        try:
+            cmd = "i2cget -f -y 0 0x21 0x30"
+            sts, res = self._api_helper.run_command(cmd)
+            if sts == True and res == b'0x40':
+                reboot_cause_path = (HOST_REBOOT_CAUSE_PATH + REBOOT_CAUSE_FILE)
+                sw_reboot_cause = self._api_helper.read_txt_file(reboot_cause_path) or "Unknown"
+                if sw_reboot_cause == "Unknown":
+                    retval = (self.REBOOT_CAUSE_WATCHDOG, "CPU Watchdog Reset")
+        except:
+            pass
+        return retval
 
     def get_sfp(self, index):
         """

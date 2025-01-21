@@ -36,7 +36,7 @@ class APIHelper():
             p = subprocess.Popen(
                 cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             raw_data, err = p.communicate()
-            if err == '':
+            if err == b'':
                 result = raw_data.strip()
         except Exception:
             status = False
