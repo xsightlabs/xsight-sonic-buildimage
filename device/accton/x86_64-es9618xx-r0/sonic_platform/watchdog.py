@@ -6,7 +6,7 @@ provides access to hardware watchdog
 import os
 import fcntl
 import array
-
+import time
 from sonic_platform_base.watchdog_base import WatchdogBase
 from sonic_py_common import logger
 from . import utils
@@ -83,11 +83,15 @@ class WatchdogImplBase(WatchdogBase):
         """
         sonic_logger.log_info(" Debug disarm watchdog ")
 
-        try:
-            self._disablewatchdog()
-            self.timeout = 0
-        except IOError:
-            return False
+        if self.is_armed():
+            os.popen("systemctl stop watchdog-control.service")
+            time.sleep(2)
+
+            try:
+                self._disablewatchdog()
+                self.timeout = 0
+            except IOError:
+                return False
 
         return True
 
@@ -140,6 +144,11 @@ class WatchdogImplBase(WatchdogBase):
             return ret
         if seconds > 340:
             return ret
+
+        # Stop the watchdog service to gain access of watchdog file pointer
+        if self.is_armed():
+            os.popen("systemctl stop watchdog-control.service")
+            time.sleep(2)
 
         try:
             if self.timeout != seconds:
