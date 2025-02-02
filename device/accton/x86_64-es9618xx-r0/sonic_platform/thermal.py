@@ -155,6 +155,18 @@ class Thermal(ThermalBase):
             of one degree Celsius, e.g. 30.125
         """
         try:
+            if Thermal.Thermals_db is None:
+                try:
+                    Thermal.Thermals_db = SonicV2Connector()
+                    Thermal.Thermals_db.connect(Thermal.Thermals_db.STATE_DB)
+                except:
+                    Thermal.Thermals_db = None
+
+            if Thermal.Thermals_db is not None:
+                self.tbl = Thermal.Thermals_db.get_all(Thermal.Thermals_db.STATE_DB, 'ASIC_TEMPERATURE_INFO')
+            else:
+                self.tbl = {}
+
             if self.index < Thermal.ASIC_TEMP_SENSORS_OFFSET:
                 temp_file = "temp{}_input".format(self.ss_index)
                 return float(self.__get_temp(temp_file))
@@ -357,10 +369,18 @@ class Thermal(ThermalBase):
             db_field_warn = None
             db_field_alarm = None
             try:
+                if Thermal.Thermals_db is None:
+                    try:
+                        Thermal.Thermals_db = SonicV2Connector()
+                        Thermal.Thermals_db.connect(Thermal.Thermals_db.STATE_DB)
+                    except:
+                        Thermal.Thermals_db = None
+
                 if Thermal.Thermals_db is not None:
                     db_key = Thermal.Thermals_db.get_all(Thermal.Thermals_db.STATE_DB, 'TRANSCEIVER_DOM_SENSOR|Ethernet{}'.format(i * 8))
                 else:
                     db_key = {}
+
                 db_field = db_key.get("temperature", None)
                 db_field_temp = float(db_field)
                 db_field = db_key.get("temphighwarning", None)
