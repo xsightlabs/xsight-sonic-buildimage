@@ -154,19 +154,24 @@ class Thermal(ThermalBase):
             A float number of current temperature in Celsius up to nearest thousandth
             of one degree Celsius, e.g. 30.125
         """
-        if self.index < Thermal.ASIC_TEMP_SENSORS_OFFSET:
-            temp_file = "temp{}_input".format(self.ss_index)
-            return float(self.__get_temp(temp_file))
-        elif self.index >= Thermal.ASIC_TEMP_SENSORS_OFFSET and self.index < Thermal.ASIC_CALCULATED_TEMP_OFFSET:
-            return float(self.tbl.get("temperature_{}".format(self.index - Thermal.ASIC_TEMP_SENSORS_OFFSET), None))
-        elif self.index == Thermal.ASIC_CALCULATED_TEMP_OFFSET:
-            return float(self.tbl.get("average_temperature", None))
-        elif self.index == Thermal.ASIC_CALCULATED_TEMP_OFFSET + 1:
-            return float(self.tbl.get("maximum_temperature", None))
-        elif self.index >= Thermal.XCVR_TEMP_SENSORS_OFFSET:
-            return float(Thermal.TRANSCEIVER_TEMP_LIST[self.index - Thermal.XCVR_TEMP_SENSORS_OFFSET][0])
-        else:
-            return None
+        try:
+            if self.index < Thermal.ASIC_TEMP_SENSORS_OFFSET:
+                temp_file = "temp{}_input".format(self.ss_index)
+                return float(self.__get_temp(temp_file))
+            elif self.index >= Thermal.ASIC_TEMP_SENSORS_OFFSET and self.index < Thermal.ASIC_CALCULATED_TEMP_OFFSET:
+                return float(self.tbl.get("temperature_{}".format(self.index - Thermal.ASIC_TEMP_SENSORS_OFFSET), None))
+            elif self.index == Thermal.ASIC_CALCULATED_TEMP_OFFSET:
+                return float(self.tbl.get("average_temperature", None))
+            elif self.index == Thermal.ASIC_CALCULATED_TEMP_OFFSET + 1:
+                return float(self.tbl.get("maximum_temperature", None))
+            elif self.index >= Thermal.XCVR_TEMP_SENSORS_OFFSET:
+                return float(Thermal.TRANSCEIVER_TEMP_LIST[self.index - Thermal.XCVR_TEMP_SENSORS_OFFSET][0])
+            else:
+                return None
+        except (TypeError, ValueError):
+            pass
+
+        return None
 
     def get_high_threshold(self):
         """

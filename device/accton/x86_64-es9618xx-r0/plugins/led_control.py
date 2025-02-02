@@ -43,8 +43,11 @@ def system_led_check():
             is_power_all_OK = 0
 
     for thermal in sonic_platform.chassis.Chassis().get_all_thermals():
-        if thermal.get_temperature() > thermal.get_high_threshold():
-            is_thermal_high = 1
+        temperature = thermal.get_temperature()
+        high_threshold = thermal.get_high_threshold()
+        if temperature is not None and high_threshold is not None:
+            if temperature > high_threshold:
+                is_thermal_high = 1
 
     if is_fan_all_OK == 1 and is_power_all_OK == 1 and is_thermal_high == 0:
         sonic_platform.chassis.Chassis().set_status_led("STATUS_LED_COLOR_GREEN")
