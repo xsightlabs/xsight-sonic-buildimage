@@ -367,8 +367,8 @@ class Thermal(ThermalBase):
                 db_field_warn = float(db_field)
                 db_field = db_key.get("temphighalarm", None)
                 db_field_alarm = float(db_field)
-            except ValueError as e:
-                print("Error: {}".format(e))
+            except (TypeError, ValueError):
+                pass
 
             if Thermal.TRANSCEIVER_LIST[i][1] != db_field_warn or Thermal.TRANSCEIVER_LIST[i][2] != db_field_alarm:
                 is_settings_changed = True
