@@ -154,19 +154,36 @@ class Thermal(ThermalBase):
             A float number of current temperature in Celsius up to nearest thousandth
             of one degree Celsius, e.g. 30.125
         """
-        if self.index < Thermal.ASIC_TEMP_SENSORS_OFFSET:
-            temp_file = "temp{}_input".format(self.ss_index)
-            return float(self.__get_temp(temp_file))
-        elif self.index >= Thermal.ASIC_TEMP_SENSORS_OFFSET and self.index < Thermal.ASIC_CALCULATED_TEMP_OFFSET:
-            return float(self.tbl.get("temperature_{}".format(self.index - Thermal.ASIC_TEMP_SENSORS_OFFSET), None))
-        elif self.index == Thermal.ASIC_CALCULATED_TEMP_OFFSET:
-            return float(self.tbl.get("average_temperature", None))
-        elif self.index == Thermal.ASIC_CALCULATED_TEMP_OFFSET + 1:
-            return float(self.tbl.get("maximum_temperature", None))
-        elif self.index >= Thermal.XCVR_TEMP_SENSORS_OFFSET:
-            return float(Thermal.TRANSCEIVER_TEMP_LIST[self.index - Thermal.XCVR_TEMP_SENSORS_OFFSET][0])
-        else:
-            return None
+        try:
+            if Thermal.Thermals_db is None:
+                try:
+                    Thermal.Thermals_db = SonicV2Connector()
+                    Thermal.Thermals_db.connect(Thermal.Thermals_db.STATE_DB)
+                except:
+                    Thermal.Thermals_db = None
+
+            if Thermal.Thermals_db is not None:
+                self.tbl = Thermal.Thermals_db.get_all(Thermal.Thermals_db.STATE_DB, 'ASIC_TEMPERATURE_INFO')
+            else:
+                self.tbl = {}
+
+            if self.index < Thermal.ASIC_TEMP_SENSORS_OFFSET:
+                temp_file = "temp{}_input".format(self.ss_index)
+                return float(self.__get_temp(temp_file))
+            elif self.index >= Thermal.ASIC_TEMP_SENSORS_OFFSET and self.index < Thermal.ASIC_CALCULATED_TEMP_OFFSET:
+                return float(self.tbl.get("temperature_{}".format(self.index - Thermal.ASIC_TEMP_SENSORS_OFFSET), None))
+            elif self.index == Thermal.ASIC_CALCULATED_TEMP_OFFSET:
+                return float(self.tbl.get("average_temperature", None))
+            elif self.index == Thermal.ASIC_CALCULATED_TEMP_OFFSET + 1:
+                return float(self.tbl.get("maximum_temperature", None))
+            elif self.index >= Thermal.XCVR_TEMP_SENSORS_OFFSET:
+                return float(Thermal.TRANSCEIVER_TEMP_LIST[self.index - Thermal.XCVR_TEMP_SENSORS_OFFSET][0])
+            else:
+                return None
+        except (TypeError, ValueError):
+            pass
+
+        return None
 
     def get_high_threshold(self):
         """
@@ -352,18 +369,26 @@ class Thermal(ThermalBase):
             db_field_warn = None
             db_field_alarm = None
             try:
+                if Thermal.Thermals_db is None:
+                    try:
+                        Thermal.Thermals_db = SonicV2Connector()
+                        Thermal.Thermals_db.connect(Thermal.Thermals_db.STATE_DB)
+                    except:
+                        Thermal.Thermals_db = None
+
                 if Thermal.Thermals_db is not None:
                     db_key = Thermal.Thermals_db.get_all(Thermal.Thermals_db.STATE_DB, 'TRANSCEIVER_DOM_SENSOR|Ethernet{}'.format(i * 8))
                 else:
                     db_key = {}
+
                 db_field = db_key.get("temperature", None)
                 db_field_temp = float(db_field)
                 db_field = db_key.get("temphighwarning", None)
                 db_field_warn = float(db_field)
                 db_field = db_key.get("temphighalarm", None)
                 db_field_alarm = float(db_field)
-            except ValueError as e:
-                print("Error: {}".format(e))
+            except (TypeError, ValueError):
+                pass
 
             if Thermal.TRANSCEIVER_LIST[i][1] != db_field_warn or Thermal.TRANSCEIVER_LIST[i][2] != db_field_alarm:
                 is_settings_changed = True
