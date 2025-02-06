@@ -12,7 +12,6 @@ TIMEOUT=180
 KEEPALIVE=60
 sonic_logger = logger.Logger('Watchdog')
 sonic_logger.set_min_log_priority_info()
-time.sleep(60)
 chassis = Chassis()
 watchdog = chassis.get_watchdog()
 
