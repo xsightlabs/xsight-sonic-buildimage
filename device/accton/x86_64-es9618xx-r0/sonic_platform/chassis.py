@@ -164,16 +164,34 @@ class Chassis(ChassisBase):
             to pass a description of the reboot cause.
         """
         retval = (self.REBOOT_CAUSE_NON_HARDWARE, None)
+
+        reboot_cause_path = (HOST_REBOOT_CAUSE_PATH + REBOOT_CAUSE_FILE)
+        sw_reboot_cause = self._api_helper.read_txt_file(reboot_cause_path) or "Unknown"
+        if sw_reboot_cause != "Unknown":
+            return retval
+
         try:
             cmd = "i2cget -f -y 0 0x21 0x30"
             sts, res = self._api_helper.run_command(cmd)
+            if sts == True and res == b'0x01':
+                retval = (self.REBOOT_CAUSE_POWER_LOSS, "Power On Reset")
+            if sts == True and res == b'0x02':
+                retval = (self.REBOOT_CAUSE_WATCHDOG, "EC Watchdog Reset")
+            if sts == True and res == b'0x04':
+                retval = (self.REBOOT_CAUSE_HARDWARE_BUTTON, "Power Button Reset")
+            if sts == True and res == b'0x08':
+                retval = (self.REBOOT_CAUSE_HARDWARE_BUTTON, "Reset Button Reset")
+            if sts == True and res == b'0x10':
+                retval = (self.REBOOT_CAUSE_NON_HARDWARE, "CPU Warm Reset")
+            if sts == True and res == b'0x20':
+                retval = (self.REBOOT_CAUSE_HARDWARE_OTHER, "CPU Cold Reset")
             if sts == True and res == b'0x40':
-                reboot_cause_path = (HOST_REBOOT_CAUSE_PATH + REBOOT_CAUSE_FILE)
-                sw_reboot_cause = self._api_helper.read_txt_file(reboot_cause_path) or "Unknown"
-                if sw_reboot_cause == "Unknown":
-                    retval = (self.REBOOT_CAUSE_WATCHDOG, "CPU Watchdog Reset")
+                retval = (self.REBOOT_CAUSE_WATCHDOG, "CPU Watchdog Reset")
+            if sts == True and res == b'0x80':
+                retval = (self.REBOOT_CAUSE_THERMAL_OVERLOAD_OTHER, "EC DIMM Critical Threshold Reset")
         except:
             pass
+
         return retval
 
     def get_sfp(self, index):
