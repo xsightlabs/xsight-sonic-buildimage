@@ -169,12 +169,6 @@
   fn: '5'
   id: 18e0
   name: 'Serial bus controller [0c80]: Intel Corporation Device 18e0 (rev 11)'
-- bus: '00'
-  dev: 1f
-  fn: '7'
-  id: 18e1
-  name: 'Non-Essential Instrumentation [1300]: Intel Corporation Device 18e1 (rev
-    11)'
 - bus: '01'
   dev: '00'
   fn: '0'
