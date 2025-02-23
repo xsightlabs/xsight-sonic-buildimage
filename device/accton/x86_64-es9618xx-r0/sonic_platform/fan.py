@@ -21,6 +21,7 @@ TRAY_FANSPEED_TOLERANCE = 25
 FAN_LED_FILE = "/sys/class/leds/es9618xx_led::fan/brightness"
 CPLD_I2C_PATH = "/sys/bus/i2c/devices/10-0066/fan"
 FAN_PERCENTAGE = CPLD_I2C_PATH + "_duty_cycle_percentage"
+FAN_PERCENTAGE_TMP = "/tmp/fan_duty_cycle_percentage"
 PSU_HWMON_I2C_PATH ="/sys/bus/i2c/devices/{}-00{}/"
 PSU_I2C_MAPPING = {
     0: {
@@ -47,7 +48,6 @@ class Fan(FanBase):
         self.fan_index = fan_index
         self.fan_tray_index = fan_tray_index
         self.is_psu_fan = is_psu_fan
-        self.fan_target_speed = int(self._api_helper.read_txt_file(FAN_PERCENTAGE))
         self.status_led_state = None
         if self.is_psu_fan:
             self.psu_index = psu_index
@@ -170,7 +170,12 @@ class Fan(FanBase):
         if self.is_psu_fan:
             return 100
         elif self.get_presence():
-            return self.fan_target_speed
+            speed = 100
+            try:
+                speed = int(self._api_helper.read_txt_file(FAN_PERCENTAGE_TMP))
+            except:
+                pass
+            return speed
         else:
             return None
 
@@ -199,9 +204,10 @@ class Fan(FanBase):
         """
 
         if not self.is_psu_fan and self.get_presence():
-            self.fan_target_speed = int(speed)
-            speed_path = "{}{}".format(CPLD_I2C_PATH, '_duty_cycle_percentage')
-            return self._api_helper.write_txt_file(speed_path, self.fan_target_speed)
+            speed = int(speed)
+            sts1 = self._api_helper.write_txt_file(FAN_PERCENTAGE, speed)
+            sts2 = self._api_helper.write_txt_file(FAN_PERCENTAGE_TMP, speed)
+            return sts1 and sts2
 
         return False
 
