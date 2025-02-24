@@ -34,6 +34,17 @@ PSU_I2C_MAPPING = {
     },
 }
 
+PSU_CPLD_I2C_MAPPING = {
+    0: {
+        "num": 11,
+        "addr": "50"
+    },
+    1: {
+        "num": 12,
+        "addr": "53"
+    },
+}
+
 
 class Fan(FanBase):
     """Platform-specific Fan class"""
@@ -54,6 +65,11 @@ class Fan(FanBase):
             self.psu_i2c_num = PSU_I2C_MAPPING[self.psu_index]['num']
             self.psu_i2c_addr = PSU_I2C_MAPPING[self.psu_index]['addr']
             self.psu_hwmon_path = PSU_HWMON_I2C_PATH.format(
+                self.psu_i2c_num, self.psu_i2c_addr)
+
+            self.psu_i2c_num = PSU_CPLD_I2C_MAPPING[self.psu_index]['num']
+            self.psu_i2c_addr = PSU_CPLD_I2C_MAPPING[self.psu_index]['addr']
+            self.psu_cpld_path = I2C_PATH.format(
                 self.psu_i2c_num, self.psu_i2c_addr)
 
         FanBase.__init__(self)
@@ -257,38 +273,37 @@ class Fan(FanBase):
         Returns:
             bool: True if FAN is present, False if not
         """
-        present_path = "{}{}{}".format(CPLD_I2C_PATH, self.fan_tray_index+1, '_present')
-        val = self._api_helper.read_txt_file(present_path)
-
-        if not self.is_psu_fan:
-            if val is not None:
-                try:
-                    int(val, 10)
-                except ValueError:
-                    return False
-                return True
-            return False
+        if self.is_psu_fan:
+            present_path="{}{}".format(self.psu_cpld_path, 'psu_present')
         else:
-            present_path = "{}{}".format(self.psu_hwmon_path, 'psu_v_in')
-            val = self._api_helper.read_txt_file(present_path)
-            if len(val) != 0:
-                try:
-                    int(val, 10)
-                except ValueError:
-                    return False
-                return True
-            else:
-                return False
+            present_path = "{}{}{}".format(CPLD_FAN_I2C_PATH, self.fan_tray_index+1, '_present')
+
+        val=self._api_helper.read_txt_file(present_path)
+        if val is not None:
+            return int(val, 10)==1
+        else:
+            return False
 
     def get_status(self):
         """
-        Returns Fan Status. Called in _refresh_fan_status thermalctld's function
+        Retrieves the operational status of the device
         Returns:
-            bool: True if status Ok, False if not
-        TODO: get_status required implementation !
-        Always return true as workaround for error in syslog.
+            A boolean value, True if device is operating properly, False if not
         """
-        return True
+        if self.is_psu_fan:
+            psu_fan_path= "{}{}".format(self.psu_hwmon_path, 'psu_fan1_fault')
+            val=self._api_helper.read_txt_file(psu_fan_path)
+            if val is not None:
+                return int(val, 10)==0
+            else:
+                return False
+        else:
+            path = "{}{}{}".format(CPLD_FAN_I2C_PATH, self.fan_tray_index+1, '_fault')
+            val=self._api_helper.read_txt_file(path)
+            if val is not None:
+                return int(val, 10)==0
+            else:
+                return False
 
     @classmethod
     def get_cooling_level(cls):
