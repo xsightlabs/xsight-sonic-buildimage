@@ -22,8 +22,8 @@ FAN_LED_FILE = "/sys/class/leds/es9618xx_led::fan/brightness"
 CPLD_I2C_PATH = "/sys/bus/i2c/devices/10-0066/fan"
 FAN_PERCENTAGE = CPLD_I2C_PATH + "_duty_cycle_percentage"
 FAN_PERCENTAGE_TMP = "/tmp/fan_duty_cycle_percentage"
-PSU_HWMON_I2C_PATH ="/sys/bus/i2c/devices/{}-00{}/"
-PSU_I2C_MAPPING = {
+PSU_I2C_PATH ="/sys/bus/i2c/devices/{}-00{}/"
+PSU_HWMON_I2C_MAPPING = {
     0: {
         "num": 3,
         "addr": "59"
@@ -36,12 +36,12 @@ PSU_I2C_MAPPING = {
 
 PSU_CPLD_I2C_MAPPING = {
     0: {
-        "num": 11,
-        "addr": "50"
+        "num": 3,
+        "addr": "51"
     },
     1: {
-        "num": 12,
-        "addr": "53"
+        "num": 2,
+        "addr": "50"
     },
 }
 
@@ -62,14 +62,14 @@ class Fan(FanBase):
         self.status_led_state = None
         if self.is_psu_fan:
             self.psu_index = psu_index
-            self.psu_i2c_num = PSU_I2C_MAPPING[self.psu_index]['num']
-            self.psu_i2c_addr = PSU_I2C_MAPPING[self.psu_index]['addr']
-            self.psu_hwmon_path = PSU_HWMON_I2C_PATH.format(
+            self.psu_i2c_num = PSU_HWMON_I2C_MAPPING[self.psu_index]['num']
+            self.psu_i2c_addr = PSU_HWMON_I2C_MAPPING[self.psu_index]['addr']
+            self.psu_hwmon_path = PSU_I2C_PATH.format(
                 self.psu_i2c_num, self.psu_i2c_addr)
 
             self.psu_i2c_num = PSU_CPLD_I2C_MAPPING[self.psu_index]['num']
             self.psu_i2c_addr = PSU_CPLD_I2C_MAPPING[self.psu_index]['addr']
-            self.psu_cpld_path = I2C_PATH.format(
+            self.psu_cpld_path = PSU_I2C_PATH.format(
                 self.psu_i2c_num, self.psu_i2c_addr)
 
         FanBase.__init__(self)
@@ -274,13 +274,13 @@ class Fan(FanBase):
             bool: True if FAN is present, False if not
         """
         if self.is_psu_fan:
-            present_path="{}{}".format(self.psu_cpld_path, 'psu_present')
+            present_path = "{}{}".format(self.psu_cpld_path, 'psu_present')
         else:
-            present_path = "{}{}{}".format(CPLD_FAN_I2C_PATH, self.fan_tray_index+1, '_present')
+            present_path = "{}{}{}".format(CPLD_I2C_PATH, self.fan_tray_index + 1, '_present')
 
-        val=self._api_helper.read_txt_file(present_path)
+        val = self._api_helper.read_txt_file(present_path)
         if val is not None:
-            return int(val, 10)==1
+            return int(val, 10) == 1
         else:
             return False
 
@@ -291,17 +291,17 @@ class Fan(FanBase):
             A boolean value, True if device is operating properly, False if not
         """
         if self.is_psu_fan:
-            psu_fan_path= "{}{}".format(self.psu_hwmon_path, 'psu_fan1_fault')
-            val=self._api_helper.read_txt_file(psu_fan_path)
+            psu_fan_path = "{}{}".format(self.psu_hwmon_path, 'psu_fan1_speed_rpm')
+            val = self._api_helper.read_txt_file(psu_fan_path)
             if val is not None:
-                return int(val, 10)==0
+                return int(val, 10) != 0
             else:
                 return False
         else:
-            path = "{}{}{}".format(CPLD_FAN_I2C_PATH, self.fan_tray_index+1, '_fault')
-            val=self._api_helper.read_txt_file(path)
+            path = "{}{}{}".format(CPLD_I2C_PATH, self.fan_tray_index + 1, '_fault')
+            val = self._api_helper.read_txt_file(path)
             if val is not None:
-                return int(val, 10)==0
+                return int(val, 10) == 0
             else:
                 return False
 
