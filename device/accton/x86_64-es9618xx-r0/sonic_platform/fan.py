@@ -18,6 +18,8 @@ PSU_FAN_MAX_RPM = 30000 # Taken from SPEC FSH082-610G Rev A12 at "9. Fans Contro
 TRAY_FRONT_FAN_MAX_RPM = 31000
 TRAY_REAR_FAN_MAX_RPM = 28000
 TRAY_FANSPEED_TOLERANCE = 25
+TRAY_LOW_FANSPEED_TOLERANCE = 35
+TRAY_LOW_FANSPEED_RPM = 30
 
 FAN_LED_FILE = "/sys/class/leds/es9618xx_led::fan/brightness"
 CPLD_I2C_PATH = "/sys/bus/i2c/devices/10-0066/fan"
@@ -210,6 +212,9 @@ class Fan(FanBase):
         tolerance = TRAY_FANSPEED_TOLERANCE
         if self.is_psu_fan:
             tolerance = 100
+        else:
+            if self.get_target_speed() <= TRAY_LOW_FANSPEED_RPM:
+                tolerance = TRAY_LOW_FANSPEED_TOLERANCE
 
         return tolerance
 
