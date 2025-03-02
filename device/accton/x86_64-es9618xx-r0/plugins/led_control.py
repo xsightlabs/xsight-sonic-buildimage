@@ -34,18 +34,8 @@ def system_led_check():
 
     # Check Fans status
     for fan in sonic_platform.chassis.Chassis().get_all_fans():
-        is_under_speed = fan.is_under_speed()
-        is_over_speed = fan.is_over_speed()
-        if is_under_speed or is_over_speed:
+        if fan.is_under_speed() or fan.is_over_speed():
             is_fan_all_OK = 0
-            name = fan.get_name()
-            speed = fan.get_speed()
-            target_speed = fan.get_target_speed()
-            log_str = "Fan {} speed detected: name = {}, speed = {}, target speed = {}"
-            if is_under_speed:
-                logprint(log_str.format('low', name, speed, target_speed))
-            if is_over_speed:
-                logprint(log_str.format('high', name, speed, target_speed))
 
     for psu in sonic_platform.chassis.Chassis().get_all_psus():
         if not True == psu.get_status():
