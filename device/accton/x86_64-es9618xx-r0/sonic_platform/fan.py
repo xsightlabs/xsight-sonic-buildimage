@@ -15,7 +15,8 @@ except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
 PSU_FAN_MAX_RPM = 30000 # Taken from SPEC FSH082-610G Rev A12 at "9. Fans Control Requirement"
-TRAY_FAN_MAX_RPM = 31000
+TRAY_FRONT_FAN_MAX_RPM = 31000
+TRAY_REAR_FAN_MAX_RPM = 28000
 TRAY_FANSPEED_TOLERANCE = 25
 
 FAN_LED_FILE = "/sys/class/leds/es9618xx_led::fan/brightness"
@@ -164,7 +165,11 @@ class Fan(FanBase):
                 "{}{}{}".format(CPLD_I2C_PATH, self.fan_tray_index + 1, speed_rpm))
             if speed is None:
                 return 0
-            speed = (int(speed, 10)) * 100 / TRAY_FAN_MAX_RPM
+
+            speed_max_rpm = TRAY_FRONT_FAN_MAX_RPM
+            if self.fan_index == 1:
+                speed_max_rpm = TRAY_REAR_FAN_MAX_RPM
+            speed = (int(speed, 10)) * 100 / speed_max_rpm
             if speed > 100:
                 speed = 100
 
