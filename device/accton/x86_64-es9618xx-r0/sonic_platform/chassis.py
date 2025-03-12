@@ -182,7 +182,7 @@ class Chassis(ChassisBase):
             if sts == True and res == b'0x08':
                 retval = (self.REBOOT_CAUSE_HARDWARE_BUTTON, "Reset Button Reset")
             if sts == True and res == b'0x10':
-                retval = (self.REBOOT_CAUSE_NON_HARDWARE, "CPU Warm Reset")
+                retval = (self.REBOOT_CAUSE_HARDWARE_OTHER, "CPU Warm Reset")
             if sts == True and res == b'0x20':
                 retval = (self.REBOOT_CAUSE_HARDWARE_OTHER, "CPU Cold Reset")
             if sts == True and res == b'0x40':
