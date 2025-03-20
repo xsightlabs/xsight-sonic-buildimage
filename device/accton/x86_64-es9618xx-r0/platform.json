@@ -100,51 +100,65 @@
       ],
       "thermals": [
         {
-          "name": "Temp sensor 1"
+          "name": "Temp sensor 1",
+          "controllable": false
         },
         {
-          "name": "Temp sensor 2"
+          "name": "Temp sensor 2",
+          "controllable": false
         },
         {
-          "name": "Temp sensor 3"
+          "name": "Temp sensor 3",
+          "controllable": false
         },
         {
-          "name": "Temp sensor 4"
+          "name": "Temp sensor 4",
+          "controllable": false
         },
         {
-          "name": "Temp sensor 5"
+          "name": "Temp sensor 5",
+          "controllable": false
         },
         {
-          "name": "Temp sensor 6"
+          "name": "Temp sensor 6",
+          "controllable": false
         },
         {
-          "name": "Temp sensor 7"
+          "name": "Temp sensor 7",
+          "controllable": false
         },
         {
-          "name": "Temp sensor 8"
+          "name": "Temp sensor 8",
+          "controllable": false
         },
         {
-          "name": "ASIC  Core X2"
+          "name": "ASIC  Core X2",
+          "controllable": false
         },
         {
           "name": "ASIC sensor 1",
-          "high-threshold" : false
+          "high-threshold" : false,
+          "controllable": false
         },
         {
           "name": "ASIC sensor 2",
-          "high-threshold" : false
+          "high-threshold" : false,
+          "controllable": false
         },
         {
           "name": "ASIC sensor 3",
-          "high-threshold" : false
+          "high-threshold" : false,
+          "controllable": false
         },
         {
           "name": "ASIC  average",
-          "high-threshold" : false
+          "high-threshold" : false,
+          "controllable": false
         },
         {
           "name": "ASIC  maximum",
-          "high-threshold" : false
+          "high-threshold" : false,
+          "controllable": false
         }
       ],
       "fan_drawers": [
