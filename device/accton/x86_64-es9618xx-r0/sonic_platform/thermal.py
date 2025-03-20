@@ -110,6 +110,9 @@ class Thermal(ThermalBase):
         else:
             self.tbl = {}
 
+        self.minimum_thermal = self.get_temperature()
+        self.maximum_thermal = self.get_temperature()
+
     def __read_txt_file(self, file_path):
         for filename in glob.glob(file_path):
             try:
@@ -202,6 +205,35 @@ class Thermal(ThermalBase):
         else:
             return None
 
+    def set_low_threshold(self, temperature):
+        """
+        Sets the low threshold temperature of thermal
+        Args :
+            temperature: A float number up to nearest thousandth of one degree Celsius,
+            e.g. 30.125
+        Returns:
+            A boolean, True if threshold is set successfully, False if not
+        """
+        return False
+
+    def get_low_threshold(self):
+        """
+        Retrieves the high threshold temperature of thermal
+        Returns:
+            A float number, the low threshold temperature of thermal in Celsius
+            up to nearest thousandth of one degree Celsius, e.g. 0.0
+        """
+        return 0.01
+
+    def get_low_critical_threshold(self):
+        """
+        Retrieves the low critical threshold temperature of thermal
+        Returns:
+            A float number, the low critical threshold temperature of thermal in Celsius
+            up to nearest thousandth of one degree Celsius, e.g. 30.125
+        """
+        return 0.01
+
     def set_high_threshold(self, temperature):
         """
         Sets the high threshold temperature of thermal
@@ -284,6 +316,30 @@ class Thermal(ThermalBase):
             else:
                 return int(raw_txt) != 0
         return True
+
+    def get_minimum_recorded(self):
+        """
+        Retrieves the minimum recorded temperature of thermal
+        Returns:
+            A float number, the minimum recorded temperature of thermal in Celsius
+            up to nearest thousandth of one degree Celsius, e.g. 30.125
+        """
+        tmp = self.get_temperature()
+        if tmp < self.minimum_thermal:
+            self.minimum_thermal = tmp
+        return self.minimum_thermal
+
+    def get_maximum_recorded(self):
+        """
+        Retrieves the maximum recorded temperature of thermal
+        Returns:
+            A float number, the maximum recorded temperature of thermal in Celsius
+            up to nearest thousandth of one degree Celsius, e.g. 30.125
+        """
+        tmp = self.get_temperature()
+        if tmp > self.maximum_thermal:
+            self.maximum_thermal = tmp
+        return self.maximum_thermal
 
     @classmethod
     def set_thermal_algorithm_status(cls, status, force=True):
