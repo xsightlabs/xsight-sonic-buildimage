@@ -23,7 +23,7 @@
             "name": "PSU-1",
             "status_led": {
                 "controllable": true,
-                "colors": ["STATUS_LED_COLOR_OFF", "STATUS_LED_COLOR_GREEN", "STATUS_LED_COLOR_AMBER"]
+                "colors": ["off", "green", "amber"]
             },
             "voltage_high_threshold" : false,
             "voltage_low_threshold" : false,
@@ -31,7 +31,8 @@
                 {
                     "name": "PSU 1 fan 0",
                     "status_led": {
-                        "controllable": false
+                        "controllable": true,
+                        "colors": ["off", "green", "amber"]
                     },
                     "speed": {
                         "controllable": false
@@ -43,7 +44,7 @@
             "name": "PSU-2",
             "status_led": {
                 "controllable": true,
-                "colors": ["STATUS_LED_COLOR_OFF", "STATUS_LED_COLOR_GREEN", "STATUS_LED_COLOR_AMBER"]
+                "colors": ["off", "green", "amber"]
             },
             "voltage_high_threshold" : false,
             "voltage_low_threshold" : false,
@@ -51,7 +52,8 @@
                 {
                     "name": "PSU 2 fan 0",
                     "status_led": {
-                        "controllable": false
+                        "controllable": true,
+                        "colors": ["off", "green", "amber"]
                     },
                     "speed": {
                         "controllable": false
