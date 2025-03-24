@@ -41,6 +41,10 @@ static struct es9618xx_fan_data *es9618xx_fan_update_device(struct device *dev);
 static ssize_t fan_show_value(struct device *dev, struct device_attribute *da, char *buf);
 static ssize_t set_duty_cycle(struct device *dev, struct device_attribute *da,
             const char *buf, size_t count);
+static ssize_t set_fan_led(struct device *dev, struct device_attribute *da,
+            const char *buf, size_t count);
+static ssize_t set_fan_led_mode(struct device *dev, struct device_attribute *da,
+            const char *buf, size_t count);
 static ssize_t show_version(struct device *dev, struct device_attribute *da,
              char *buf);
 extern int es9618xx_cpld_read(unsigned short cpld_addr, u8 reg);
@@ -58,12 +62,15 @@ static const u8 fan_reg[] = {
 	0x15,	   /* front fan 4 speed(rpm) */
 	0x16,	   /* front fan 5 speed(rpm) */
 	0x17,	   /* front fan 6 speed(rpm) */
+	0x1C,	   /* LED display 1 (fan 1-4) */
+	0x1D,	   /* LED display 2 (fan 5-6) */
 	0x22,	   /* rear fan 1 speed(rpm) */
 	0x23,	   /* rear fan 2 speed(rpm) */
 	0x24,	   /* rear fan 3 speed(rpm) */
 	0x25,	   /* rear fan 4 speed(rpm) */
 	0x26,	   /* rear fan 5 speed(rpm) */
 	0x27,	   /* rear fan 6 speed(rpm) */
+	0x42,	   /* LED debug mode */
 
 };
 
@@ -95,12 +102,15 @@ enum sysfs_fan_attributes {
     FAN4_FRONT_SPEED_RPM,
     FAN5_FRONT_SPEED_RPM,
     FAN6_FRONT_SPEED_RPM,
+    FAN_LED_DISPLAY1,
+    FAN_LED_DISPLAY2,
     FAN1_REAR_SPEED_RPM,
     FAN2_REAR_SPEED_RPM,
     FAN3_REAR_SPEED_RPM,
     FAN4_REAR_SPEED_RPM,
     FAN5_REAR_SPEED_RPM,
     FAN6_REAR_SPEED_RPM,
+    FAN_LED_MODE,
     FAN1_DIRECTION,
     FAN2_DIRECTION,
     FAN3_DIRECTION,
@@ -119,8 +129,27 @@ enum sysfs_fan_attributes {
     FAN4_FAULT,
     FAN5_FAULT,
 	FAN6_FAULT,
+    FAN1_LED,
+    FAN2_LED,
+    FAN3_LED,
+    FAN4_LED,
+    FAN5_LED,
+    FAN6_LED,
     FAN_MAX_RPM,
     CPLD_VERSION
+};
+
+enum led_color {
+    LED_COLOR_UNKNOWN,
+    LED_COLOR_RED,
+    LED_COLOR_GREEN,
+    LED_COLOR_OFF
+};
+
+enum led_mode {
+    LED_MODE_NORMAL,
+    LED_MODE_DEBUG,
+    LED_MODE_UNKNOWN
 };
 
 /* Define attributes
@@ -133,6 +162,14 @@ enum sysfs_fan_attributes {
 #define DECLARE_FAN_DIRECTION_SENSOR_DEV_ATTR(index) \
     static SENSOR_DEVICE_ATTR(fan##index##_direction, S_IRUGO, fan_show_value, NULL, FAN##index##_DIRECTION)
 #define DECLARE_FAN_DIRECTION_ATTR(index)  &sensor_dev_attr_fan##index##_direction.dev_attr.attr
+
+#define DECLARE_FAN_LED_SENSOR_DEV_ATTR(index) \
+    static SENSOR_DEVICE_ATTR(fan##index##_led, S_IWUSR | S_IRUGO, fan_show_value, set_fan_led, FAN##index##_LED)
+#define DECLARE_FAN_LED_ATTR(index)  &sensor_dev_attr_fan##index##_led.dev_attr.attr
+
+#define DECLARE_FAN_LED_MODE_SENSOR_DEV_ATTR() \
+    static SENSOR_DEVICE_ATTR(fan_led_mode, S_IWUSR | S_IRUGO, fan_show_value, set_fan_led_mode, FAN_LED_MODE)
+#define DECLARE_FAN_LED_MODE_ATTR()  &sensor_dev_attr_fan_led_mode.dev_attr.attr
 
 #define DECLARE_FAN_DUTY_CYCLE_SENSOR_DEV_ATTR(index) \
     static SENSOR_DEVICE_ATTR(fan##index##_duty_cycle_percentage, S_IWUSR | S_IRUGO, fan_show_value, set_duty_cycle, FAN##index##_DUTY_CYCLE_PERCENTAGE)
@@ -188,8 +225,19 @@ DECLARE_FAN_DIRECTION_SENSOR_DEV_ATTR(4);
 DECLARE_FAN_DIRECTION_SENSOR_DEV_ATTR(5);
 DECLARE_FAN_DIRECTION_SENSOR_DEV_ATTR(6);
 
+/* 6 fan led attribute in this platform */
+DECLARE_FAN_LED_SENSOR_DEV_ATTR(1);
+DECLARE_FAN_LED_SENSOR_DEV_ATTR(2);
+DECLARE_FAN_LED_SENSOR_DEV_ATTR(3);
+DECLARE_FAN_LED_SENSOR_DEV_ATTR(4);
+DECLARE_FAN_LED_SENSOR_DEV_ATTR(5);
+DECLARE_FAN_LED_SENSOR_DEV_ATTR(6);
+
 /* 1 fan duty cycle attribute in this platform */
 DECLARE_FAN_DUTY_CYCLE_SENSOR_DEV_ATTR();
+
+/* LED debug mode attribute */
+DECLARE_FAN_LED_MODE_SENSOR_DEV_ATTR();
 
 static struct attribute *es9618xx_fan_attributes[] = {
     &sensor_dev_attr_version.dev_attr.attr,
@@ -218,8 +266,15 @@ static struct attribute *es9618xx_fan_attributes[] = {
 	DECLARE_FAN_DIRECTION_ATTR(4),
 	DECLARE_FAN_DIRECTION_ATTR(5),
 	DECLARE_FAN_DIRECTION_ATTR(6),
+    DECLARE_FAN_LED_ATTR(1),
+    DECLARE_FAN_LED_ATTR(2),
+    DECLARE_FAN_LED_ATTR(3),
+    DECLARE_FAN_LED_ATTR(4),
+    DECLARE_FAN_LED_ATTR(5),
+    DECLARE_FAN_LED_ATTR(6),
     DECLARE_FAN_DUTY_CYCLE_ATTR(),
     DECLARE_FAN_MAX_RPM_ATTR(),
+    DECLARE_FAN_LED_MODE_ATTR(),
     NULL
 };
 
@@ -324,6 +379,85 @@ exit:
 	return count;
 }
 
+static ssize_t set_fan_led(struct device *dev, struct device_attribute *da,
+            const char *buf, size_t count)
+{
+    int error, value;
+    u8 reg, offset, reg_val, fan_id;
+    struct i2c_client *client = to_i2c_client(dev);
+    struct es9618xx_fan_data *data = i2c_get_clientdata(client);
+    struct sensor_device_attribute *attr = to_sensor_dev_attr(da);
+
+    error = kstrtoint(buf, 10, &value);
+    if (error)
+        return error;
+
+    if (value < LED_COLOR_RED || value > LED_COLOR_OFF)
+        return -EINVAL;
+
+    mutex_lock(&data->update_lock);
+
+    data = es9618xx_fan_update_device(dev);
+    if (data->valid) {
+        switch (attr->index) {
+            case FAN1_LED:
+            case FAN2_LED:
+            case FAN3_LED:
+            case FAN4_LED:
+                reg = FAN_LED_DISPLAY1;
+                fan_id = FAN4_ID;
+                break;
+            case FAN5_LED:
+            case FAN6_LED:
+                reg = FAN_LED_DISPLAY2;
+                fan_id = FAN6_ID;
+                break;
+            default:
+                goto exit;
+        }
+
+        offset = 2 * (fan_id - (attr->index - FAN1_LED));
+        reg_val = data->reg_val[reg];
+        reg_val &= ~(0x03 << offset);
+        reg_val |= ((value & 0x03) << offset);
+        es9618xx_fan_write_value(client, fan_reg[reg], reg_val);
+        data->valid = 0;
+    } else {
+        return count;
+    }
+
+exit:
+    mutex_unlock(&data->update_lock);
+    return count;
+}
+
+static ssize_t set_fan_led_mode(struct device *dev, struct device_attribute *da,
+            const char *buf, size_t count)
+{
+    int error, value;
+    u8 reg_val;
+    struct i2c_client *client = to_i2c_client(dev);
+    struct es9618xx_fan_data *data = i2c_get_clientdata(client);
+
+    error = kstrtoint(buf, 10, &value);
+    if (error)
+        return error;
+
+    if (value < LED_MODE_NORMAL || value > LED_MODE_DEBUG)
+        return -EINVAL;
+
+    mutex_lock(&data->update_lock);
+
+    reg_val = data->reg_val[FAN_LED_MODE];
+    reg_val &= ~(0x01 << 7);
+    reg_val |= (value << 7);
+    es9618xx_fan_write_value(client, fan_reg[FAN_LED_MODE], reg_val);
+    data->valid = 0;
+
+    mutex_unlock(&data->update_lock);
+    return count;
+}
+
 static ssize_t fan_show_value(struct device *dev, struct device_attribute *da,
              char *buf)
 {
@@ -331,6 +465,7 @@ static ssize_t fan_show_value(struct device *dev, struct device_attribute *da,
 	struct es9618xx_fan_data *data = i2c_get_clientdata(client);
     struct sensor_device_attribute *attr = to_sensor_dev_attr(da);
     ssize_t ret = 0;
+    u8 reg, offset;
 
     mutex_lock(&data->update_lock);
 
@@ -356,6 +491,9 @@ static ssize_t fan_show_value(struct device *dev, struct device_attribute *da,
             case FAN5_REAR_SPEED_RPM:
             case FAN6_REAR_SPEED_RPM:
                 ret = sprintf(buf, "%u\n", reg_val_to_speed_rpm(data->reg_val[attr->index]));
+                break;
+            case FAN_LED_MODE:
+                ret = sprintf(buf, "%u\n", (data->reg_val[attr->index] >> 7) & 0x01);
                 break;
             case FAN1_DIRECTION:
             case FAN2_DIRECTION:
@@ -385,15 +523,29 @@ static ssize_t fan_show_value(struct device *dev, struct device_attribute *da,
             case FAN6_FAULT:
                 ret = sprintf(buf, "%d\n", is_fan_fault(data, attr->index - FAN1_FAULT));
                 break;
+            case FAN1_LED:
+            case FAN2_LED:
+            case FAN3_LED:
+            case FAN4_LED:
+                reg = FAN_LED_DISPLAY1;
+                offset = 2 * (FAN4_ID - (attr->index - FAN1_LED));
+                ret = sprintf(buf, "%d\n", (data->reg_val[reg] >> offset) & 0x03);
+                break;
+            case FAN5_LED:
+            case FAN6_LED:
+                reg = FAN_LED_DISPLAY2;
+                offset = 2 * (FAN6_ID - (attr->index - FAN1_LED));
+                ret = sprintf(buf, "%d\n", (data->reg_val[reg] >> offset) & 0x03);
+                break;
 			case FAN_MAX_RPM:
 				ret = sprintf(buf, "%d\n", MAX_FAN_SPEED_RPM);
                 break;
             default:
                 break;
         }
-    }
 
-    mutex_unlock(&data->update_lock);
+        mutex_unlock(&data->update_lock);
+    }
 
     return ret;
 }
