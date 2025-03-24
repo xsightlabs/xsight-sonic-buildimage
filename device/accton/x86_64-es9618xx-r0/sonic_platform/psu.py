@@ -47,10 +47,6 @@ PSU_CPLD_I2C_MAPPING = {
 class Psu(PsuBase):
     """Platform-specific Psu class"""
 
-    STATUS_LED_COLOR_GREEN = "STATUS_LED_COLOR_GREEN"
-    STATUS_LED_COLOR_AMBER = "STATUS_LED_COLOR_AMBER"
-    STATUS_LED_COLOR_OFF = "STATUS_LED_COLOR_OFF"
-
     def __init__(self, psu_index=0):
         PsuBase.__init__(self)
         self.index = psu_index
@@ -211,7 +207,7 @@ class Psu(PsuBase):
             A boolean value, True if device is operating properly, False if not
         """
         power_path="{}{}".format(self.cpld_path, 'psu_power_good')
-        val=self._api_helper.read_txt_file(power_path)
+        val = self._api_helper.read_txt_file(power_path)
         if val is not None:
             if int(val, 10) == 1:
                 self.set_status_led(self.STATUS_LED_COLOR_GREEN)

@@ -48,7 +48,6 @@ PSU_CPLD_I2C_MAPPING = {
     },
 }
 
-
 class Fan(FanBase):
     """Platform-specific Fan class"""
     
@@ -63,6 +62,7 @@ class Fan(FanBase):
         self.fan_tray_index = fan_tray_index
         self.is_psu_fan = is_psu_fan
         self.status_led_state = None
+
         if self.is_psu_fan:
             self.psu_index = psu_index
             self.psu_i2c_num = PSU_HWMON_I2C_MAPPING[self.psu_index]['num']
@@ -246,20 +246,29 @@ class Fan(FanBase):
         Returns:
             bool: True if status LED state is set successfully, False if not
         """
-        self.status_led_state = color
-        set_status = 0
-        if "off" == self.status_led_state:
-            set_status = 0
-        elif "amber" == self.status_led_state:
-            set_status = 3
-        elif "red" == self.status_led_state:
-            set_status = 3
-        elif "green" == self.status_led_state:
-            set_status = 1
+
+        if self.is_psu_fan:
+            if self.get_presence():
+                platform_chassis = platform.Platform().get_chassis()
+                psu = platform_chassis.get_psu(self.psu_index)
+                return psu.set_status_led(color)
+            else:
+                return False
         else:
-            return False
-        self._api_helper.write_txt_file(FAN_LED_FILE, set_status)
-        return True
+            self.status_led_state = color
+            set_status = 0
+            if FanBase.STATUS_LED_COLOR_OFF == self.status_led_state:
+                set_status = 0
+            elif FanBase.STATUS_LED_COLOR_AMBER == self.status_led_state:
+                set_status = 3
+            elif FanBase.STATUS_LED_COLOR_RED == self.status_led_state:
+                set_status = 3
+            elif FanBase.STATUS_LED_COLOR_GREEN == self.status_led_state:
+                set_status = 1
+            else:
+                return False
+            self._api_helper.write_txt_file(FAN_LED_FILE, set_status)
+            return True
 
     def get_status_led(self):
         """
