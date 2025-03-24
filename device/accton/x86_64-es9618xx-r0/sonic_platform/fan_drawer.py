@@ -10,12 +10,12 @@
 try:
     from sonic_platform_base.fan_drawer_base import FanDrawerBase
     from sonic_platform.fan import Fan
+    from sonic_platform import platform
     from .helper import APIHelper
 except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
 FANS_PER_FANTRAY = 2
-FAN_LED_FILE = "/sys/class/leds/es9618xx_led::fan/brightness"
 
 class FanDrawer(FanDrawerBase):
     """Platform-specific Fan class"""
@@ -26,7 +26,7 @@ class FanDrawer(FanDrawerBase):
         # FanTray is 0-based in platforms
         self._api_helper=APIHelper()
         self.fantrayindex = fantray_index
-        self.status_led_state = None
+        self.status_led_state = self.STATUS_LED_COLOR_OFF
         for i in range(FANS_PER_FANTRAY):
             self._fan_list.append(Fan(fantray_index, i))
 
@@ -108,19 +108,22 @@ class FanDrawer(FanDrawerBase):
                    fan drawer status LED
         Returns:
             bool: True if status LED state is set successfully, False if not
+        Notes:
+            The fan drawer LED status is managed in the `fan.py` module, as its
+            output is displayed through the `show platform fan` command.
         """
         self.status_led_state = color
-        set_status = 0
-        if "off" == self.status_led_state:
-            set_status = 0
-        elif "amber" == self.status_led_state:
-            set_status = 3
-        elif "red" == self.status_led_state:
-            set_status = 3
-        elif "green" == self.status_led_state:
-            set_status = 1
-        else:
-            return False
-        self._api_helper.write_txt_file(FAN_LED_FILE, set_status)
         return True
+
+    def get_status_led(self):
+        """
+        Gets the state of the fan drawer LED
+
+        Returns:
+            A string, one of the predefined STATUS_LED_COLOR_* strings above
+        Notes:
+            The fan drawer LED status is managed in the `fan.py` module, as its
+            output is displayed through the `show platform fan` command.
+        """
+        return self.status_led_state
 

@@ -21,8 +21,9 @@ TRAY_FANSPEED_TOLERANCE = 25
 TRAY_LOW_FANSPEED_TOLERANCE = 35
 TRAY_LOW_FANSPEED_RPM = 30
 
-FAN_LED_FILE = "/sys/class/leds/es9618xx_led::fan/brightness"
+FP_FAN_LED_FILE = "/sys/class/leds/es9618xx_led::fan/brightness"
 CPLD_I2C_PATH = "/sys/bus/i2c/devices/10-0066/fan"
+FAN_LED_MODE = CPLD_I2C_PATH + "_led_mode"
 FAN_PERCENTAGE = CPLD_I2C_PATH + "_duty_cycle_percentage"
 FAN_PERCENTAGE_TMP = "/tmp/fan_duty_cycle_percentage"
 PSU_I2C_PATH ="/sys/bus/i2c/devices/{}-00{}/"
@@ -48,6 +49,10 @@ PSU_CPLD_I2C_MAPPING = {
     },
 }
 
+LED_DEBUG_MODE_OFF = "0"
+LED_DEBUG_MODE_ON = "1"
+
+
 class Fan(FanBase):
     """Platform-specific Fan class"""
     
@@ -57,12 +62,23 @@ class Fan(FanBase):
     current_cooling_level = min_cooling_level
 
     def __init__(self, fan_tray_index, fan_index=0, is_psu_fan=False, psu_index=0):
+        # Front panel fan LED
+        self.SYSFANLED_MODES = {
+            "0" : self.STATUS_LED_COLOR_OFF,
+            "1" : self.STATUS_LED_COLOR_GREEN,
+            "3" : self.STATUS_LED_COLOR_AMBER
+        }
+        # Fan drawer status LED
+        self.FANLED_MODES = {
+            "3" : self.STATUS_LED_COLOR_OFF,
+            "2" : self.STATUS_LED_COLOR_GREEN,
+            "1" : self.STATUS_LED_COLOR_RED
+        }
+
         self._api_helper=APIHelper()
         self.fan_index = fan_index
         self.fan_tray_index = fan_tray_index
         self.is_psu_fan = is_psu_fan
-        self.status_led_state = None
-
         if self.is_psu_fan:
             self.psu_index = psu_index
             self.psu_i2c_num = PSU_HWMON_I2C_MAPPING[self.psu_index]['num']
@@ -245,30 +261,45 @@ class Fan(FanBase):
                    fan module status LED
         Returns:
             bool: True if status LED state is set successfully, False if not
+        Notes:
+            The following notes are applicable only to fans that are not related to the PSU.
+            This function handle the fan drawer LED status, not the fan LED status.
+            This fan drawer LED status is managed by default in auto mode via the fan CPLD.
+            It can be controlled by software only when the `fan drawer LED mode` is set to
+            debug mode.
+            This function also manages the front panel fan LED status based on the status of
+            all fan drawer LEDs.
         """
+        if not self.is_psu_fan:
+            sts1 = False
 
-        if self.is_psu_fan:
+            # This code is executed when the `fan drawer LED mode` is set to debug mode.
+            led_mode = self._api_helper.read_txt_file(FAN_LED_MODE)
+            if led_mode == LED_DEBUG_MODE_ON:
+                filename = "{}{}{}".format(CPLD_I2C_PATH, self.fan_tray_index + 1, '_led')
+                for key, val in self.FANLED_MODES.items():
+                    if val == color:
+                        sts1 = self._api_helper.write_txt_file(filename, key)
+            else:
+                sts1 = True
+
+            # Set the front panel fan LED based on the status of all fan drawer LEDs
+            fp_led_color = 'green'
+            fans = platform.Platform().get_chassis().get_all_fans()
+            for fan in fans:
+                if fan.get_status_led() == 'red':
+                    # Force `amber` instead of `red` since there is no option for 'red' in hardware
+                    fp_led_color = 'amber'
+            sts2 = self.set_front_panel_status_led(fp_led_color)
+
+            return sts1 and sts2
+        else:
             if self.get_presence():
                 platform_chassis = platform.Platform().get_chassis()
                 psu = platform_chassis.get_psu(self.psu_index)
                 return psu.set_status_led(color)
             else:
                 return False
-        else:
-            self.status_led_state = color
-            set_status = 0
-            if FanBase.STATUS_LED_COLOR_OFF == self.status_led_state:
-                set_status = 0
-            elif FanBase.STATUS_LED_COLOR_AMBER == self.status_led_state:
-                set_status = 3
-            elif FanBase.STATUS_LED_COLOR_RED == self.status_led_state:
-                set_status = 3
-            elif FanBase.STATUS_LED_COLOR_GREEN == self.status_led_state:
-                set_status = 1
-            else:
-                return False
-            self._api_helper.write_txt_file(FAN_LED_FILE, set_status)
-            return True
 
     def get_status_led(self):
         """
@@ -278,13 +309,37 @@ class Fan(FanBase):
         Returns:
             string: representing the color with which is the status of
                    fan modules
+        Notes:
+            The following notes are applicable only to fans that are not related to the PSU.
+            This function read the fan drawer LED status, not the fan LED status.
+            This fan drawer LED status is managed by default in auto mode via the fan CPLD.
+            It can be controlled by software only when the `fan drawer LED mode` is set to
+            debug mode.
+            This fanction implements the fan drawer LED status to ensure the correct hardware
+            LED indication is displayed via the `show platform fan` command.
         """
         if not self.is_psu_fan:
-            return self.status_led_state
+            filename = "{}{}{}".format(CPLD_I2C_PATH, self.fan_tray_index + 1, '_led')
+            key = self._api_helper.read_txt_file(filename)
+            return self.FANLED_MODES.get(key, 'N/A')
         else:
             platform_chassis = platform.Platform().get_chassis()
             psu = platform_chassis.get_psu(self.psu_index)
             return psu.get_status_led()
+
+    def set_front_panel_status_led(self, color):
+        """
+        Sets the state of the front panel fan status LED
+        Args:
+            color: A string representing the color with which to set the
+                   fan drawer status LED
+        Returns:
+            bool: True if status LED state is set successfully, False if not
+        """
+        for key, val in self.SYSFANLED_MODES.items():
+            if val == color:
+                return self._api_helper.write_txt_file(FP_FAN_LED_FILE, key)
+        return False
 
     def get_presence(self):
         """

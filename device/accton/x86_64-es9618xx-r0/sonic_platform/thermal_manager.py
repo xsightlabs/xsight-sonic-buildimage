@@ -6,6 +6,8 @@ from .thermal_conditions import *
 from .thermal_infos import *
 from .helper import APIHelper
 
+CPLD_I2C_PATH = "/sys/bus/i2c/devices/10-0066/fan"
+FAN_LED_MODE = CPLD_I2C_PATH + "_led_mode"
 
 class ThermalManager(ThermalManagerBase):
     @classmethod
@@ -16,6 +18,8 @@ class ThermalManager(ThermalManagerBase):
         :return:
         """
         cls._add_private_thermal_policy()
+        _api_helper = APIHelper()
+        _api_helper.write_txt_file(FAN_LED_MODE, 0) # Disable LED debug mode
 
     @classmethod
     def deinitialize(cls):
@@ -25,6 +29,8 @@ class ThermalManager(ThermalManagerBase):
         :return:
         """
         cls.start_thermal_control_algorithm()
+        _api_helper = APIHelper()
+        _api_helper.write_txt_file(FAN_LED_MODE, 1) # Enable LED debug mode
 
     @classmethod
     def start_thermal_control_algorithm(cls):
