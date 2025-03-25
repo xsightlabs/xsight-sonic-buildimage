@@ -1,6 +1,6 @@
 {%- set default_cable = '5m' %}
 {% set ingress_pool_size = '8493465' %}
-{% set dummy_egress_pool_size = '8493465' %}
+{% set egress_pool_size = '8493465' %}
 
 {%- macro generate_buffer_pool_and_profiles() %}
     "BUFFER_POOL": {
@@ -9,8 +9,8 @@
             "type": "ingress",
             "mode": "dynamic"
         },
-        "dummy_egress_pool": {
-            "size": "{{ dummy_egress_pool_size }}",
+        "egress_lossless_pool": {
+            "size": "{{ egress_pool_size }}",
             "type": "egress",
             "mode": "dynamic"
         }
@@ -28,8 +28,8 @@
             "size":"3584",
             "dynamic_th":"3"
         },
-        "dummy_egress_profile": {
-            "pool": "dummy_egress_pool",
+        "egress_lossy_profile": {
+            "pool": "egress_lossless_pool",
             "size": "1518",
             "dynamic_th": "3"
         }
@@ -50,12 +50,11 @@
     },
 {%- endmacro %}
 
-{# dummy_egress_profile used as workaround to enable queue counters. #}
 {%- macro generate_queue_buffers(port_names_list_active) %}
     "BUFFER_QUEUE": {
 {% for port in port_names_list_active.split(',') %}
         "{{ port }}|0-7": {
-            "profile" : "dummy_egress_profile"
+            "profile" : "egress_lossy_profile"
         }
         {% if not loop.last %},{% endif %}
 {% endfor %}
