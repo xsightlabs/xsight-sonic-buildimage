@@ -234,6 +234,7 @@ class Psu(PsuBase):
 
         val = open(model_path, encoding='utf-8', errors='ignore').read()
         if val is not None:
+            val = val.strip()
             return val
         else:
             return "Unknown"
@@ -250,6 +251,7 @@ class Psu(PsuBase):
 
         val = open(serial_path, encoding='utf-8', errors='ignore').read()
         if val is not None:
+            val = val.strip()
             return val
         else:
             return "Unknown"
