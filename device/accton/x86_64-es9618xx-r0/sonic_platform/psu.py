@@ -47,10 +47,6 @@ PSU_CPLD_I2C_MAPPING = {
 class Psu(PsuBase):
     """Platform-specific Psu class"""
 
-    STATUS_LED_COLOR_GREEN = "STATUS_LED_COLOR_GREEN"
-    STATUS_LED_COLOR_AMBER = "STATUS_LED_COLOR_AMBER"
-    STATUS_LED_COLOR_OFF = "STATUS_LED_COLOR_OFF"
-
     def __init__(self, psu_index=0):
         PsuBase.__init__(self)
         self.index = psu_index
