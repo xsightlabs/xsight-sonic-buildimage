@@ -212,14 +212,10 @@ sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip3 install thrift
 {# Xsight platform files and packages #}
 {% if sonic_asic_platform == "xsight" %}
 
-## Add support for log output into journalctl from python services
-sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install \
-    python3-systemd
-
-## X1 scripts
-sudo cp -a platform/xsight/files/xlx $FILESYSTEM_ROOT/home/admin/
-sudo chmod +x $FILESYSTEM_ROOT/home/admin/xlx/*.sh
-sudo LANG=C chroot $FILESYSTEM_ROOT chown -R $USERNAME /home/admin/xlx
+## X2 scripts
+sudo cp -a platform/xsight/files/xlx $FILESYSTEM_ROOT/opt
+sudo chmod +x $FILESYSTEM_ROOT/opt/xlx/*.sh
+sudo LANG=C chroot $FILESYSTEM_ROOT chown -R $USERNAME /opt/xlx
 
 ## Default ixgbe module loading is happening to early for udev interface renaming
 ## Thus blacklisting ixgbe. It will be loaded in xlx/start.sh.

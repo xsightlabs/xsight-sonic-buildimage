@@ -65,7 +65,7 @@ function startplatform() {
     fi
 
     if [[ x"$sonic_asic_platform" == x"xsight" ]]; then
-        /home/admin/xlx/start.sh
+        /opt/xlx/start.sh
     fi
 
     if [[ x"$WARM_BOOT" != x"true" ]]; then
@@ -150,7 +150,7 @@ function stopplatform2() {
         elif [ x"$sonic_asic_platform" == x"nvidia-bluefield" ]; then
             /usr/bin/bfnet.sh stop
         elif [ x$sonic_asic_platform == x'xsight' ]; then
-            /home/admin/xlx/down.sh $DEBUGLOG
+            /opt/xlx/down.sh $DEBUGLOG
         fi
     fi
 }
