@@ -221,6 +221,7 @@ sudo cp -a platform/xsight/files/xlx $FILESYSTEM_ROOT/home/admin/
 sudo chmod +x $FILESYSTEM_ROOT/home/admin/xlx/*.sh
 sudo LANG=C chroot $FILESYSTEM_ROOT chown -R $USERNAME /home/admin/xlx
 sudo cp -a ${files_path}/ixgbe.ko  $FILESYSTEM_ROOT/lib/modules/{{kversion}}/kernel/drivers/net/ethernet/intel/ixgbe/ixgbe.ko
+sudo cp -a platform/xsight/files/link/* $FILESYSTEM_ROOT/lib/systemd/network/
 
 ## Default ixgbe module loading is happening to early for udev interface renaming
 ## Thus blacklisting ixgbe. It will be loaded in xlx/start.sh.
