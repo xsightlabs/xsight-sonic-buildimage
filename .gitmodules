@@ -145,6 +145,3 @@
 [submodule "platform/marvell-teralynx/sonic-platform-marvell-teralynx"]
 	path = platform/marvell-teralynx/sonic-platform-marvell-teralynx
 	url = https://github.com/Marvell-switching/sonic-platform-marvell.git
-[submodule "src/ixgbe/ixgbe"]
-	path = src/ixgbe/ixgbe
-	url = http://x-git01.xsight.ent:7990/scm/xs/ixgbe.git
