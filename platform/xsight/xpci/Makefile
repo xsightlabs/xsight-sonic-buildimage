@@ -23,8 +23,6 @@ $(addprefix $(DEST)/, $(MAIN_TARGET)): $(DEST)/% :
 #	fi
 #	done
 
-	sudo dkms build -m xpci/$(XPCI_VERSION) -k $(KVERSION)/amd64
-
 	mkdir -p $(DKMS_TMP)/DEBIAN
 
 	mkdir -p $(DKMS_TMP)/lib/modules/$(KVERSION)/updates/dkms
@@ -35,7 +33,7 @@ $(addprefix $(DEST)/, $(MAIN_TARGET)): $(DEST)/% :
 	echo -e "Package: $(MOD_DEB_NAME)\n\
 	Version: $(XPCI_VERSION) \n\
 	Architecture: amd64 \n\
-	Maintainer: Anton Parkhomenko <aparkhomenko@larch-networks.com> \n\
+	Maintainer: Kirill Tsym <kirillt@xsightlabs.com> \n\
 	Description: XPCI kernel module for SONiC project" \
 	> $(DKMS_TMP)/DEBIAN/control
 
