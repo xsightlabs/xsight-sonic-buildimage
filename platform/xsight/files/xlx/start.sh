@@ -120,7 +120,7 @@ if [[ ${ONIE_MACHINE,,} != *"kvm"* ]]; then
     fi
 
     # Checking the label revision
-    decode-syseeprom -d | grep "Label Revision" | awk '{print $5}' > ${LABEL_REVISION_FILE}
+    decode-syseeprom | grep "Label Revision" | awk '{print $5}' > ${LABEL_REVISION_FILE}
 fi
 
 if [[ ${XPCI_NETDEV_ATTACH_IF} == "xcpu" ]]; then
