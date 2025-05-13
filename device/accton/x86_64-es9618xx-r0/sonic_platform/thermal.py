@@ -129,12 +129,11 @@ class Thermal(ThermalBase):
             temp_file_path = os.path.join(self.hwmon_path, temp_file)
             raw_temp = self.__read_txt_file(temp_file_path)
             if raw_temp is not None:
-                return float(raw_temp)/1000
+                return float(raw_temp) / 1000
             else:
                 return 0
         else:
             return 0
-
 
     def __set_threshold(self, file_name, temperature):
         if self.index < Thermal.ASIC_TEMP_SENSORS_OFFSET:
@@ -172,15 +171,15 @@ class Thermal(ThermalBase):
 
             if self.index < Thermal.ASIC_TEMP_SENSORS_OFFSET:
                 temp_file = "temp{}_input".format(self.ss_index)
-                return float(self.__get_temp(temp_file))
+                return round(float(self.__get_temp(temp_file)), 1)
             elif self.index >= Thermal.ASIC_TEMP_SENSORS_OFFSET and self.index < Thermal.ASIC_CALCULATED_TEMP_OFFSET:
-                return float(self.tbl.get("temperature_{}".format(self.index - Thermal.ASIC_TEMP_SENSORS_OFFSET), None))
+                return round(float(self.tbl.get("temperature_{}".format(self.index - Thermal.ASIC_TEMP_SENSORS_OFFSET), None)), 1)
             elif self.index == Thermal.ASIC_CALCULATED_TEMP_OFFSET:
-                return float(self.tbl.get("average_temperature", None))
+                return round(float(self.tbl.get("average_temperature", None)), 1)
             elif self.index == Thermal.ASIC_CALCULATED_TEMP_OFFSET + 1:
-                return float(self.tbl.get("maximum_temperature", None))
+                return round(float(self.tbl.get("maximum_temperature", None)), 1)
             elif self.index >= Thermal.XCVR_TEMP_SENSORS_OFFSET:
-                return float(Thermal.TRANSCEIVER_TEMP_LIST[self.index - Thermal.XCVR_TEMP_SENSORS_OFFSET][0])
+                return round(float(Thermal.TRANSCEIVER_TEMP_LIST[self.index - Thermal.XCVR_TEMP_SENSORS_OFFSET][0]), 1)
             else:
                 return None
         except (TypeError, ValueError):
@@ -223,7 +222,7 @@ class Thermal(ThermalBase):
             A float number, the low threshold temperature of thermal in Celsius
             up to nearest thousandth of one degree Celsius, e.g. 0.0
         """
-        return 0.01
+        return 0.1
 
     def get_low_critical_threshold(self):
         """
@@ -232,7 +231,7 @@ class Thermal(ThermalBase):
             A float number, the low critical threshold temperature of thermal in Celsius
             up to nearest thousandth of one degree Celsius, e.g. 30.125
         """
-        return 0.01
+        return 0.1
 
     def set_high_threshold(self, temperature):
         """
