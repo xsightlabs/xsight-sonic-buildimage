@@ -351,7 +351,7 @@ PLATFORM_ROOT_PATH = '/usr/share/sonic/device'
 PLATFORM_API2_WHL_FILE_PY2 ='sonic_platform-1.0-py2-none-any.whl'
 PLATFORM_API2_WHL_FILE_PY3 ='sonic_platform-1.0-py3-none-any.whl'
 def do_sonic_platform_install():
-    device_path = "{}{}{}{}".format(PLATFORM_ROOT_PATH, '/x86_64-', PROJECT_NAME, '-r0')
+    device_path = "{}{}{}{}{}".format(PLATFORM_ROOT_PATH, '/x86_64-', 'accton_', PROJECT_NAME, '-r0')
     SONIC_PLATFORM_BSP_WHL_PKG_PY3 = "/".join([device_path, PLATFORM_API2_WHL_FILE_PY3])
     SONIC_PLATFORM_BSP_WHL_PKG_PY2 = "/".join([device_path, PLATFORM_API2_WHL_FILE_PY2])
 

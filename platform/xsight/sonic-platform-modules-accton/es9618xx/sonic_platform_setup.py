@@ -1,7 +1,7 @@
 from setuptools import setup
 
 DEVICE_NAME = 'accton'
-HW_SKU = 'x86_64-es9618xx-r0'  
+HW_SKU = 'x86_64-accton_es9618xx-r0'
 
 setup(
     name='sonic-platform',
