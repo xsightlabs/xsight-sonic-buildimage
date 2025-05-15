@@ -1,5 +1,5 @@
 DEVICE_DATA = {
-    'x86_64-es9618xx-r0': {
+    'x86_64-accton_es9618xx-r0': {
         'thermal': {
             'threshold_table': {
                 'thermal_x48': ["64:69:10", "70:75:10",   "80:85:10"],
