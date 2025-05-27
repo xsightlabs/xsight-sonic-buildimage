@@ -1,6 +1,6 @@
 {
     "chassis": {
-      "name": "es9618xx-O16x400G",
+      "name": "Accton-ES9618XX-O16x400G",
       "components": [
           {
               "name": "BIOS"
