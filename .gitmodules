@@ -9,11 +9,11 @@
 [submodule "sonic-sairedis"]
 	path = src/sonic-sairedis
 	url = http://x-git01.xsight.ent:7990/scm/xs/sonic-sairedis.git
-	branch = 202211-xsight
+	branch = 202411-xsight
 [submodule "sonic-swss"]
 	path = src/sonic-swss
-	url = http://x-git01.xsight.ent:7990/scm/xs/sonic-swss.git
-	branch = 202211-xsight
+ 	url = http://x-git01.xsight.ent:7990/scm/xs/sonic-swss.git
+	branch = 202411-xsight
 [submodule "src/p4c-bm/p4c-bm"]
 	path = platform/p4/p4c-bm/p4c-bm
 	url = https://github.com/krambn/p4c-bm
@@ -38,14 +38,14 @@
 [submodule "src/sonic-utilities"]
 	path = src/sonic-utilities
   url = https://bbk.xsightlabs.com/scm/xs/sonic-utilities.git
-	branch = 202211-xsight
+	branch = 2022411-xsight
 [submodule "platform/broadcom/sonic-platform-modules-arista"]
 	path = platform/broadcom/sonic-platform-modules-arista
 	url = https://github.com/aristanetworks/sonic
 [submodule "src/sonic-platform-common"]
 	path = src/sonic-platform-common
-	url = https://bbk.xsightlabs.com/scm/xs/sonic-platform-common.git
-	branch = 202211-xsight
+  url = https://bbk.xsightlabs.com/scm/xs/sonic-platform-common.git
+	branch = 202411-xsight
 [submodule "src/sonic-platform-daemons"]
 	path = src/sonic-platform-daemons
 	url = https://github.com/sonic-net/sonic-platform-daemons
