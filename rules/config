@@ -116,7 +116,7 @@ FRR_USER_GID = 300
 #	cache   :  Same as rwcache
 # SONIC_DPKG_CACHE_SOURCE - Stores the cache location details
 SONIC_DPKG_CACHE_METHOD ?= rwcache
-SONIC_DPKG_CACHE_SOURCE ?= /var/cache/sonic/artifacts.master
+SONIC_DPKG_CACHE_SOURCE ?= /var/cache/sonic/artifacts.202411
 
 # Default VS build memory preparation
 DEFAULT_VS_PREPARE_MEM = yes
