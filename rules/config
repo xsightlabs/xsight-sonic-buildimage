@@ -66,7 +66,7 @@ DEFAULT_PASSWORD = password
 
 # INSTALL_DEBUG_TOOLS - installs debugging tools in baseline docker
 # Uncomment next line to enable:
-# INSTALL_DEBUG_TOOLS = y
+INSTALL_DEBUG_TOOLS = y
 
 # SONIC_USE_PDDF_FRAMEWORK - Use PDDF generic drivers and plugins
 # Uncomment next line to enable:
