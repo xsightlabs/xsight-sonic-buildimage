@@ -23,6 +23,8 @@ $(SYNCD)_UNINSTALLS += $(XSIGHT_LIBSAI_DEV)
 # Runtime dependency on xsight sai is set only for syncd
 $(SYNCD)_RDEPENDS += $(XSIGHT_LIBSAI)
 
+ifeq ($(ENABLE_SYNCD_RPC),y)
 # Remove the libthrift_0.11.0 dependency injected by rules/syncd.mk
 $(SYNCD)_DEPENDS := $(filter-out $(LIBTHRIFT_DEV),$($(SYNCD)_DEPENDS))
 $(SYNCD)_DEPENDS += $(LIBSAITHRIFT_DEV)
+endif
