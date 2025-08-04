@@ -1,0 +1,13 @@
+[Unit]
+Description=Accton ES9618XX Platform initialization service
+Before=pmon.service
+After=sysinit.target
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/es9618xx_util.py install
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
