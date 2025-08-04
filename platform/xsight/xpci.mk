@@ -1,7 +1,7 @@
 # Xsight xpci
 
 # Fallback when no xpci-dkms_*.deb in SONiC root (/sonic)
-XPCI_VERSION_GITHUB ?= 1.0
+XPCI_VERSION_GITHUB ?= 20.72.1
 XPCI_GITHUB_URL = https://github.com/xsightlabs/sonic-xsight-binaries/raw/refs/heads/main/amd64/kernel
 
 XPCI_DKMS_CANDIDATES := $(sort $(wildcard xpci-dkms_*_amd64.deb))
@@ -25,13 +25,13 @@ KERNEL_XPCI = xpci-modules-$(KVERSION)_$(XPCI_VERSION)_amd64.deb
 
 ifeq ($(XPCI_USE_LOCAL),y)
 XSIGHT_XPCI_URL_PREFIX = "file:///sonic"
+else
+XSIGHT_XPCI_URL_PREFIX = "$(XPCI_GITHUB_URL)"
+endif
+
 $(XPCI)_URL = "$(XSIGHT_XPCI_URL_PREFIX)/$(XPCI)"
 SONIC_ONLINE_DEBS += $(XPCI)
 
 $(KERNEL_XPCI)_DEPENDS += $(LINUX_HEADERS) $(LINUX_HEADERS_COMMON) $(XPCI)
 $(KERNEL_XPCI)_SRC_PATH = $(PLATFORM_PATH)/xpci
 SONIC_MAKE_DEBS += $(KERNEL_XPCI)
-else
-$(KERNEL_XPCI)_URL = "$(XPCI_GITHUB_URL)/$(KERNEL_XPCI)"
-SONIC_ONLINE_DEBS += $(KERNEL_XPCI)
-endif
