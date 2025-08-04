@@ -691,6 +691,7 @@ start() {
 {%- if sonic_asic_platform == "xsight" %}
         -v /opt/xplt:/opt/xplt:rw \
         -v /dev/shm:/dev/shm:rw \
+        -v /host/reboot-cause:/host/reboot-cause:rw \
 {%- endif %}
 {%- endif %}
 {%- if docker_container_name == "swss" %}
