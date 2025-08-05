@@ -143,14 +143,12 @@ exit:
     return status;
 }
 
-static int es9632_sys_remove(struct i2c_client *client)
+static void es9632_sys_remove(struct i2c_client *client)
 {
     struct es9632_sys_data *data = i2c_get_clientdata(client);
 
     sysfs_remove_group(&client->dev.kobj, &es9632_sys_group);
     kfree(data);
-
-    return 0;
 }
 
 static const struct i2c_device_id es9632_sys_id[] = {

@@ -393,14 +393,13 @@ static int sfp_device_probe(struct i2c_client *client,
 	return qsfp_probe(client, dev_id, &data->qsfp);
 }
 
-static int qfp_remove(struct i2c_client *client, struct qsfp_data *data)
+static void qfp_remove(struct i2c_client *client, struct qsfp_data *data)
 {
 	sfp_sysfs_eeprom_cleanup(&client->dev.kobj, &data->eeprom.bin);
 	kfree(data);
-	return 0;
 }
 
-static int sfp_device_remove(struct i2c_client *client)
+static void sfp_device_remove(struct i2c_client *client)
 {
 	struct sfp_port_data *data = i2c_get_clientdata(client);
 
@@ -408,8 +407,6 @@ static int sfp_device_remove(struct i2c_client *client)
 		case DRIVER_TYPE_OSFP:
 			return qfp_remove(client, data->qsfp);
    	}
-
-	return 0;
 }
 
 static struct i2c_driver sfp_driver = {

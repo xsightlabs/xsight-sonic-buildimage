@@ -316,15 +316,13 @@ exit:
         return status;
 }
 
-static int dps850_remove(struct i2c_client *client)
+static void dps850_remove(struct i2c_client *client)
 {
         struct dps850_data *data = i2c_get_clientdata(client);
 
         hwmon_device_unregister(data->hwmon_dev);
         sysfs_remove_group(&client->dev.kobj, &dps850_group);
         kfree(data);
-
-        return 0;
 }
 
 static const struct i2c_device_id dps850_id[] = {

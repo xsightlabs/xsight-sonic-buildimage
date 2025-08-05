@@ -696,7 +696,7 @@ exit:
 	return ret;
 }
 
-static int es9632_cpld_remove(struct i2c_client *client)
+static void es9632_cpld_remove(struct i2c_client *client)
 {
     struct es9632_cpld_data *data = i2c_get_clientdata(client);
     const struct attribute_group *group = NULL;
@@ -723,8 +723,6 @@ static int es9632_cpld_remove(struct i2c_client *client)
     }
 
     kfree(data);
-
-    return 0;
 }
 
 static int es9632_cpld_read_internal(struct i2c_client *client, u8 reg)
