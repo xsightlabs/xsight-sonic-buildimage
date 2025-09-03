@@ -18,7 +18,6 @@ XPLT_UTL="/opt/xplt/utils"
 XSIGHT_PCI_SIG="1e6c"
 XSIGHT_PCI_ID=""
 XSIGHT_DEVICE=""
-FIRSTBOOT="/tmp/notify_firstboot_to_platform"
 
 fname=$(basename $0)
 
