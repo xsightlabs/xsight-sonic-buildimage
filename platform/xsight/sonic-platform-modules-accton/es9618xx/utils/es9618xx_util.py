@@ -358,6 +358,10 @@ def device_install():
         if ret and FORCE == 0:
             return ret
 
+        path = f"/sys/bus/i2c/devices/{bus}-0050/write_timeout"
+        ret, msg = echo_to_file("250", path)
+        if ret and FORCE == 0:
+            return ret
 
 def device_uninstall():
     global FORCE
