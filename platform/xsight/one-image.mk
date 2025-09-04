@@ -6,9 +6,11 @@ $(SONIC_ONE_IMAGE)_IMAGE_TYPE = onie
 $(SONIC_ONE_IMAGE)_INSTALLS += $(SYSTEMD_SONIC_GENERATOR) $(KERNEL_XPCI)
 $(SONIC_ONE_IMAGE)_LAZY_INSTALLS += $(ACCTON_ES9632XX_PLATFORM_MODULE) \
                                     $(ACCTON_ES9618XX_PLATFORM_MODULE) \
+                                    $(ACCTON_AS9647_32D_PLATFORM_MODULE) \
                                     $(ACCTON_ES9632XQ_PLATFORM_MODULE) \
                                     $(ACCTON_ES9632XQ_XPLT_PLATFORM_MODULE) \
                                     $(ACCTON_ES9618XX_XPLT_PLATFORM_MODULE) \
+                                    $(ACCTON_AS9647_32D_XPLT_PLATFORM_MODULE) \
                                     $(XSIGHT_X2EVB_PLATFORM_MODULE) \
                                     $(XSIGHT_X2EVB_XPLT_PLATFORM_MODULE)
 
