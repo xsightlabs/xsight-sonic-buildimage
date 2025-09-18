@@ -362,6 +362,11 @@ def device_install():
         ret, msg = echo_to_file("250", path)
         if ret and FORCE == 0:
             return ret
+
+        path = f"/sys/bus/i2c/devices/13-0061/module_lpmode_{count}"
+        ret, msg = echo_to_file("0", path)
+        if ret and FORCE == 0:
+            return ret
     update_vddh_for_r0b()
 
 def device_uninstall():
