@@ -363,6 +363,12 @@ def device_install():
         if ret and FORCE == 0:
             return ret
 
+        path = f"/sys/bus/i2c/devices/13-0061/module_lpmode_{count}"
+        ret, msg = echo_to_file("0", path)
+        if ret and FORCE == 0:
+            return ret
+        time.sleep(0.1)
+
 def device_uninstall():
     global FORCE
 
