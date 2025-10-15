@@ -240,6 +240,25 @@ make configure PLATFORM=marvell PLATFORM_ARCH=armhf
 make target/sonic-marvell-armhf.bin
 ```
 
+## Xsight platform build examples
+
+_local build example:_
+
+```shell
+make init
+make configure PLATFORM=xsight
+SONIC_BUILD_JOBS=8 SONIC_DPKG_CACHE_METHOD=none make target/sonic-xsight.bin
+```
+
+_github build example:_
+
+```shell
+./xsight_update_gitconfig_for_github_build.sh update
+make init
+make configure PLATFORM=xsight
+SONIC_BUILD_JOBS=8 SONIC_DPKG_CACHE_METHOD=none make target/sonic-xsight.bin
+```
+
 To build Arm32 bit for (ARMHF) Marvell platform on amd64 host for debian buster
 using cross-compilation, run the following commands:
 
