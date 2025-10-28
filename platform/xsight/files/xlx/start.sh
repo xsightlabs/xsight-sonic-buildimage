@@ -18,22 +18,23 @@ XPLT_UTL="/opt/xplt/utils"
 XSIGHT_PCI_SIG="1e6c"
 XSIGHT_PCI_ID=""
 XSIGHT_DEVICE=""
-FIRSTBOOT="/tmp/notify_firstboot_to_platform"
 
-# Adding the custom.json content at run time is a quick workaround, which we do in our code.
-# It would be more appropriate to do it at build time, but it requires modifying the system-wide build script.
-# Please note that the following solution may not work if the system boot timing is changed in the future and
-# the /tmp/notify_firstboot_to_platform file is removed before the start.sh is invoked.
-# The current solution is used temporarily and the issue could also be resolved in the following ways:
-# 1. By adding the custom settings in build time through JSON template file (require change of system-wide files)
-# 2. Fixing incorrect removing of FIRSTBOOT indicator file (require a change of system-wide files)
-if [ -f $FIRSTBOOT ]; then
-    PLATFORM=$(sed -n 's/onie_platform=\(.*\)/\1/p' /host/machine.conf)
-
-    # update default config from custom.json
-    if [ -f /usr/share/sonic/device/$PLATFORM/custom.json ]; then
-        sonic-cfggen --from-db -j /usr/share/sonic/device/$PLATFORM/custom.json --print-data > /etc/sonic/config_db.json
-        sonic-cfggen -j /usr/share/sonic/device/$PLATFORM/custom.json --write-to-db
+# Adding the custom.json content at runtime is a workaround introduced in the 202311 code.
+# Ideally, this should be handled via platform.json, but the necessary infrastructure
+# was added later in 202411 (PR #20826: "[asic_sensors] Generate the ASIC sensor polling
+# configuration based on platform.json").
+ASIC_POLLER_SECTION=$(sonic-cfggen --from-db -j /etc/sonic/config_db.json --print-data | jq 'has("ASIC_SENSORS")')
+PLATFORM=$(sed -n 's/onie_platform=\(.*\)/\1/p' /host/machine.conf)
+CUSTOM_JSON="/usr/share/sonic/device/$PLATFORM/custom.json"
+TMP_CONFIG="/etc/sonic/config_db.json.tmp"
+if [ "false" = "$ASIC_POLLER_SECTION" ]; then
+    if [ -f "$CUSTOM_JSON" ]; then
+        echo "Merging $CUSTOM_JSON into config_db.json ..."
+        sonic-cfggen --from-db -j "$CUSTOM_JSON" --print-data > "$TMP_CONFIG"
+        mv "$TMP_CONFIG" /etc/sonic/config_db.json
+        config reload -y
+    else
+        echo "custom.json not found for platform $PLATFORM" >&2
     fi
 fi
 
