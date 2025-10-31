@@ -3,7 +3,7 @@
 DOCKER_SYNCD_PLATFORM_CODE = xsight
 include $(PLATFORM_PATH)/../template/docker-syncd-bookworm.mk
 
-$(DOCKER_SYNCD_BASE)_DEPENDS += $(SYNCD)
+$(DOCKER_SYNCD_BASE)_DEPENDS += $(SYNCD) $(LIBTHRIFT_0_22_0)
 
 
 $(DOCKER_SYNCD_BASE)_DBG_DEPENDS += $(SYNCD_DBG) \

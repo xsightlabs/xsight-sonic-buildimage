@@ -1,0 +1,55 @@
+From c94619295173b94acee18bcfb24ed06e2cc70a48 Mon Sep 17 00:00:00 2001
+From: Borys Barkauskas <bbarkauskas@larch-networks.net>
+Date: Mon, 10 Nov 2025 12:56:06 +0000
+Subject: [PATCH 1/2] debian/rules: isolate Rust/Cargo build environment and
+ expand configure options
+
+- Create isolated temporary directories for Cargo and Rust tools under /tmp/cargo
+  to avoid permission issues during dpkg-buildpackage without root.
+- Export RUSTC_TMPDIR and RUSTUP_HOME to ensure rustc and rustup use non-root paths.
+- Add explicit ./configure flags to disable unused language bindings
+  (PHP, Java, Perl, Lua, Go, Ruby, etc.) and disable tutorial build.
+- Keep C++ and Python bindings enabled for SONiC build.
+
+This change prevents "could not create temp file /usr/.cargo/tmp" errors
+and ensures deterministic, non-root-friendly builds in the SONiC environment.
+---
+ debian/rules | 17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
+
+diff --git a/debian/rules b/debian/rules
+index ba886fa..529572a 100755
+--- a/debian/rules
++++ b/debian/rules
+@@ -27,12 +27,27 @@ configure: configure-stamp
+ configure-stamp:
+ 	dh_testdir
+ 
++	export RUSTC_TMPDIR=/tmp/cargo/.tmp
++	export RUSTUP_HOME=/tmp/cargo/.rustup
++	mkdir -p $RUSTC_TMPDIR $RUSTUP_HOME
++
+ 	# Add here commands to configure the package.
+ 	if [ -f bootstrap.sh ]; then $(CURDIR)/bootstrap.sh; fi
+-	$(CURDIR)/configure --prefix=/usr --enable-plugin=no
++	env RUSTC_TMPDIR=/tmp/cargo/.tmp \
++		RUSTUP_HOME=/tmp/cargo/.rustup \
++	$(CURDIR)/configure --prefix=/usr --enable-plugin=no \
++		--disable-dependency-tracking \
++		--with-cpp --with-c_glib --with-py3 --with-python \
++		--without-php_extension --without-perl \
++		--without-php --without-java \
++		--without-nodejs --without-erlang --without-lua \
++		--without-go --without-ruby --with-qt4=no \
++		--with-qt5=no --without-rust --disable-tutorial
+ 
+ 	touch configure-stamp
+ 
++	# Clean up accidental Rust info lines from generated Makefiles
++	find compiler/cpp lib/cpp lib/c_glib -type f -name 'Makefile' -exec sed -i '/^info:/d;/^rustc /d;/^rustc_version/d' {} +
+ 
+ #Architecture
+ build: build-arch build-indep
+-- 
+2.17.1
+

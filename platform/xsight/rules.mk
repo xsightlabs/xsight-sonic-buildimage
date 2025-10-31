@@ -11,6 +11,7 @@ include $(PLATFORM_PATH)/xplt.mk
 include $(PLATFORM_PATH)/onie.mk
 include $(PLATFORM_PATH)/kvm-image.mk
 include $(PLATFORM_PATH)/xpci.mk
+include $(PLATFORM_PATH)/thrift.mk
 
 SONIC_ALL += $(SONIC_ONE_IMAGE) \
              $(DOCKER_FPM) \
