@@ -35,7 +35,11 @@ $(addprefix $(DEST)/, $(MAIN_TARGET)): $(DEST)/% :
 	rm -rf net-snmp-$(SNMPD_VERSION)
 
 	# download debian net-snmp
+ifneq (,$(findstring 5.9,$(SNMPD_VERSION)))
+	dget -u https://security.debian.org/pool/updates/main/n/net-snmp/net-snmp_$(SNMPD_VERSION_FULL).dsc
+else
 	dget -u https://packages.trafficmanager.net/public/debian/pool/main/n/net-snmp/net-snmp_$(SNMPD_VERSION_FULL).dsc
+endif
 
 	pushd net-snmp-$(SNMPD_VERSION)
 	git init
