@@ -66,7 +66,7 @@ def main(argv):
                             logger.error("Failed to run command: {}".format(cmd))
 
                         # Reset X2 chip
-                        cmd = "/opt/xplt/utils/es9618x_reset_x2.sh"
+                        cmd = "/opt/xplt/utils/reset_x2.sh"
                         logger.info("Reset X2 chip")
                         sts, res = run_command(cmd)
                         if sts == False:
