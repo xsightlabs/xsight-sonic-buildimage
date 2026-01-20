@@ -22,10 +22,6 @@ $(addprefix $(DEST)/, $(MAIN_TARGET)): $(DEST)/% :
 
 	pushd thrift-$(THRIFT_VERSION)
 
-	echo "THRIFT build evironment install"
-	sudo apt-get update && sudo apt-get install -y automake pkg-config g++ libglib2.0-dev git libmnl-dev \
-                                                 libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-program-options-dev
-
 	dch -v $(THRIFT_VERSION) "Update to Thrift 0.22.0"
 	DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage -d -rfakeroot -b -us -uc -j$(SONIC_CONFIG_MAKE_JOBS) --admindir $(SONIC_DPKG_ADMINDIR)
 	popd
