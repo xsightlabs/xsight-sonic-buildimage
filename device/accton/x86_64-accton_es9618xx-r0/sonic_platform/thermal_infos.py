@@ -249,6 +249,7 @@ class ThermalInfo(ThermalPolicyInfoBase):
         from .thermal_device_data import DEVICE_DATA
 
         self._cool_lvl_idx = self.CoolingLevel.LEVEL_0.value
+        self._coherent_floor_active = False
 
         self._thermal_list = None
         self._temp_list = None
@@ -377,12 +378,18 @@ class ThermalInfo(ThermalPolicyInfoBase):
         self._xcvr_warn_oh_data = []
         self._xcvr_crit_oh = False
         self._xcvr_crit_oh_data = []
+        coherent_present = False
         xcvr_eval_failed = False
         try:
             for sfp in chassis.get_all_sfps():
                 try:
                     if not sfp.get_presence():
                         continue
+                    if not coherent_present and hasattr(sfp, 'is_coherent_module'):
+                        try:
+                            coherent_present = sfp.is_coherent_module()
+                        except Exception:
+                            pass
                     sfp_thermal = sfp.get_thermal(0)
                     if sfp_thermal is None:
                         continue
@@ -404,6 +411,13 @@ class ThermalInfo(ThermalPolicyInfoBase):
         except Exception as e:
             xcvr_eval_failed = True
             logger.log_error("Failure in XCVR temperature evaluation: {}".format(str(e)))
+
+        if coherent_present != self._coherent_floor_active:
+            self._coherent_floor_active = coherent_present
+            if coherent_present:
+                logger.log_notice("Coherent module detected, raising cooling floor to LEVEL_1 (60%)")
+            else:
+                logger.log_notice("No coherent modules present, removing cooling floor")
 
         if xcvr_eval_failed:
             self._xcvr_warn_oh = self._xcvr_warn_oh or prev_xcvr_warn
@@ -498,10 +512,14 @@ class ThermalInfo(ThermalPolicyInfoBase):
 
     def get_cooling_level_idx(self):
         """
-        Retrieves the cooling level index.
+        Retrieves the effective cooling level index, factoring in the coherent
+        module floor when applicable.
         :return: Integer of cooling level index.
         """
-        return self._cool_lvl_idx
+        lvl = self._cool_lvl_idx
+        if self._coherent_floor_active:
+            lvl = max(lvl, self.CoolingLevel.LEVEL_1.value)
+        return lvl
 
     def is_faulty_sensor_invalid_detected(self):
         """
