@@ -256,8 +256,8 @@ static int dps850_probe(struct i2c_client *client,
 	}
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0)
-    data->hwmon_dev = hwmon_device_register_with_info(&client->dev, "dps850",
-                                                      NULL, NULL, NULL);
+    data->hwmon_dev = hwmon_device_register_with_groups(&client->dev, "dps850",
+                                                       NULL, NULL);
 #else
 	data->hwmon_dev = hwmon_device_register(&client->dev);
 #endif
