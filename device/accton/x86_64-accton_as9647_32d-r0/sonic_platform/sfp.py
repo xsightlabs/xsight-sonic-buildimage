@@ -323,8 +323,10 @@ class Sfp(SfpOptoeBase):
         return error_description
 
     def get_temperature(self):
-        bulkStatus = self.get_transceiver_bulk_status()
-        temp = bulkStatus["temperature"] if bulkStatus else 0.0
+        temp = None
+        api = SfpOptoeBase.get_xcvr_api(self)
+        if api is not None:
+            temp = api.get_module_temperature()
         if isinstance(temp, float):
             temp = round(temp, 1)
         return temp
