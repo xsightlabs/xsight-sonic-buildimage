@@ -26,15 +26,11 @@ logger = logger.Logger()
 logger.set_min_log_priority_debug()
 logger.log_debug("Load {} module".format(__name__))
 
-QSFP_POWEROVERRIDE_OFFSET = 93
 SFP_STATUS_INSERTED = '1'
 SFP_STATUS_REMOVED = '0'
 
 SYSFS_RESET_DISABLE = 0
 SYSFS_RESET_ENABLE = 1
-
-SYSFS_LPM_MODE_DISABLE = 0
-SYSFS_LPM_MODE_ENABLE = 1
 
 XCVR_TYPE_OFFSET = 0
 XCVR_TYPE_WIDTH = 1
@@ -104,7 +100,6 @@ class Sfp(SfpOptoeBase):
         self.eeprom_path = self.EEPROM_PATH.format(self._port_to_i2c_mapping[self._port_num])
         self.reset_path = "{}{}{}{}".format(self.CPLD_I2C_PATH, self._cpld_mapping[0], '/module_reset_', self._port_num)
         self.present_path = "{}{}{}{}".format(self.CPLD_I2C_PATH, self._cpld_mapping[0], '/module_present_', self._port_num)
-        self.lpmode_path = "{}{}{}{}".format(self.CPLD_I2C_PATH, self._cpld_mapping[0], '/module_lpmode_', self._port_num)
 
         self._sfp_type = None
         self._thermal_list.append(SfpThermal(self))
@@ -214,23 +209,6 @@ class Sfp(SfpOptoeBase):
         return int(val, 10)==1
 
 
-    def get_lpmode(self):
-        """
-        Retrieves the lpmode (low power mode) status of this SFP
-        Returns:
-            A Boolean, True if lpmode is enabled, False if disabled
-        """
-        if self._port_num > self.PORT_END:
-            # SFP doesn't support this feature
-            return False
-        else:
-            val = self._api_helper.read_txt_file(self.lpmode_path)
-            if val is not None:
-                return int(val, 10) == 1
-            else:
-                return False
-
-
     def reset(self):
         """
         Reset SFP and return all user module settings to their default srate.
@@ -253,26 +231,6 @@ class Sfp(SfpOptoeBase):
         time.sleep(0.2)
 
         return ret
-
-
-    def set_lpmode(self, lpmode):
-        """
-        Sets the lpmode (low power mode) of SFP
-        Args:
-            lpmode: A Boolean, True to enable lpmode, False to disable it
-        Returns:
-            A boolean, True if lpmode is set successfully, False if not
-        """
-        if self._port_num > self.PORT_END:
-            return False # SFP doesn't support this feature
-        else:
-            if not self.get_presence():
-                return False
-
-            val = SYSFS_LPM_MODE_ENABLE
-            if lpmode == False:
-                val = SYSFS_LPM_MODE_DISABLE
-            return self._api_helper.write_txt_file(self.lpmode_path, val)
 
 
     def get_transceiver_info(self):
