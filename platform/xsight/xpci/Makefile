@@ -22,6 +22,15 @@ $(addprefix $(DEST)/, $(MAIN_TARGET)): $(DEST)/% :
 	j2 templates/postinst.j2 > $(DKMS_TMP)/DEBIAN/postinst
 	chmod +x $(DKMS_TMP)/DEBIAN/postinst
 
+	PATCH_DIR=$$(readlink -f xpci.patches)
+	XPCI_SRC=/usr/src/xpci-$(XPCI_VERSION)
+	if [ -f "$$PATCH_DIR/series" ] && [ -d "$$XPCI_SRC" ]; then
+		sudo chmod -R u+w "$$XPCI_SRC"
+		pushd "$$XPCI_SRC"
+		sudo env QUILT_PATCHES="$$PATCH_DIR" quilt pop -a -f 2>/dev/null || true
+		sudo env QUILT_PATCHES="$$PATCH_DIR" quilt push -a
+		popd
+	fi
 	sudo dkms install --force xpci/$(XPCI_VERSION) -k $(KVERSION) -a $(CONFIGURED_ARCH)
 	cp /lib/modules/$(KVERSION)/updates/dkms/xpci.ko $(DKMS_TMP)/lib/modules/$(KVERSION)/updates/dkms
 
