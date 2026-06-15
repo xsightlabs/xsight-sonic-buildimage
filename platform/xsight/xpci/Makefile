@@ -22,9 +22,10 @@ $(addprefix $(DEST)/, $(MAIN_TARGET)): $(DEST)/% :
 	j2 templates/postinst.j2 > $(DKMS_TMP)/DEBIAN/postinst
 	chmod +x $(DKMS_TMP)/DEBIAN/postinst
 
-	PATCH_DIR=$$(readlink -f xpci.patches)
 	XPCI_SRC=/usr/src/xpci-$(XPCI_VERSION)
-	if [ -f "$$PATCH_DIR/series" ] && [ -d "$$XPCI_SRC" ]; then
+	if [ -d xpci.patches ] && [ -f xpci.patches/series ] && \
+	   grep -qE '^[^#[:space:]]' xpci.patches/series && [ -d "$$XPCI_SRC" ]; then
+		PATCH_DIR=$$(readlink -f xpci.patches)
 		sudo chmod -R u+w "$$XPCI_SRC"
 		pushd "$$XPCI_SRC"
 		sudo env QUILT_PATCHES="$$PATCH_DIR" quilt pop -a -f 2>/dev/null || true
