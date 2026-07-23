@@ -157,7 +157,7 @@ fi
 #               5 - Debug with Packet trace
 modprobe xpci attach_if=${XPCI_NETDEV_ATTACH_IF} num_of_ports=${PORT_NUM} debug_level=${DEBUG_LEVEL} \
               netdev_mode=${NETDEV_MODE} hw_irq_mode=${HW_IRQ_MODE} pci_mode=${PCI_MODE} \
-              tx_checksumming=${TX_CHECKSUMMING_MODE} pcxd_rx_coales_time=PCXD_RX_COALES_TIME
+              tx_checksumming=${TX_CHECKSUMMING_MODE} pcxd_rx_coales_time=${PCXD_RX_COALES_TIME}
 
 echo ">>> Sleeping 5"
 sleep 5
