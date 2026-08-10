@@ -1,7 +1,9 @@
 # XSight SAI
 
 XSIGHT_LIBSAI_VERSION = 0.1
-XSIGHT_LIBSAI_VERSION_GITHUB = 1.15.0-0
+XSIGHT_LIBSAI_REVISION_GITHUB_URL = "https://raw.githubusercontent.com/xsightlabs/sonic-xsight-binaries/refs/heads/main/amd64/sai-plugin/202411/xsai-1.15.0-latest-revision"
+XSIGHT_LIBSAI_REVISION_GITHUB = $(shell wget -qO- $(XSIGHT_LIBSAI_REVISION_GITHUB_URL))
+XSIGHT_LIBSAI_VERSION_GITHUB = 1.15.0-$(XSIGHT_LIBSAI_REVISION_GITHUB)
 XSIGHT_LIBSAI_URL_PREFIX = "file:///sonic"
 
 XSIGHT_LIBSAI = xsai-main_$(XSIGHT_LIBSAI_VERSION)_all.deb
