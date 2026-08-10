@@ -267,7 +267,9 @@ class Sfp(SfpOptoeBase):
     def get_transceiver_info(self):
         transceiver_info_dict = SfpOptoeBase.get_transceiver_info(self)
         if transceiver_info_dict is not None:
-            transceiver_info_dict['hardware_rev'] = 'N/A'
+            # SFF-8636/SFF-8472 APIs don't populate hardware_rev; only backfill
+            # it so we don't clobber the real value CMIS modules report.
+            transceiver_info_dict.setdefault('hardware_rev', 'N/A')
 
         return transceiver_info_dict
 
@@ -302,6 +304,10 @@ class Sfp(SfpOptoeBase):
             return self.SFP_STATUS_UNPLUGGED
 
         api = SfpOptoeBase.get_xcvr_api(self)
+        if not hasattr(api, 'get_module_level_flag'):
+            # get_module_level_flag() is CMIS-only; Sff8636Api (QSFP28) and
+            # Sff8472Api (SFP) don't implement it.
+            return self.SFP_STATUS_OK
         flags = api.get_module_level_flag()
         case_temp = flags.get("case_temp_flags")
         case_voltage = flags.get("voltage_flags")
