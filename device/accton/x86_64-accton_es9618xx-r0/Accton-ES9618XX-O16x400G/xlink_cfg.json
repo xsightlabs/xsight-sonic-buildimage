@@ -140,5 +140,7 @@
 
  "serdes_config": "serdes_config.json",
 
+ "led_config": "accton_osfp_led_config.json",
+
  "tables_config": "xsw_auto_table_properties.json"
 }
