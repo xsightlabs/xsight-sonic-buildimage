@@ -13,7 +13,9 @@ $(addprefix $(DEST)/, $(MAIN_TARGET)): $(DEST)/% :
 	# Remove any stale files
 	rm -rf protobuf-$(PROTOBUF_VERSION)
 
-	dget -u protobuf_$(PROTOBUF_VERSION_FULL).dsc http://deb.debian.org/debian/pool/main/p/protobuf/protobuf_$(PROTOBUF_VERSION_FULL).dsc
+	# 3.21.12-3 is bookworm; live debian pool only has 3.21.12-11+deb13u1 now.
+	# archive.debian.org does not have it (never a bullseye package).
+	dget -u protobuf_$(PROTOBUF_VERSION_FULL).dsc http://snapshot.debian.org/archive/debian/20260201T000000Z/pool/main/p/protobuf/protobuf_$(PROTOBUF_VERSION_FULL).dsc
 
 	pushd protobuf-$(PROTOBUF_VERSION)
 

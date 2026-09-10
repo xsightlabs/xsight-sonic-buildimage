@@ -33,6 +33,14 @@ if [ "$DISTRIBUTION" == "buster" ]; then
     DEFAULT_MIRROR_SECURITY_URLS=http://archive.debian.org/debian-security/
 fi
 
+# bullseye LTS ended 2026-08-31. archive.debian.org/debian-security has no
+# bullseye-security yet (~1y lag). Live deb.debian.org/debian-security still
+# publishes Packages but the pool is already 404 (index/pool desync). Pin the
+# last snapshot.debian.org import from EOL day.
+if [ "$DISTRIBUTION" == "bullseye" ]; then
+    DEFAULT_MIRROR_SECURITY_URLS=http://snapshot.debian.org/archive/debian-security/20260831T211327Z/
+fi
+
 if [ "$MIRROR_SNAPSHOT" == y ]; then
     if [ -f "$MIRROR_VERSION_FILE" ]; then
         DEBIAN_TIMESTAMP=$(grep "^debian==" $MIRROR_VERSION_FILE | tail -n 1 | sed 's/.*==//')

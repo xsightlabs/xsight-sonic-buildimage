@@ -14,9 +14,9 @@ http://deb.debian.org/debian/pool/main/l/lm-sensors/lm-sensors_3.6.0-7.dsc==983d
 http://deb.debian.org/debian/pool/main/l/lm-sensors/lm-sensors_3.6.0.orig.tar.gz==f60e47b5eb50bbeed48a9f43bb08dd5e
 http://deb.debian.org/debian/pool/main/n/ntp/ntp_4.2.8p15+dfsg-1.debian.tar.xz==896c9b6679f379d8967b012a0cc792c2
 http://deb.debian.org/debian/pool/main/n/ntp/ntp_4.2.8p15+dfsg.orig.tar.xz==c1c557036197188a22ec285fa53149d8
-http://deb.debian.org/debian/pool/main/p/protobuf/protobuf_3.21.12-3.debian.tar.xz==f457e44218a7d4cc7b7ab0ed696096e3
-http://deb.debian.org/debian/pool/main/p/protobuf/protobuf_3.21.12-3.dsc==d8e34e7b07473c6903f9d245934524fb
-http://deb.debian.org/debian/pool/main/p/protobuf/protobuf_3.21.12.orig.tar.gz==d38562490234d8080bdbe8eb7baf937a
+http://snapshot.debian.org/archive/debian/20260201T000000Z/pool/main/p/protobuf/protobuf_3.21.12-3.debian.tar.xz==f457e44218a7d4cc7b7ab0ed696096e3
+http://snapshot.debian.org/archive/debian/20260201T000000Z/pool/main/p/protobuf/protobuf_3.21.12-3.dsc==d8e34e7b07473c6903f9d245934524fb
+http://snapshot.debian.org/archive/debian/20260201T000000Z/pool/main/p/protobuf/protobuf_3.21.12.orig.tar.gz==d38562490234d8080bdbe8eb7baf937a
 http://ftp.us.debian.org/debian/pool/main/s/scapy/python3-scapy_2.4.0-2_all.deb==b8717ca83b3b60da54bc3f72018964a7
 http://www.mellanox.com/downloads/MFT/mft-4.28.0-96-x86_64-deb.tgz==f552e1faddc8f76fe4eb0b8902606c2a
 https://archive.apache.org/dist/thrift/0.14.1/thrift-0.14.1.tar.gz==c64434548438df2cb1e53fb27c600e85

@@ -35,11 +35,9 @@ $(addprefix $(DEST)/, $(MAIN_TARGET)): $(DEST)/% :
 	rm -rf net-snmp-$(SNMPD_VERSION)
 
 	# download debian net-snmp
-ifneq (,$(findstring 5.9,$(SNMPD_VERSION)))
-	dget -u https://security.debian.org/pool/updates/main/n/net-snmp/net-snmp_$(SNMPD_VERSION_FULL).dsc
-else
+	# live security.debian.org pool 404s after bullseye LTS EOL; SONiC already
+	# mirrors these sources (5.7 and 5.9) on trafficmanager.
 	dget -u https://packages.trafficmanager.net/public/debian/pool/main/n/net-snmp/net-snmp_$(SNMPD_VERSION_FULL).dsc
-endif
 
 	pushd net-snmp-$(SNMPD_VERSION)
 	git init
