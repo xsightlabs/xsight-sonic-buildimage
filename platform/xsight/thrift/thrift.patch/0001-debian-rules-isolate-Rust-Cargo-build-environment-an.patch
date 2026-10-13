@@ -46,7 +46,7 @@ index ba886fa..529572a 100755
  	touch configure-stamp
  
 +	# Clean up accidental Rust info lines from generated Makefiles
-+	find compiler/cpp lib/cpp lib/c_glib -type f -name 'Makefile' -exec sed -i '/^info:/d;/^rustc /d;/^rustc_version/d' {} +
++	find compiler/cpp lib/cpp lib/c_glib -type f -name 'Makefile' -exec sed -i '/^info:/d;/^warn:/d;/^rustc /d;/^rustc_version/d' {} +
  
  #Architecture
  build: build-arch build-indep
